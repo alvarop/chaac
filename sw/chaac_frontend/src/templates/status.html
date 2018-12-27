@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="container">
+      <div class="columns is-desktop">
+        <div class="column">
+          <h3 class="subtitle is-3 ">Weather as of <b>{{ sample.timestamp }}</b></h3>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        <div class="column">
+          <div class="notification has-text-centered">
+            <h2 class="title is-2">Temperature</h2>
+            <h3 class="subtitle is-3 ">{{ sample.temperature }} °C</h3>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <h2 class="title is-2">Humidity</h2>
+            <h3 class="subtitle is-3 ">{{ sample.humidity }}%</h3>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <h2 class="title is-2">Pressure</h2>
+            <h3 class="subtitle is-3 ">{{ sample.pressure }} hPa</h3>
+          </div>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        <div class="column">
+          <div class="notification has-text-centered">
+            <h2 class="title is-2">Battery</h2>
+            <h3 class="subtitle is-3 ">{{ sample.light }} V</h3>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <h2 class="title is-2">Rain</h2>
+            <h3 class="subtitle is-3 ">{{ sample.rain }} mm V</h3>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <h2 class="title is-2">Wind</h2>
+            <h3 class="subtitle is-3 ">{{ sample.wind_speed }} kph @ {{ sample.wind_dir }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
