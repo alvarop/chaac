@@ -24,9 +24,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)  # load config from this file , flaskr.py
 
 # Load default config and override config from an environment variable
-app.config.update(
-    dict(DATABASE=os.path.join(app.root_path, "/home/pi/wx_out1.db"))
-)
+app.config.update(dict(DATABASE=os.path.join(app.root_path, "/home/pi/wx_out1.db")))
 
 app.config.from_envvar("CHAAC_SETTINGS", silent=True)
 
@@ -88,9 +86,11 @@ def summary():
         # Convert the units
         for key, val in row._asdict().items():
             if key == "timestamp":
-                sample[key] = datetime.datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
+                sample[key] = datetime.datetime.fromtimestamp(val).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
             else:
-                sample[key] = float(val)/1000.0
+                sample[key] = float(val) / 1000.0
 
         samples.append(sample)
 
@@ -108,11 +108,12 @@ def show_all():
         # Convert the units
         for key, val in row._asdict().items():
             if key == "timestamp":
-                sample[key] = datetime.datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
+                sample[key] = datetime.datetime.fromtimestamp(val).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
             else:
-                sample[key] = float(val)/1000.0
+                sample[key] = float(val) / 1000.0
 
         samples.append(sample)
-
 
     return render_template("show_samples.html", samples=samples)
