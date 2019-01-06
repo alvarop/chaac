@@ -7,3 +7,6 @@
 3. Run `./support/setup.sh` to configure everything and start the server
 
 **NOTE:** Python files copied over to /var/flaskapp/chaac_frontend, so if you edit the ones here, it won't change.
+
+## Local Development
+Run `export DATABASE=/home/alvaro/Desktop/out_2.db; pipenv run gunicorn --workers 5 src:app`

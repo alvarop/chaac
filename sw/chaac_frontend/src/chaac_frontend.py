@@ -24,24 +24,18 @@ app = Flask(__name__)
 app.config.from_object(__name__)  # load config from this file , flaskr.py
 
 # Load default config and override config from an environment variable
-app.config.update(dict(DATABASE=os.path.join(app.root_path, "/home/pi/wx_out1.db")))
+app.config.update(dict(DATABASE=os.getenv("DATABASE")))
 
-app.config.from_envvar("CHAAC_SETTINGS", silent=True)
+# Get column names from database and use with WXRecord
+db = sqlite3.connect(app.config["DATABASE"])
+cur = db.execute("PRAGMA table_info(samples)")
+cols = cur.fetchall()
+col_names = []
+for col in cols:
+    col_names.append(col[1])
+db.close()
 
-data_columns = [
-    "index",
-    "timestamp",
-    "temperature",
-    "humidity",
-    "pressure",
-    "light",
-    "rain",
-    "wind_speed",
-    "wind_dir",
-]
-
-
-WXRecord = collections.namedtuple("WXRecord", data_columns)
+WXRecord = collections.namedtuple("WXRecord", col_names)
 
 
 def wx_row_factory(cursor, row):
@@ -90,7 +84,7 @@ def summary():
                     "%Y-%m-%d %H:%M:%S"
                 )
             else:
-                sample[key] = float(val) / 1000.0
+                sample[key] = round(float(val), 2)
 
         samples.append(sample)
 
