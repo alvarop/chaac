@@ -5,7 +5,8 @@ import os
 import collections
 import sqlite3
 import time
-import datetime
+from datetime import datetime
+import json
 from flask import (
     Flask,
     request,
@@ -80,7 +81,7 @@ def summary():
         # Convert the units
         for key, val in row._asdict().items():
             if key == "timestamp":
-                sample[key] = datetime.datetime.fromtimestamp(val).strftime(
+                sample[key] = datetime.fromtimestamp(val).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
             else:
@@ -89,6 +90,64 @@ def summary():
         samples.append(sample)
 
     return render_template("status.html", sample=samples[0])
+
+
+def get_json_str(start_date, end_date):
+    # Get last sample
+    db = get_db()
+    query = """
+        SELECT * FROM samples
+        WHERE timestamp > {}
+        AND timestamp < {}
+        ORDER BY timestamp
+        """.format(
+            int(start_date), int(end_date))
+
+    cur = db.execute(query)
+    rows = cur.fetchall()
+
+    plot = {}
+
+    plot["start_date"] = datetime.fromtimestamp(start_date).strftime("%Y-%m-%d %H:%M:%S")
+    plot["end_date"] = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d %H:%M:%S")
+
+    for name in col_names:
+        plot[name] = []
+
+    for row in rows:
+        for name in col_names:
+            if name == "timestamp":
+                plot[name].append(
+                    datetime.fromtimestamp(getattr(row, name)).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                )
+            elif name == "uid" or name == "id":
+                continue
+            else:
+                plot[name].append(round(getattr(row, name), 3))
+
+    return json.dumps(plot)
+
+
+@app.route("/json/day")
+def json_day_str():
+    return get_json_str(time.time() - 60 * 60 * 24, time.time())
+
+
+@app.route("/json/week")
+def json_week_str():
+    return get_json_str(time.time() - 60 * 60 * 24 * 7, time.time())
+
+
+@app.route("/json/month")
+def json_month_str():
+    return get_json_str(time.time() - 60 * 60 * 24 * 31, time.time())
+
+
+@app.route("/plots")
+def test():
+    return render_template("plots.html")
 
 
 @app.route("/all")
@@ -102,7 +161,7 @@ def show_all():
         # Convert the units
         for key, val in row._asdict().items():
             if key == "timestamp":
-                sample[key] = datetime.datetime.fromtimestamp(val).strftime(
+                sample[key] = datetime.fromtimestamp(val).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
             else:

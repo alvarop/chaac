@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WxUi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+
+      function load_plots(url) {
+        fetch(url)
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(plot) {
+          plots = [
+          {
+            title:"Temperature",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "temperature",
+            y_label: "Temperature (C)",
+            div: "div-temperature",
+            type: "scatter"
+          },
+          {
+            title:"Pressure",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "pressure",
+            y_label: "Pressure (hPa)",
+            div: "div-pressure",
+            type: "scatter"
+          },
+          {
+            title:"Humidity",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "humidity",
+            y_label: "Humidity (%RH)",
+            div: "div-humidity",
+            type: "scatter"
+          },
+          {
+            title:"Rain",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "rain",
+            y_label: "Rain (mm)",
+            div: "div-rain",
+            type: "scatter"
+          },
+          {
+            title:"Wind Speed",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "wind_speed",
+            y_label: "Speed (kph)",
+            div: "div-wspeed",
+            type: "scatter"
+          },
+          {
+            title:"Wind Direction",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "wind_dir",
+            y_label: "Direction",
+            div: "div-wdir",
+            type: "scatter"
+          },
+          {
+            title:"Battery Level",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "battery",
+            y_label: "Voltage (V)",
+            div: "div-battery",
+            type: "scatter"
+          }
+        ];
+
+        // Draw each plot here
+        plots.forEach(function(item){
+          var layout = {
+            title: {
+              text:item["title"]
+            },
+            xaxis: {
+              title: {
+                text:item["x_label"]
+              }
+            },
+            yaxis: {
+              title: {
+                text:item["y_label"]
+              }
+            }
+          };
+
+          // TODO - Also add html elements here for more flexibility
+
+          Plotly.purge(document.getElementById(item["div"]));
+          Plotly.plot(document.getElementById(item["div"]),
+            [{x:plot[item["xdata"]],
+              y:plot[item["ydata"]],
+              type:item["type"],
+              name:item["title"]}],
+              layout,
+              {responsive: true} );
+          });
+
+          document.getElementById("div-header").innerHTML = "Weather from <b>" + plot["start_date"] + "</b> to <b>" + plot["end_date"] +"</b>";
+        });
+      }
+
+      window.onload = function(){
+        load_plots('/json/day');
+      };
+    </script>
+  </head>
+  <body>
+  <section class="section">
+    <div class="container">
+      <div class="columns">
+        <div class="column">
+          <button class="button" onclick="load_plots('/json/day')">Day</button>
+          <button class="button" onclick="load_plots('/json/week')">Week</button>
+          <button class="button" onclick="load_plots('/json/month')">Month</button>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        <div class="column">
+          <h3 class="subtitle is-3 " id="div-header">Weather</h3>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-temperature" ></div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-humidity" ></div>
+          </div>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-pressure" ></div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-rain" ></div>
+          </div>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-wspeed" ></div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-wdir" ></div>
+          </div>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-battery" ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </body>
+</html>
