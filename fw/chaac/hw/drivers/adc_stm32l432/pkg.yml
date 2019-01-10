@@ -1,0 +1,11 @@
+pkg.name: hw/drivers/adc_stm32l432
+pkg.description: ADC driver for the STM32F4L32 series of processors.
+pkg.author: "Alvaro Prieto"
+pkg.homepage:
+pkg.keywords:
+pkg.features:
+    - ADC_STM32L432
+pkg.apis:
+    - ADC_HW_IMPL
+pkg.deps:
+    - "@apache-mynewt-core/hw/drivers/adc"

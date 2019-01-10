@@ -1,0 +1,11 @@
+
+syscfg.defs:
+
+    XBEE_UART_BAUD:
+        description: 'XBee UART baud rate.'
+        value: 115200
+
+    XBEE_UART_DEV:
+        description: 'XBee UART device.'
+        value: '"uart1"'
+

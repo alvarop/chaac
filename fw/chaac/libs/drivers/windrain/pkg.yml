@@ -1,0 +1,14 @@
+pkg.name: libs/drivers/windrain
+pkg.description: Argent data systems wind/rain sensor driver
+pkg.author: "Alvaro Prieto <source@alvaroprieto.com>"
+pkg.homepage: "https://github.com/alvarop/"
+pkg.keywords:
+    - wind
+    - rain
+
+pkg.deps:
+    - "@apache-mynewt-core/kernel/os"
+    - libs/drivers/simple_adc
+
+pkg.cflags:
+    - -std=gnu99

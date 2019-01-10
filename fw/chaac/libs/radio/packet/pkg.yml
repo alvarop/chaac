@@ -1,0 +1,11 @@
+pkg.name: libs/radio/packet
+pkg.description: Library for creating and processing radio packets
+pkg.author: "Alvaro Prieto"
+pkg.homepage:
+pkg.keywords:
+
+pkg.deps:
+    - "@apache-mynewt-core/kernel/os"
+
+pkg.cflags:
+    - -std=gnu99

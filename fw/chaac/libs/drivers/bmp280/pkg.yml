@@ -1,0 +1,15 @@
+pkg.name: libs/drivers/bmp280
+pkg.description: BMP280 Humidity/Temperature Sensor Driver
+pkg.author: "Alvaro Prieto <source@alvaroprieto.com>"
+pkg.homepage: "https://github.com/alvarop/"
+pkg.keywords:
+    - BMP280
+    - Temperature
+    - Pressure
+    - sensor
+
+pkg.deps:
+    - "@apache-mynewt-core/kernel/os"
+
+pkg.cflags:
+    - -std=gnu99
