@@ -58,7 +58,7 @@ static bmp280_cal_t cal;
 
 int32_t bmp280_init() {
     struct hal_i2c_master_data i2c_data = {
-        .address = BMP280_ADDR_ALT
+        .address = BMP280_ADDR
     };
     uint8_t cmd[4];
     int32_t rval = 0;
@@ -108,7 +108,7 @@ int32_t bmp280_init() {
 
 int32_t bmp280_read(float *temperature, float *pressure) {
     struct hal_i2c_master_data i2c_data = {
-        .address = BMP280_ADDR_ALT
+        .address = BMP280_ADDR
     };
     uint32_t temp_raw;
     uint32_t press_raw;
