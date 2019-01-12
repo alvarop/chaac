@@ -191,12 +191,13 @@ ADC_HandleTypeDef adc1_handle = STM32L432_DEFAULT_ADC1_HANDLE;
         {0},\
         {0},\
         {0},\
-        ADC_CH10_SAC_CFG,\
-        ADC_CH11_SAC_CFG,\
+        ADC_CH10_SAC_CFG,  /* BATT pin (PA5) */   \
+        ADC_CH11_SAC_CFG,  /* LIGHT pin (PA6) */  \
         {0},\
         {0},\
         {0},\
-        ADC_CH15_SAC_CFG},\
+        ADC_CH15_SAC_CFG   /* WDIR pin (PB0) */   \
+      },\
     .sac_adc_handle = &adc1_handle,\
   }
 

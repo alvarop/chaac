@@ -38,13 +38,42 @@ extern uint8_t _ram_start;
 
 #define RAM_SIZE        (64 * 1024)
 
-/* LED pins */
-#define LED_BLINK_PIN   MCU_GPIO_PORTB(3)
+
+#define XBEE_ON_PIN     MCU_GPIO_PORTA(0)
+#define XBEE_nSBY_PIN   MCU_GPIO_PORTA(1)
+
+#define XBEE_RX_PIN     MCU_GPIO_PORTA(2)
+#define XBEE_TX_PIN     MCU_GPIO_PORTA(3)
+
+#define XBEE_nRST_PIN   MCU_GPIO_PORTA(4)
+
+#define BATT_PIN        MCU_GPIO_PORTA(5)
+#define BATT_ADC_CH     (10)
+
+#define LIGHT_PIN       MCU_GPIO_PORTA(6)
+#define LIGHT_ADC_CH    (11)
 
 #define WX_SPEED_PIN    MCU_GPIO_PORTA(7)
 #define WX_RAIN_PIN     MCU_GPIO_PORTA(8)
-#define WX_DIR_EN_PIN   MCU_GPIO_PORTB(1)
+
+#define SCL_PIN         MCU_GPIO_PORTA(9)
+#define SDA_PIN         MCU_GPIO_PORTA(10)
+
+#define FAN_EN_PIN      MCU_GPIO_PORTA(11)
+#define LED1_PIN        MCU_GPIO_PORTA(12)
+
+#define WX_DIR_PIN      MCU_GPIO_PORTB(0)
 #define WX_DIR_ADC_CH   (15)
+
+#define WX_DIR_EN_PIN   MCU_GPIO_PORTB(1)
+
+#define MCP_STAT1_PIN   MCU_GPIO_PORTB(3)
+#define MCP_STAT2_PIN   MCU_GPIO_PORTB(4)
+#define MCP_nPG_PIN     MCU_GPIO_PORTB(5)
+#define UART_TX_PIN     MCU_GPIO_PORTB(6)
+#define UART_RX_PIN     MCU_GPIO_PORTB(7)
+
+#define GPS_SBY_PIN     MCU_GPIO_PORTH(3)
 
 /* UART */
 #define UART_CNT 2
