@@ -20,15 +20,15 @@
 bsp.arch: cortex_m4
 bsp.compiler: "@apache-mynewt-core/compiler/arm-none-eabi-m4"
 bsp.linkerscript:
-    - "hw/bsp/nucleo-l432kc/nucleo-l432kc.ld"
+    - "hw/bsp/chaac_v1p0/chaac_v1p0.ld"
     - "hw/mcu/stm/stm32l4xx/stm32l432.ld"
 bsp.linkerscript.BOOT_LOADER.OVERWRITE:
-    - "hw/bsp/nucleo-l432kc/boot-nucleo-l432kc.ld"
+    - "hw/bsp/chaac_v1p0/boot-chaac_v1p0.ld"
     - "hw/mcu/stm/stm32l4xx/stm32l432.ld"
-bsp.downloadscript: "hw/bsp/nucleo-l432kc/nucleo-l432kc_download.sh"
-bsp.debugscript: "hw/bsp/nucleo-l432kc/nucleo-l432kc_debug.sh"
-bsp.downloadscript.WINDOWS.OVERWRITE: "hw/bsp/nucleo-l432kc/nucleo-l432kc_download.cmd"
-bsp.debugscript.WINDOWS.OVERWRITE: "hw/bsp/nucleo-l432kc/nucleo-l432kc_debug.cmd"
+bsp.downloadscript: "hw/bsp/chaac_v1p0/chaac_v1p0_download.sh"
+bsp.debugscript: "hw/bsp/chaac_v1p0/chaac_v1p0_debug.sh"
+bsp.downloadscript.WINDOWS.OVERWRITE: "hw/bsp/chaac_v1p0/chaac_v1p0_download.cmd"
+bsp.debugscript.WINDOWS.OVERWRITE: "hw/bsp/chaac_v1p0/chaac_v1p0_debug.cmd"
 
 bsp.flash_map:
     areas:
