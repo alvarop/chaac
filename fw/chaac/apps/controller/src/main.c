@@ -24,17 +24,25 @@ os_stack_t weather_task_stack[WEATHER_STACK_SIZE];
 
 static uint8_t packet_tx_buff[MAX_PACKET_SIZE];
 
-void xbee_enable() {
+void xbee_enable(uint32_t timeout) {
+
+    hal_gpio_write(XBEE_nSBY_PIN, 0);
+
+    while((hal_gpio_read(XBEE_ON_PIN) == 0) && (timeout-- > 0)){
+        // TODO - make this smarter
+        // interrupt, actual timeout, sleep, etc
+    }
+
     return;
 }
 
 void xbee_disable() {
+    hal_gpio_write(XBEE_nSBY_PIN, 1);
     return;
 }
 
 int32_t packet_tx(uint16_t len, void *data) {
     int32_t rval = 0;
-
     do {
         if(len > MAX_DATA_LEN) {
             rval = -1;
@@ -56,10 +64,19 @@ int32_t packet_tx(uint16_t len, void *data) {
 
         footer->crc = crc;
 
+        // Seems to take ~500-600 'units' to wake up. 1000 to be safe
+        xbee_enable(1000);
         xbee_uart_tx(
             header->len + sizeof(packet_footer_t) + sizeof(packet_header_t),
             packet_tx_buff);
+
+        // TODO - figure out better way to know when to go back to standby
+        // 2 os ticks is too short and it takes 3 packets to buffer before tx
+        // 6 seems to be working ok...
+        os_time_delay(6);
+        xbee_disable();
     } while(0);
+
 
     return rval;
 }
@@ -69,8 +86,10 @@ static uint32_t *uid = (uint32_t *)(0x1FFF7590);
 void weather_task_func(void *arg) {
     printf("Weather Breakout!\n");
 
-    hal_gpio_init_out(MCU_GPIO_PORTB(4), 0);
-    hal_gpio_init_out(LED_BLINK_PIN, 1);
+    hal_gpio_init_out(FAN_EN_PIN, 0);
+    hal_gpio_init_in(XBEE_ON_PIN, HAL_GPIO_PULL_DOWN);
+    hal_gpio_init_out(XBEE_nSBY_PIN, 1); // XBEE nSBY
+    hal_gpio_init_out(LED1_PIN, 1);
     int32_t rval;
 
     am2315_init();
@@ -87,7 +106,9 @@ void weather_task_func(void *arg) {
 
     while (1) {
         int32_t result = 0;
-        os_time_delay(OS_TICKS_PER_SEC * 2);
+        os_time_delay(OS_TICKS_PER_SEC * 60);
+
+        hal_gpio_write(LED1_PIN, 1);
 
         weather_data_packet_t packet;
 
@@ -98,7 +119,10 @@ void weather_task_func(void *arg) {
         if(rval) {
             printf("simple_adc_read_ch error %ld\n", rval);
         } else {
-            packet.battery = (float)result / 1000.0;
+            packet.battery = (float)result * 2.0 / 1000.0;
+            printf("Batt: %ld.%ld\n",
+                (int32_t)(packet.battery),
+                (int32_t)((packet.battery-(int32_t)(packet.battery))*1000));
         }
 
         rval = simple_adc_read_ch(11, &result);
@@ -106,6 +130,9 @@ void weather_task_func(void *arg) {
             printf("simple_adc_read_ch error %ld\n", rval);
         } else {
             packet.light = (float)result / 1000.0;
+            printf("Light: %ld.%ld\n",
+                (int32_t)(packet.light),
+                (int32_t)((packet.light-(int32_t)(packet.light))*1000));
         }
 
         rval = am2315_read(&packet.temperature, &packet.humidity);
@@ -144,13 +171,9 @@ void weather_task_func(void *arg) {
                 (int32_t)(packet.rain),
                 (int32_t)((packet.rain-(int32_t)(packet.rain))*10000));
 
-        xbee_enable();
-        // wait(0.01);
         packet_tx(sizeof(weather_data_packet_t), (void*)&packet);
-        // wait(0.01);
-        xbee_disable();
 
-        hal_gpio_toggle(LED_BLINK_PIN);
+        hal_gpio_write(LED1_PIN, 0);
     }
 }
 

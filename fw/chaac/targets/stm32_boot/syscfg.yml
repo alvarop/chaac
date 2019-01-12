@@ -1,2 +1,4 @@
 syscfg.vals:
   ADC_1: 0
+  CONSOLE_UART_DEV: '"uart1"'
+  XBEE_UART_DEV: '"uart0"'
