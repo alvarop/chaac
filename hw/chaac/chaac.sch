@@ -2493,5 +2493,4 @@ STAT2
 Text Label 6300 3800 0    50   ~ 0
 nPG
 NoConn ~ 8400 4200
-NoConn ~ 6300 3350
 $EndSCHEMATC

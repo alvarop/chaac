@@ -4,3 +4,6 @@ gerber/
 *.bak
 *.zip
 *.net
+*.csv
+*.xml
+_autosave*
