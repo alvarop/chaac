@@ -75,6 +75,8 @@ extern uint8_t _ram_start;
 
 #define GPS_SBY_PIN     MCU_GPIO_PORTH(3)
 
+#define LED_BLINK_PIN   LED1_PIN
+
 /* UART */
 #define UART_CNT 2
 

@@ -20,7 +20,7 @@
 /* Linker script to configure memory regions. */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x08010000, LENGTH = 96K /* First image slot. */
+  FLASH (rx) : ORIGIN = 0x0800E000, LENGTH = 92K /* First image slot. */
   RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 64K
 }
 
