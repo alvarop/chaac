@@ -28,26 +28,26 @@
 #  - NO_GDB set if we should not start gdb to debug
 #
 
-# . $CORE_PATH/hw/scripts/jlink.sh
-
-# FILE_NAME=$BIN_BASENAME.elf
-
-# if [ $# -gt 2 ]; then
-#     SPLIT_ELF_NAME=$3.elf
-#     # TODO -- this magic number 0x42000 is the location of the second image
-#     # slot. we should either get this from a flash map file or somehow learn
-#     # this from the image itself
-#     EXTRA_GDB_CMDS="add-symbol-file $SPLIT_ELF_NAME 0x8000 -readnow"
-# fi
-
-# JLINK_DEV="STM32L476RG"
-
-# jlink_debug
-
-. $CORE_PATH/hw/scripts/stlink.sh
+. $CORE_PATH/hw/scripts/jlink.sh
 
 FILE_NAME=$BIN_BASENAME.elf
 
-EXTRA_GDB_CMDS="load $BIN_BASENAME.elf"
+if [ $# -gt 2 ]; then
+    SPLIT_ELF_NAME=$3.elf
+    # TODO -- this magic number 0x42000 is the location of the second image
+    # slot. we should either get this from a flash map file or somehow learn
+    # this from the image itself
+    EXTRA_GDB_CMDS="add-symbol-file $SPLIT_ELF_NAME 0x8000 -readnow"
+fi
 
-stlink_debug
+JLINK_DEV="STM32L476RG"
+
+jlink_debug
+
+# . $CORE_PATH/hw/scripts/stlink.sh
+
+# FILE_NAME=$BIN_BASENAME.elf
+
+# EXTRA_GDB_CMDS="load $BIN_BASENAME.elf"
+
+# stlink_debug
