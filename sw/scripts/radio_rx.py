@@ -13,6 +13,7 @@ import time
 from crc import crc16
 from datetime import datetime
 import collections
+from chaac_packet import ChaacPacket
 
 HEADER_LEN = 4
 CRC_LEN = 2
@@ -33,40 +34,51 @@ data_columns = [
     "wind_dir",
 ]
 
-WeatherData = collections.namedtuple(
-    "WeatherData",
-    [
-        "uid",
-        "packet_type",
-        "wind_speed",
-        "wind_dir",
-        "rain",
-        "temperature",
-        "humidity",
-        "temperature_in",
-        "pressure",
-        "light",
-        "battery",
-    ],
-)
-
-GPSData = collections.namedtuple(
-    "GPSData",
-    [
-        "uid",
-        "packet_type",
-        "lat_degrees",
-        "lat_minutes",
-        "lat_cardinal",
-        "lon_degrees",
-        "lon_minutes",
-        "lon_cardinal",
-    ],
-)
-
-
 PACKET_TYPE_DATA = 1
 PACKET_TYPE_GPS = 2
+PACKET_TYPE_CMD = 3
+
+
+WeatherPacket = ChaacPacket(
+    "WeatherPacket",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+        ("wind_speed", "f"),
+        ("wind_dir", "f"),
+        ("rain", "f"),
+        ("temperature", "f"),
+        ("humidity", "f"),
+        ("temperature_in", "f"),
+        ("pressure", "f"),
+        ("light", "f"),
+        ("battery", "f"),
+    ],
+)
+
+GPSPacket = ChaacPacket(
+    "GPSPacket",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+        ("lat_degrees", "i"),
+        ("lat_minutes", "d"),
+        ("lat_cardinal", "c"),
+        ("lon_degrees", "i"),
+        ("lon_minutes", "d"),
+        ("lon_cardinal", "c"),
+    ],
+)
+
+CMDPacket = ChaacPacket(
+    "CMDPacket",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+        ("cmd", "B"),
+    ],
+)
+
 
 sql_insert = "INSERT INTO samples VALUES(NULL,{})".format(
     ",".join(["?"] * len(data_columns))
@@ -76,7 +88,7 @@ devices = {}
 
 
 def process_data_packet(packet):
-    data = WeatherData._make(struct.unpack_from("<IBfffffffff", packet, 0))
+    data = WeatherPacket.decode(packet)
     print(data)
 
     if args.db:
@@ -87,7 +99,7 @@ def process_data_packet(packet):
 
 
 def process_gps_packet(packet):
-    data = GPSData._make(struct.unpack_from("<IBidcidc", packet, 0))
+    data = GPSPacket.decode(packet)
     print(data)
 
     if args.db:
