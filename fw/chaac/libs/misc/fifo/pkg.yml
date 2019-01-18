@@ -1,0 +1,11 @@
+pkg.name: libs/misc/fifo
+pkg.description: Simple FIFO
+pkg.author: "Alvaro Prieto"
+pkg.homepage:
+pkg.keywords:
+
+pkg.deps:
+    - "@apache-mynewt-core/kernel/os"
+
+pkg.cflags:
+    - -std=gnu99

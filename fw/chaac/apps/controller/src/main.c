@@ -15,6 +15,8 @@
 #include <xbee_uart/xbee_uart.h>
 #include <packet/packet.h>
 #include <packet/crc.h>
+#include <fifo/fifo.h>
+
 
 /* Define task stack and task object */
 #define WEATHER_TASK_PRI         (10)
@@ -44,7 +46,7 @@ void xbee_disable() {
 int32_t packet_tx(uint16_t len, void *data) {
     int32_t rval = 0;
     do {
-        if(len > MAX_DATA_LEN) {
+        if(len > MAX_PACKET_DATA_LEN) {
             rval = -1;
             break;
         }
@@ -70,10 +72,8 @@ int32_t packet_tx(uint16_t len, void *data) {
             header->len + sizeof(packet_footer_t) + sizeof(packet_header_t),
             packet_tx_buff);
 
-        // TODO - figure out better way to know when to go back to standby
-        // 2 os ticks is too short and it takes 3 packets to buffer before tx
-        // 6 seems to be working ok...
-        os_time_delay(6);
+        // Wait 0.5 second for response packets
+        os_time_delay(OS_TICKS_PER_SEC/2);
         xbee_disable();
     } while(0);
 
@@ -81,10 +81,19 @@ int32_t packet_tx(uint16_t len, void *data) {
     return rval;
 }
 
+void xbee_rx_ev(struct os_event *ev) {
+    fifo_t *fifo = ev->ev_arg;
+
+    while(fifo_size(fifo)) {
+        packet_process_byte(fifo_pop(fifo));
+    }
+}
+
 static uint32_t *uid = (uint32_t *)(0x1FFF7590);
 
 void weather_task_func(void *arg) {
-    printf("Weather Breakout!\n");
+    printf("Chaac v1.0\n");
+    printf("UID: %08lX\n", uid[0] ^ uid[1] ^ uid[2]);
 
     hal_gpio_init_out(FAN_EN_PIN, 0);
     hal_gpio_init_in(XBEE_ON_PIN, HAL_GPIO_PULL_DOWN);
@@ -102,7 +111,7 @@ void weather_task_func(void *arg) {
 
     windrain_init();
 
-    xbee_uart_init();
+    xbee_uart_init(&xbee_rx_ev);
 
     while (1) {
         int32_t result = 0;
