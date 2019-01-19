@@ -86,7 +86,16 @@ int16_t windrain_get_dir() {
     int32_t mv = 0;
     int16_t direction = -1;
 
+    hal_gpio_init_out(WX_DIR_EN_PIN, 1);
+
+    // Measured rise time in WX_DIR pin ~1ms (with 0.1uF cap)
+    // 5 ms delay is plenty to settle before measuring
+    os_time_delay(os_time_ms_to_ticks32(5)); //
+
     simple_adc_read_ch(15, &mv);
+
+    hal_gpio_init_out(WX_DIR_EN_PIN, 0);
+
     printf("adc: %ld mv\n", mv);
 
     for (uint8_t dir = 0; dir < sizeof(wind_dir_lut)/sizeof(wind_dir_t); dir++) {
@@ -98,6 +107,8 @@ int16_t windrain_get_dir() {
         // TODO add invalid check
     }
 
+
+
     return direction;
 }
 
@@ -106,7 +117,7 @@ void windrain_init() {
     last_speed_time_s = 0;
 
     // TODO: Disable when not in use (and check signal)
-    hal_gpio_init_out(WX_DIR_EN_PIN, 1);
+    hal_gpio_init_out(WX_DIR_EN_PIN, 0);
 
     hal_gpio_irq_init(WX_SPEED_PIN, wind_speed_irq, NULL,
         HAL_GPIO_TRIG_FALLING, HAL_GPIO_PULL_UP);
