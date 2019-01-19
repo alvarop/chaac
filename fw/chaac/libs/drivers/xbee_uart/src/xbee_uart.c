@@ -16,8 +16,9 @@ static struct os_event xbee_uart_rx_ev;
 
 static int xbee_uart_tx_char(void *arg)
 {
-    //  TODO - implement this
-    return ' ';
+    // -1 means done transmitting
+    // otherwise return char to tx...
+    return -1;
 }
 
 static int xbee_uart_rx_char(void *arg, uint8_t byte)
