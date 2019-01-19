@@ -310,15 +310,21 @@ hal_bsp_init(void)
 #endif
 
 #if MYNEWT_VAL(TIMER_0)
-    hal_timer_init(0, TIM2);
+    hal_timer_init(0, TIM15);
 #endif
 
 #if MYNEWT_VAL(TIMER_1)
-    hal_timer_init(1, TIM3);
+    hal_timer_init(1, TIM16);
 #endif
 
 #if MYNEWT_VAL(TIMER_2)
-    hal_timer_init(2, TIM4);
+    hal_timer_init(2, TIM2);
+#endif
+
+
+#if MYNEWT_VAL(OS_CPUTIME_TIMER_NUM) > 0
+    rc = os_cputime_init(MYNEWT_VAL(OS_CPUTIME_FREQ));
+    assert(rc == 0);
 #endif
 
 #if MYNEWT_VAL(SPI_0_MASTER)

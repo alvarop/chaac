@@ -44,12 +44,14 @@ syscfg.defs:
 
     TIMER_2:
         description: 'Whether to enable TIMER_2'
-        value: 0
+        value: 1
 
 syscfg.vals:
     REBOOT_LOG_FLASH_AREA: FLASH_AREA_REBOOT_LOG
     CONFIG_FCB_FLASH_AREA: FLASH_AREA_NFFS
     NFFS_FLASH_AREA: FLASH_AREA_NFFS
     COREDUMP_FLASH_AREA: FLASH_AREA_IMAGE_1
+    OS_CPUTIME_TIMER_NUM: 2
+    OS_CPUTIME_TIMER_FREQ: 1000000
 
     I2C_0: 1
