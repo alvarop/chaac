@@ -78,8 +78,9 @@ int32_t packet_tx(uint16_t len, void *data) {
             header->len + sizeof(packet_footer_t) + sizeof(packet_header_t),
             packet_tx_buff);
 
-        // Wait 0.5 second for response packets
-        os_time_delay(OS_TICKS_PER_SEC/2);
+        // Wait ~62ms for response packets
+        // This is enough time to get a response if any
+        os_time_delay(OS_TICKS_PER_SEC/16);
         xbee_disable();
     } while(0);
 
@@ -129,6 +130,7 @@ void weather_task_func(void *arg) {
     xbee_uart_init(&xbee_rx_ev);
     packet_init_cb(packet_rx_cb);
 
+    // TODO - send get time packet
     while (1) {
         int32_t result = 0;
         os_time_delay(OS_TICKS_PER_SEC * 60);
