@@ -18,6 +18,11 @@
 #include <fifo/fifo.h>
 #include <hal/hal_nvreg.h>
 
+// XOR uid 32-bit words to have a single 32-bit uid
+#define DEVICE_UID (   ((uint32_t *)(0x1FFF7590))[0] ^ \
+                        ((uint32_t *)(0x1FFF7590))[1] ^ \
+                        ((uint32_t *)(0x1FFF7590))[2])
+// static uint32_t *uid = (uint32_t *)(0x1FFF7590);
 
 /* Define task stack and task object */
 #define WEATHER_TASK_PRI         (10)
@@ -92,18 +97,18 @@ void xbee_rx_ev(struct os_event *ev) {
 
 void packet_rx_cb(int16_t len, void* data) {
     chaac_header_t *header = (chaac_header_t*)data;
-    if (header->type == PACKET_TYPE_CMD) {
+    if (header->type == PACKET_TYPE_CMD && header->uid == DEVICE_UID) {
         // ack?
+        // TODO - have actual reset command
         hal_nvreg_write(0, 0xB7);
         NVIC_SystemReset();
     }
 }
 
-static uint32_t *uid = (uint32_t *)(0x1FFF7590);
 
 void weather_task_func(void *arg) {
     printf("Chaac v1.0\n");
-    printf("UID: %08lX\n", uid[0] ^ uid[1] ^ uid[2]);
+    printf("UID: %08lX\n", DEVICE_UID);
 
     hal_gpio_init_out(FAN_EN_PIN, 0);
     hal_gpio_init_in(XBEE_ON_PIN, HAL_GPIO_PULL_DOWN);
@@ -132,7 +137,7 @@ void weather_task_func(void *arg) {
 
         weather_data_packet_t packet;
 
-        packet.header.uid = uid[0] ^ uid[1] ^ uid[2];
+        packet.header.uid = DEVICE_UID;
         packet.header.type = PACKET_TYPE_DATA;
 
         rval = simple_adc_read_ch(10, &result);
