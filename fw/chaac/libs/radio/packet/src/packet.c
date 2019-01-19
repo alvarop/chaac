@@ -17,10 +17,12 @@ typedef enum {
 
 static packet_state_t state = PACKET_STATE_CLEAR;
 
-void process_packet() {
-    cmd_packet_t *packet = (cmd_packet_t*)&header[1];
-    printf("Packet Received! (Len: %d)\n", header->len);
-    printf("Type: %d\n", packet->type);
+static void (*packet_cb_fn)(int16_t len, void *data) = NULL;
+
+int32_t packet_init_cb(void (*cb_fn)(int16_t len, void *data)) {
+    packet_cb_fn = cb_fn;
+
+    return 0;
 }
 
 int32_t packet_process_byte(uint8_t byte) {
@@ -94,7 +96,10 @@ int32_t packet_process_byte(uint8_t byte) {
             crc = crc_finalize(crc);
 
             if (crc == footer->crc) {
-                process_packet();
+                if (packet_cb_fn != NULL) {
+                    // Process packet
+                    packet_cb_fn(header->len, (void *)&header[1]);
+                }
             }
 
             buff_index = 0;

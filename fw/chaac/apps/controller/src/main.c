@@ -89,6 +89,12 @@ void xbee_rx_ev(struct os_event *ev) {
     }
 }
 
+void packet_rx_cb(int16_t len, void* data) {
+    chaac_header_t *header = (chaac_header_t*)data;
+    printf("Packet Received! (Len: %d)\n", len);
+    printf("Type: %d\n", header->type);
+}
+
 static uint32_t *uid = (uint32_t *)(0x1FFF7590);
 
 void weather_task_func(void *arg) {
@@ -112,6 +118,7 @@ void weather_task_func(void *arg) {
     windrain_init();
 
     xbee_uart_init(&xbee_rx_ev);
+    packet_init_cb(packet_rx_cb);
 
     while (1) {
         int32_t result = 0;
@@ -121,8 +128,8 @@ void weather_task_func(void *arg) {
 
         weather_data_packet_t packet;
 
-        packet.uid = uid[0] ^ uid[1] ^ uid[2];
-        packet.type = PACKET_TYPE_DATA;
+        packet.header.uid = uid[0] ^ uid[1] ^ uid[2];
+        packet.header.type = PACKET_TYPE_DATA;
 
         rval = simple_adc_read_ch(10, &result);
         if(rval) {
