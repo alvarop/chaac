@@ -16,6 +16,7 @@
 #include <packet/packet.h>
 #include <packet/crc.h>
 #include <fifo/fifo.h>
+#include <hal/hal_nvreg.h>
 
 
 /* Define task stack and task object */
@@ -91,8 +92,11 @@ void xbee_rx_ev(struct os_event *ev) {
 
 void packet_rx_cb(int16_t len, void* data) {
     chaac_header_t *header = (chaac_header_t*)data;
-    printf("Packet Received! (Len: %d)\n", len);
-    printf("Type: %d\n", header->type);
+    if (header->type == PACKET_TYPE_CMD) {
+        // ack?
+        hal_nvreg_write(0, 0xB7);
+        NVIC_SystemReset();
+    }
 }
 
 static uint32_t *uid = (uint32_t *)(0x1FFF7590);

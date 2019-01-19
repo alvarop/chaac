@@ -290,6 +290,11 @@ hal_bsp_init(void)
     SystemClock_Config();
     SystemCoreClockUpdate();
 
+#if MYNEWT_VAL(BOOT_SERIAL)
+    // Bootloader needs to enable XBEE to communicate
+    hal_gpio_init_out(XBEE_nSBY_PIN, 0);
+#endif
+
 #if MYNEWT_VAL(UART_0)
     rc = os_dev_create((struct os_dev *) &hal_uart0, "uart0",
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
