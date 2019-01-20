@@ -45,7 +45,7 @@ static void wind_speed_irq(void *arg) {
 
 static void rain_irq(void *arg) {
     static os_time_t last_rain_time;
-    // Use OS time for debounce (1/128 ~= 8ms)
+    // Use OS time for debounce (1/1000 ~= 1ms)
     if(os_time_get() != last_rain_time) {
         last_rain_time = os_time_get();
         rain_ticks++;

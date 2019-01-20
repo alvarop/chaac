@@ -131,6 +131,7 @@ void weather_task_func(void *arg) {
     packet_init_cb(packet_rx_cb);
 
     // TODO - send get time packet
+
     while (1) {
         int32_t result = 0;
         os_time_delay(OS_TICKS_PER_SEC * 60);
@@ -156,7 +157,7 @@ void weather_task_func(void *arg) {
         if(rval) {
             printf("simple_adc_read_ch error %ld\n", rval);
         } else {
-            packet.light = (float)result / 1000.0;
+            packet.light = (float)result / 3300.0; // Normalize from 0.0-1.0
             printf("Light: %ld.%ld\n",
                 (int32_t)(packet.light),
                 (int32_t)((packet.light-(int32_t)(packet.light))*1000));
