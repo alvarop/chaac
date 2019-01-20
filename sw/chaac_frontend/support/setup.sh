@@ -23,18 +23,5 @@ export PIPENV_VENV_IN_PROJECT=true; pipenv install flask gunicorn
 
 echo "copying to /var/"
 sudo rm -r /var/flaskapp/chaac_frontend
-sudo mkdir -p /var/flaskapp/chaac_frontend/
-sudo cp -r . /var/flaskapp/chaac_frontend/
 
-cd /var/flaskapp/chaac_frontend
-
-echo "changing ownership"
-sudo chown -R www-data:www-data /var/flaskapp/chaac_frontend
-
-cd -
-
-echo "restart nginx"
-sudo systemctl restart nginx
-
-echo "restart supervisor"
-sudo systemctl restart supervisor
+bash ./support/update.sh
