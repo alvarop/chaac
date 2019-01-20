@@ -11,4 +11,4 @@
 If you just changed a few files and don't want to go through the whole pipenv process again, you can use `./support/update.sh`. This will just rsync the changed files over and restart the services.
 
 ## Local Development
-Run `export DATABASE=/home/alvaro/Desktop/out_2.db; pipenv run gunicorn --workers 5 src:app`
+Run `export DATABASE=~/Desktop/chaac.db; pipenv run gunicorn --workers 5 src:app`
