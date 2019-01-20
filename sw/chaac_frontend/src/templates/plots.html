@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>WxUi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+{% extends "layout.html" %}
+{% block head %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
 
@@ -127,72 +122,70 @@
         load_plots('/json/day');
       };
     </script>
-  </head>
-  <body>
-  <section class="section">
-    <div class="container">
-      <div class="columns">
-        <div class="column">
-          <button class="button" onclick="load_plots('/json/day')">Day</button>
-          <button class="button" onclick="load_plots('/json/week')">Week</button>
-          <button class="button" onclick="load_plots('/json/month')">Month</button>
+{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <div class="columns">
+      <div class="column">
+        <button class="button" onclick="load_plots('/json/day')">Day</button>
+        <button class="button" onclick="load_plots('/json/week')">Week</button>
+        <button class="button" onclick="load_plots('/json/month')">Month</button>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <h3 class="subtitle is-3 " id="div-header">Weather</h3>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-temperature" ></div>
         </div>
       </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <h3 class="subtitle is-3 " id="div-header">Weather</h3>
-        </div>
-      </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-temperature" ></div>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-humidity" ></div>
-          </div>
-        </div>
-      </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-pressure" ></div>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-rain" ></div>
-          </div>
-        </div>
-      </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-wspeed" ></div>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-wdir" ></div>
-          </div>
-        </div>
-      </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-battery" ></div>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <div id="div-light" ></div>
-          </div>
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-humidity" ></div>
         </div>
       </div>
     </div>
-  </section>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-pressure" ></div>
+        </div>
+      </div>
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-rain" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-wspeed" ></div>
+        </div>
+      </div>
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-wdir" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-battery" ></div>
+        </div>
+      </div>
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-light" ></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  </body>
-</html>
+{% endblock %}
