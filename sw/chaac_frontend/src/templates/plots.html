@@ -77,6 +77,15 @@
             y_label: "Voltage (V)",
             div: "div-battery",
             type: "scatter"
+          },
+          {
+            title:"Light Level",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "light",
+            y_label: "Light Level (0-1)",
+            div: "div-light",
+            type: "scatter"
           }
         ];
 
@@ -174,6 +183,11 @@
         <div class="column">
           <div class="notification has-text-centered">
             <div id="div-battery" ></div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="notification has-text-centered">
+            <div id="div-light" ></div>
           </div>
         </div>
       </div>
