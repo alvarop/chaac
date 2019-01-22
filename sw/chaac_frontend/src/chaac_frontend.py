@@ -1,23 +1,11 @@
 
-from flask import Flask
-
 import os
 import collections
 import sqlite3
 import time
 from datetime import datetime
 import json
-from flask import (
-    Flask,
-    request,
-    session,
-    g,
-    redirect,
-    url_for,
-    abort,
-    render_template,
-    flash,
-)
+from flask import Flask, request, g, render_template, jsonify
 
 
 app = Flask(__name__)
@@ -81,9 +69,7 @@ def summary():
         # Convert the units
         for key, val in row._asdict().items():
             if key == "timestamp":
-                sample[key] = datetime.fromtimestamp(val).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+                sample[key] = datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
             else:
                 sample[key] = round(float(val), 2)
 
@@ -101,14 +87,17 @@ def get_json_str(start_date, end_date):
         AND timestamp < {}
         ORDER BY timestamp
         """.format(
-            int(start_date), int(end_date))
+        int(start_date), int(end_date)
+    )
 
     cur = db.execute(query)
     rows = cur.fetchall()
 
     plot = {}
 
-    plot["start_date"] = datetime.fromtimestamp(start_date).strftime("%Y-%m-%d %H:%M:%S")
+    plot["start_date"] = datetime.fromtimestamp(start_date).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
     plot["end_date"] = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d %H:%M:%S")
 
     for name in col_names:
@@ -127,7 +116,7 @@ def get_json_str(start_date, end_date):
             else:
                 plot[name].append(round(getattr(row, name), 3))
 
-    return json.dumps(plot)
+    return jsonify(plot)
 
 
 @app.route("/json/day")
@@ -161,9 +150,7 @@ def show_all():
         # Convert the units
         for key, val in row._asdict().items():
             if key == "timestamp":
-                sample[key] = datetime.fromtimestamp(val).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+                sample[key] = datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
             else:
                 sample[key] = float(val) / 1000.0
 
