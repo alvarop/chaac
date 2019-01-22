@@ -3,14 +3,6 @@
 # Make sure we're in the right directory
 cd `git rev-parse --show-toplevel`/sw/chaac_frontend
 
-echo "nginx config setup"
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo cp support/nginx_chaac_frontend /etc/nginx/sites-enabled/chaac_frontend
-
-echo "supervisor config setup"
-sudo rm -f /etc/supervisor/conf.d/chaac_frontend.conf
-sudo cp support/chaac_frontend.conf /etc/supervisor/conf.d/chaac_frontend.conf
-
 echo "pipenv setup"
 
 # Temporary workaround. Getting hash errors when trying to install without --sequential
@@ -21,7 +13,9 @@ rm ./Pipfile
 export PIPENV_VENV_IN_PROJECT=true; pipenv install --three
 export PIPENV_VENV_IN_PROJECT=true; pipenv install flask gunicorn
 
-echo "copying to /var/"
+echo "Remove old setup"
 sudo rm -r /var/flaskapp/chaac_frontend
+
+cd -
 
 bash ./support/update.sh
