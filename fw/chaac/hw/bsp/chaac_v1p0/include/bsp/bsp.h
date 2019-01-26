@@ -66,6 +66,8 @@ extern uint8_t _ram_start;
 #define WX_DIR_ADC_CH   (15)
 
 #define WX_DIR_EN_PIN   MCU_GPIO_PORTB(1)
+#define WX_DIR_EN_ON    (0)
+#define WX_DIR_EN_OFF   (1)
 
 #define MCP_STAT1_PIN   MCU_GPIO_PORTB(3)
 #define MCP_STAT2_PIN   MCU_GPIO_PORTB(4)

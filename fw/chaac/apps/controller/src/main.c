@@ -115,6 +115,9 @@ void weather_task_func(void *arg) {
     hal_gpio_init_in(XBEE_ON_PIN, HAL_GPIO_PULL_DOWN);
     hal_gpio_init_out(XBEE_nSBY_PIN, 1); // XBEE nSBY
     hal_gpio_init_out(LED1_PIN, 1);
+
+    hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_OFF);
+
     int32_t rval;
 
     am2315_init();
@@ -134,7 +137,7 @@ void weather_task_func(void *arg) {
 
     while (1) {
         int32_t result = 0;
-        os_time_delay(OS_TICKS_PER_SEC * 60);
+        os_time_delay(OS_TICKS_PER_SEC * 5);
 
         hal_gpio_write(LED1_PIN, 1);
 
@@ -142,6 +145,11 @@ void weather_task_func(void *arg) {
 
         packet.header.uid = DEVICE_UID;
         packet.header.type = PACKET_TYPE_DATA;
+
+        hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_ON);
+        // Measured rise time in WX_DIR pin ~1ms (with 0.1uF cap)
+        // 5 ms delay is plenty to settle before measuring
+        os_time_delay(os_time_ms_to_ticks32(5));
 
         rval = simple_adc_read_ch(10, &result);
         if(rval) {
@@ -188,7 +196,10 @@ void weather_task_func(void *arg) {
 
         packet.rain = (float)windrain_get_rain()/10000.0; // TODO check if 1000
         packet.wind_speed = (float)windrain_get_speed()/1000.0;
+
+
         packet.wind_dir = (float)windrain_get_dir()/10.0;
+        hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_OFF);
 
         printf( "ws: %ld.%ld kph @ %ld.%ld\n",
                 (int32_t)(packet.wind_speed),
