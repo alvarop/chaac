@@ -1,3 +1,7 @@
+syscfg.defs:
+    CHAAC_SAMPLE_RATE_S:
+        description: 'Sample rate in seconds'
+        value:  60
 
 syscfg.vals:
-  CONSOLE_TICKS: 0
+    CONSOLE_TICKS: 0
