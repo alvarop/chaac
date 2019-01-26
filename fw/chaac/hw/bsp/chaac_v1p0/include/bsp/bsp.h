@@ -38,6 +38,7 @@ extern uint8_t _ram_start;
 
 #define RAM_SIZE        (64 * 1024)
 
+#define CHAAC_HW_VERS   (0x0100)
 
 #define XBEE_ON_PIN     MCU_GPIO_PORTA(0)
 #define XBEE_nSBY_PIN   MCU_GPIO_PORTA(1)

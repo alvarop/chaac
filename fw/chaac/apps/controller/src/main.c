@@ -106,11 +106,7 @@ void packet_rx_cb(int16_t len, void* data) {
     }
 }
 
-
-void weather_task_func(void *arg) {
-    printf("Chaac v1.0\n");
-    printf("UID: %08lX\n", DEVICE_UID);
-
+void weather_init() {
     hal_gpio_init_out(FAN_EN_PIN, 0);
     hal_gpio_init_in(XBEE_ON_PIN, HAL_GPIO_PULL_DOWN);
     hal_gpio_init_out(XBEE_nSBY_PIN, 1); // XBEE nSBY
@@ -123,7 +119,7 @@ void weather_task_func(void *arg) {
     am2315_init();
     rval = bmp280_init();
     if(rval) {
-        printf("Error initializing BMP280 (%ld)\n", rval);
+        console_printf("Error initializing BMP280 (%ld)\n", rval);
     }
 
     simple_adc_init();
@@ -132,11 +128,20 @@ void weather_task_func(void *arg) {
 
     xbee_uart_init(&xbee_rx_ev);
     packet_init_cb(packet_rx_cb);
+}
+
+void weather_task_func(void *arg) {
+    console_printf("Chaac v%d.%d\n", (CHAAC_HW_VERS >> 8), CHAAC_HW_VERS & 0xFF);
+    console_printf("UID: %08lX\n", DEVICE_UID);
+
+    weather_init();
 
     // TODO - send get time packet
 
     while (1) {
         int32_t result = 0;
+        int32_t rval;
+
         os_time_delay(OS_TICKS_PER_SEC * 5);
 
         hal_gpio_write(LED1_PIN, 1);
@@ -153,29 +158,29 @@ void weather_task_func(void *arg) {
 
         rval = simple_adc_read_ch(10, &result);
         if(rval) {
-            printf("simple_adc_read_ch error %ld\n", rval);
+            console_printf("simple_adc_read_ch error %ld\n", rval);
         } else {
             packet.battery = (float)result * 2.0 / 1000.0;
-            printf("Batt: %ld.%ld\n",
+            console_printf("B: %ld.%ld\n",
                 (int32_t)(packet.battery),
                 (int32_t)((packet.battery-(int32_t)(packet.battery))*1000));
         }
 
         rval = simple_adc_read_ch(11, &result);
         if(rval) {
-            printf("simple_adc_read_ch error %ld\n", rval);
+            console_printf("simple_adc_read_ch error %ld\n", rval);
         } else {
             packet.light = (float)result / 3300.0; // Normalize from 0.0-1.0
-            printf("Light: %ld.%ld\n",
+            console_printf("L: %ld.%ld\n",
                 (int32_t)(packet.light),
                 (int32_t)((packet.light-(int32_t)(packet.light))*1000));
         }
 
         rval = am2315_read(&packet.temperature, &packet.humidity);
         if (rval) {
-            printf("Error reading from AM2315 (%ld)\n", rval);
+            console_printf("Error reading from AM2315 (%ld)\n", rval);
         } else {
-            printf("%ld.%02ld %ld.%02ld\n",
+            console_printf("H:%ld.%02ld T:%ld.%02ld\n",
                 (int32_t)(packet.humidity),
                 (int32_t)((packet.humidity-(int32_t)(packet.humidity))*10),
                 (int32_t)(packet.temperature),
@@ -185,9 +190,9 @@ void weather_task_func(void *arg) {
         rval = bmp280_read(&packet.temperature_in, &packet.pressure);
         packet.pressure /= 100.0;
         if (rval) {
-            printf("Error reading from BMP280 (%ld)\n", rval);
+            console_printf("Error reading from BMP280 (%ld)\n", rval);
         } else {
-            printf("%ld.%02ld %ld.%02ld\n",
+            console_printf("P: %ld.%02ld T: %ld.%02ld\n",
                 (int32_t)(packet.pressure),
                 (int32_t)((packet.pressure-(int32_t)(packet.pressure))*100),
                 (int32_t)(packet.temperature_in),
@@ -201,12 +206,12 @@ void weather_task_func(void *arg) {
         packet.wind_dir = (float)windrain_get_dir()/10.0;
         hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_OFF);
 
-        printf( "ws: %ld.%ld kph @ %ld.%ld\n",
+        console_printf("ws: %ld.%ld kph @ %ld.%ld\n",
                 (int32_t)(packet.wind_speed),
                 (int32_t)((packet.wind_speed-(int32_t)(packet.wind_speed))*10),
                 (int32_t)(packet.wind_dir),
                 (int32_t)((packet.wind_dir-(int32_t)(packet.wind_dir))*10));
-        printf("rain: %ld.%ld mm\n",
+        console_printf("rain: %ld.%ld mm\n",
                 (int32_t)(packet.rain),
                 (int32_t)((packet.rain-(int32_t)(packet.rain))*10000));
 

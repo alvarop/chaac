@@ -25,12 +25,6 @@ int32_t am2315_read(float *temperature, float *humidity) {
 
     do {
         hal_i2c_master_probe(0, AM2315_ADDR, 10);
-        // rval = hal_i2c_master_probe(0, AM2315_ADDR, 10);
-
-        // if(rval != 0) {
-        //     printf("ERR 1\n");
-        //     break;
-        // }
 
         // Read temperature and humidity register
         // send request to AM2315
@@ -43,7 +37,6 @@ int32_t am2315_read(float *temperature, float *humidity) {
         rval = hal_i2c_master_write(0, &i2c_data, 10, 1);
 
         if(rval != 0) {
-            printf("ERR 2\n");
             break;
         }
 
@@ -55,7 +48,6 @@ int32_t am2315_read(float *temperature, float *humidity) {
         rval = hal_i2c_master_read(0, &i2c_data, 10, 1);
 
         if(rval != 0) {
-            printf("ERR 3\n");
             break;
         }
 

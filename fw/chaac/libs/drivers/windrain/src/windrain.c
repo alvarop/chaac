@@ -88,8 +88,6 @@ int16_t windrain_get_dir() {
 
     simple_adc_read_ch(15, &mv);
 
-    printf("adc: %ld mv\n", mv);
-
     for (uint8_t dir = 0; dir < sizeof(wind_dir_lut)/sizeof(wind_dir_t); dir++) {
         if (mv < wind_dir_lut[dir].voltage) {
             direction = wind_dir_lut[dir].direction;

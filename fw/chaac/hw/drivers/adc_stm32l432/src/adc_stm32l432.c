@@ -312,7 +312,7 @@ stm32l432_adc_read_channel(struct adc_dev *dev, uint8_t cnum, int *result)
     hadc = cfg->sac_adc_handle;
 
     if(HAL_ADC_PollForConversion(hadc, 100) != HAL_OK) {
-        printf("Error waiting :(\n");
+        assert(0);
     }
 
     *result = HAL_ADC_GetValue(hadc);
