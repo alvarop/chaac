@@ -1,0 +1,3 @@
+syscfg.vals:
+  CONSOLE_UART_DEV: '"uart1"'
+  XBEE_UART_DEV: '"uart0"'

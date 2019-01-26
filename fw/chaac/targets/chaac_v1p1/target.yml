@@ -1,0 +1,3 @@
+target.app: apps/controller
+target.bsp: hw/bsp/chaac_v1p1
+target.build_profile: debug
