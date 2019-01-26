@@ -3,9 +3,10 @@
 #include <packet/crc.h>
 #include <string.h>
 
-static uint8_t buff[MAX_PACKET_SIZE];
+static uint8_t packet_tx_buff[MAX_PACKET_SIZE];
+static uint8_t rx_buff[MAX_PACKET_SIZE];
 static uint32_t buff_index = 0;
-static packet_header_t *header = (packet_header_t*)(buff);
+static packet_header_t *header = (packet_header_t*)(rx_buff);
 
 typedef enum {
     PACKET_STATE_CLEAR,
@@ -18,9 +19,16 @@ typedef enum {
 static packet_state_t state = PACKET_STATE_CLEAR;
 
 static void (*packet_cb_fn)(int16_t len, void *data) = NULL;
+static void (*packet_tx_fn)(int16_t len, void *data) = NULL;
 
 int32_t packet_init_cb(void (*cb_fn)(int16_t len, void *data)) {
     packet_cb_fn = cb_fn;
+
+    return 0;
+}
+
+int32_t packet_init_tx_fn(void (*tx_fn)(int16_t len, void *data)) {
+    packet_tx_fn = tx_fn;
 
     return 0;
 }
@@ -29,7 +37,7 @@ int32_t packet_process_byte(uint8_t byte) {
     switch(state) {
         case PACKET_STATE_CLEAR: {
             if (byte == (PACKET_START & 0xFF)) {
-                buff[buff_index++] = byte;
+                rx_buff[buff_index++] = byte;
                 state = PACKET_STATE_START;
             } else {
                 buff_index = 0;
@@ -40,7 +48,7 @@ int32_t packet_process_byte(uint8_t byte) {
 
         case PACKET_STATE_START: {
             if (byte == ((PACKET_START >> 8) & 0xFF)) {
-                buff[buff_index++] = byte;
+                rx_buff[buff_index++] = byte;
                 state = PACKET_STATE_LEN;
             } else {
                 buff_index = 0;
@@ -50,7 +58,7 @@ int32_t packet_process_byte(uint8_t byte) {
         }
 
         case PACKET_STATE_LEN: {
-            buff[buff_index++] = byte;
+            rx_buff[buff_index++] = byte;
 
             if (buff_index < sizeof(packet_header_t)) {
                 // Need one more len byte
@@ -68,7 +76,7 @@ int32_t packet_process_byte(uint8_t byte) {
         }
 
         case PACKET_STATE_DATA: {
-            buff[buff_index++] = byte;
+            rx_buff[buff_index++] = byte;
 
             if (buff_index < (sizeof(packet_header_t) + header->len)) {
                 // Need more data bytes
@@ -80,7 +88,7 @@ int32_t packet_process_byte(uint8_t byte) {
         }
 
         case PACKET_STATE_CRC: {
-            buff[buff_index++] = byte;
+            rx_buff[buff_index++] = byte;
 
             if (buff_index < (sizeof(packet_header_t) +
                                 header->len + sizeof(packet_footer_t))) {
@@ -109,4 +117,42 @@ int32_t packet_process_byte(uint8_t byte) {
     }
 
     return 0;
+}
+
+int32_t packet_tx(uint16_t len, void *data) {
+    int32_t rval = 0;
+    do {
+        if(packet_tx_fn == NULL) {
+            rval = -2;
+            break;
+        }
+
+        if(len > MAX_PACKET_DATA_LEN) {
+            rval = -1;
+            break;
+        }
+        crc_t crc;
+
+        packet_header_t *header = (packet_header_t *)packet_tx_buff;
+        packet_footer_t *footer = (packet_footer_t *)((uint8_t *)&header[1] + len);
+
+        header->start = PACKET_START;
+        header->len = len;
+
+        memcpy((void*)&header[1], data, len);
+
+        crc = crc_init();
+        crc = crc_update(crc, header, header->len + sizeof(packet_header_t));
+        crc = crc_finalize(crc);
+
+        footer->crc = crc;
+
+        packet_tx_fn(
+            header->len + sizeof(packet_footer_t) + sizeof(packet_header_t),
+            packet_tx_buff);
+
+    } while(0);
+
+
+    return rval;
 }

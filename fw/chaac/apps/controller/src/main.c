@@ -23,8 +23,6 @@
                         ((uint32_t *)(0x1FFF7590))[1] ^ \
                         ((uint32_t *)(0x1FFF7590))[2])
 
-static uint8_t packet_tx_buff[MAX_PACKET_SIZE];
-
 struct os_callout sample_callout;
 
 void xbee_enable(uint32_t timeout) {
@@ -44,43 +42,16 @@ void xbee_disable() {
     return;
 }
 
-int32_t packet_tx(uint16_t len, void *data) {
-    int32_t rval = 0;
-    do {
-        if(len > MAX_PACKET_DATA_LEN) {
-            rval = -1;
-            break;
-        }
-        crc_t crc;
+void packet_tx_fn(int16_t len, void* data) {
+    // Seems to take ~500-600 'units' to wake up. 1000 to be safe
+    xbee_enable(1000);
 
-        packet_header_t *header = (packet_header_t *)packet_tx_buff;
-        packet_footer_t *footer = (packet_footer_t *)((uint8_t *)&header[1] + len);
+    xbee_uart_tx(len, data);
 
-        header->start = PACKET_START;
-        header->len = len;
-
-        memcpy((void*)&header[1], data, len);
-
-        crc = crc_init();
-        crc = crc_update(crc, header, header->len + sizeof(packet_header_t));
-        crc = crc_finalize(crc);
-
-        footer->crc = crc;
-
-        // Seems to take ~500-600 'units' to wake up. 1000 to be safe
-        xbee_enable(1000);
-        xbee_uart_tx(
-            header->len + sizeof(packet_footer_t) + sizeof(packet_header_t),
-            packet_tx_buff);
-
-        // Wait ~62ms for response packets
-        // This is enough time to get a response if any
-        os_time_delay(OS_TICKS_PER_SEC/16);
-        xbee_disable();
-    } while(0);
-
-
-    return rval;
+    // Wait ~62ms for response packets
+    // This is enough time to get a response if any
+    os_time_delay(OS_TICKS_PER_SEC/16);
+    xbee_disable();
 }
 
 void xbee_rx_ev(struct os_event *ev) {
@@ -123,6 +94,7 @@ void weather_init() {
 
     xbee_uart_init(&xbee_rx_ev);
     packet_init_cb(packet_rx_cb);
+    packet_init_tx_fn(packet_tx_fn);
 }
 
 void weather_sample_fn(struct os_event *ev) {

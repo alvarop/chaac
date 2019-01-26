@@ -57,6 +57,9 @@ typedef struct {
 #define PACKET_START 0xAA55
 
 int32_t packet_init_cb(void (*cb_fn)(int16_t len, void *data));
+int32_t packet_init_tx_fn(void (*tx_fn)(int16_t len, void *data));
 int32_t packet_process_byte(uint8_t byte);
+int32_t packet_tx(uint16_t len, void *data);
+
 
 #endif
