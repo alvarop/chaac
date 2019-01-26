@@ -86,7 +86,7 @@ int16_t windrain_get_dir() {
     int32_t mv = 0;
     int16_t direction = -1;
 
-    simple_adc_read_ch(15, &mv);
+    simple_adc_read_ch(WX_DIR_ADC_CH, &mv);
 
     for (uint8_t dir = 0; dir < sizeof(wind_dir_lut)/sizeof(wind_dir_t); dir++) {
         if (mv < wind_dir_lut[dir].voltage) {
@@ -114,4 +114,7 @@ void windrain_init() {
 
     hal_gpio_irq_enable(WX_SPEED_PIN);
     hal_gpio_irq_enable(WX_RAIN_PIN);
+
+    // Dummy read to reset the speed timer
+    windrain_get_speed();
 }

@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <hal/hal_i2c.h>
 
-#include "sysinit/sysinit.h"
+#include <sysinit/sysinit.h>
 #include <os/os.h>
-#include "bsp/bsp.h"
+#include <bsp/bsp.h>
 #include <hal/hal_gpio.h>
 #include <am2315/am2315.h>
 #include <bmp280/bmp280.h>
@@ -18,29 +18,14 @@
 #include <fifo/fifo.h>
 #include <hal/hal_nvreg.h>
 
+#include "chaac_packet.h"
+
 // XOR uid 32-bit words to have a single 32-bit uid
 #define DEVICE_UID (   ((uint32_t *)(0x1FFF7590))[0] ^ \
                         ((uint32_t *)(0x1FFF7590))[1] ^ \
                         ((uint32_t *)(0x1FFF7590))[2])
 
 struct os_callout sample_callout;
-
-void xbee_enable(uint32_t timeout) {
-
-    hal_gpio_write(XBEE_nSBY_PIN, 0);
-
-    while((hal_gpio_read(XBEE_ON_PIN) == 0) && (timeout-- > 0)){
-        // TODO - make this smarter
-        // interrupt, actual timeout, sleep, etc
-    }
-
-    return;
-}
-
-void xbee_disable() {
-    hal_gpio_write(XBEE_nSBY_PIN, 1);
-    return;
-}
 
 void packet_tx_fn(int16_t len, void* data) {
     // Seems to take ~500-600 'units' to wake up. 1000 to be safe
@@ -54,7 +39,7 @@ void packet_tx_fn(int16_t len, void* data) {
     xbee_disable();
 }
 
-void xbee_rx_ev(struct os_event *ev) {
+void xbee_rx_handler(struct os_event *ev) {
     fifo_t *fifo = ev->ev_arg;
 
     while(fifo_size(fifo)) {
@@ -62,7 +47,7 @@ void xbee_rx_ev(struct os_event *ev) {
     }
 }
 
-void packet_rx_cb(int16_t len, void* data) {
+void chaac_packet_handler(int16_t len, void* data) {
     chaac_header_t *header = (chaac_header_t*)data;
     if (header->type == PACKET_TYPE_CMD && header->uid == DEVICE_UID) {
         // ack?
@@ -92,8 +77,8 @@ void weather_init() {
 
     windrain_init();
 
-    xbee_uart_init(&xbee_rx_ev);
-    packet_init_cb(packet_rx_cb);
+    xbee_uart_init(&xbee_rx_handler);
+    packet_init_cb(chaac_packet_handler);
     packet_init_tx_fn(packet_tx_fn);
 }
 
@@ -116,7 +101,7 @@ void weather_sample_fn(struct os_event *ev) {
     // 5 ms delay is plenty to settle before measuring
     os_time_delay(os_time_ms_to_ticks32(5));
 
-    rval = simple_adc_read_ch(10, &result);
+    rval = simple_adc_read_ch(BATT_ADC_CH, &result);
     if(rval) {
         console_printf("simple_adc_read_ch error %ld\n", rval);
     } else {
@@ -126,7 +111,7 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)((packet.battery-(int32_t)(packet.battery))*1000));
     }
 
-    rval = simple_adc_read_ch(11, &result);
+    rval = simple_adc_read_ch(LIGHT_ADC_CH, &result);
     if(rval) {
         console_printf("simple_adc_read_ch error %ld\n", rval);
     } else {

@@ -2,6 +2,7 @@
 #include <xbee_uart/xbee_uart.h>
 #include <uart/uart.h>
 #include <bsp/bsp.h>
+#include <hal/hal_gpio.h>
 #include <fifo/fifo.h>
 #include <os/os.h>
 
@@ -13,6 +14,24 @@ static fifo_t rx_fifo;
 static uint8_t rx_fifo_buff[XBEE_RX_FIFO_SIZE];
 
 static struct os_event xbee_uart_rx_ev;
+
+void xbee_enable(uint32_t timeout) {
+
+    hal_gpio_write(XBEE_nSBY_PIN, 0);
+
+    while((hal_gpio_read(XBEE_ON_PIN) == 0) && (timeout-- > 0)){
+        // TODO - make this smarter
+        // interrupt, actual timeout, sleep, etc
+        os_time_delay(1);
+    }
+
+    return;
+}
+
+void xbee_disable() {
+    hal_gpio_write(XBEE_nSBY_PIN, 1);
+    return;
+}
 
 static int xbee_uart_tx_char(void *arg)
 {
