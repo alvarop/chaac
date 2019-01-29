@@ -124,6 +124,10 @@ void weather_sample_fn(struct os_event *ev) {
     rval = am2315_read(&packet.temperature, &packet.humidity);
     if (rval) {
         console_printf("Error reading from AM2315 (%ld)\n", rval);
+        // Set unrealistic values during error
+        // Absolute zero temp and zero humidity
+        packet.temperature = -273.15;
+        packet.humidity = 0;
     } else {
         console_printf("H:%ld.%02ld T:%ld.%02ld\n",
             (int32_t)(packet.humidity),
@@ -136,6 +140,9 @@ void weather_sample_fn(struct os_event *ev) {
     packet.pressure /= 100.0;
     if (rval) {
         console_printf("Error reading from BMP280 (%ld)\n", rval);
+        // Set unrealistic values during error
+        packet.pressure = 0;
+        packet.temperature_in = -273.15;
     } else {
         console_printf("P: %ld.%02ld T: %ld.%02ld\n",
             (int32_t)(packet.pressure),
