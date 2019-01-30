@@ -6,4 +6,5 @@ gerber/
 *.net
 *.csv
 *.xml
+*.pdf
 _autosave*
