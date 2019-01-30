@@ -19,6 +19,7 @@ import subprocess
 
 devices = {}
 
+
 def process_packet(packet_bytes):
 
     try:
@@ -34,7 +35,6 @@ def process_packet(packet_bytes):
     except UnicodeDecodeError:
         print("unicode error")
         pass
-
 
 
 parser = argparse.ArgumentParser()

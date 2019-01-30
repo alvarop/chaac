@@ -5,7 +5,6 @@ Decode incoming packets from weather station
 
 import argparse
 import os
-import struct
 import serial
 import sys
 import time
@@ -24,9 +23,6 @@ args = parser.parse_args()
 stream = serial.Serial(args.port, baudrate=args.baud_rate, timeout=0.01)
 stream.flushInput()
 
-data = packets.CMDPacket.encode((123,3,0xAA))
+data = packets.CMDPacket.encode((123, 3, 0xAA))
 
 stream.write(encode_packet(data))
-
-
-
