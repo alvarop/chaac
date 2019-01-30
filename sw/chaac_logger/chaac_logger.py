@@ -36,9 +36,9 @@ sql_insert = "INSERT INTO samples VALUES(NULL,{})".format(
 
 devices = {}
 
-
 def process_data_packet(packet):
     data = packets.WeatherPacket.decode(packet)
+    data = packets.WeatherPacket.round(data)
     print(data)
 
     if args.db:
