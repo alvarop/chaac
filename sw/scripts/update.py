@@ -11,40 +11,17 @@ import struct
 import serial
 import sys
 import time
-from crc import crc16
 from datetime import datetime
 import collections
 from chaac import packets
+from serial_packet.serial_packet import decode_packet, encode_packet
 import subprocess
-
-HEADER_LEN = 4
-CRC_LEN = 2
-START_BYTES = 0xaa55
 
 devices = {}
 
-
-def check_crc(packet):
-    packet_crc = struct.unpack("H", packet[-CRC_LEN:])[0]
-    computed_crc = crc16(packet[0:-CRC_LEN])
-    return packet_crc == computed_crc
-
-
-# Encode serial packet with CRC
-def encode_packet(data):
-    buff = bytearray(len(data) + HEADER_LEN + CRC_LEN)
-    struct.pack_into("HH", buff, 0, START_BYTES, len(data))
-    struct.pack_into("{}s".format(len(data)), buff, HEADER_LEN, data)
-    crc = crc16(buff[0:-CRC_LEN])
-    struct.pack_into("H", buff, HEADER_LEN + len(data), crc)
-
-    return buff
-
-
-def process_packet(packet):
+def process_packet(packet_bytes):
 
     try:
-        packet_bytes = packet[HEADER_LEN:-CRC_LEN]
         header = packets.PacketHeader.decode(packet_bytes)
 
         if header.packet_type == packets.PACKET_TYPE_DATA:
@@ -58,38 +35,6 @@ def process_packet(packet):
         print("unicode error")
         pass
 
-
-def decode(buff):
-
-    # Look for start bytes in packet
-    for offset in range(len(buff)):
-
-        # Need at least 4 bytes for the header and 2 for crc
-        if (len(buff) - offset) < (HEADER_LEN + CRC_LEN):
-            return False
-
-        start, dlen = struct.unpack_from("HH", buff, offset)
-        if start == START_BYTES:
-
-            # Make sure we have enough bytes for the packet
-            if (len(buff) - offset) < (HEADER_LEN + dlen + CRC_LEN):
-                return False
-            else:
-                if (
-                    check_crc(buff[offset : (offset + dlen + HEADER_LEN + CRC_LEN)])
-                    is True
-                ):
-                    process_packet(
-                        buff[offset : (offset + dlen + HEADER_LEN + CRC_LEN)]
-                    )
-
-                    # Remove all data before the packet
-                    del buff[: (offset + dlen + HEADER_LEN + CRC_LEN)]
-                    return True
-                else:
-                    # CRC Error, remove the header and keep processing
-                    del buff[: (offset + 2)]
-                    return True
 
 
 parser = argparse.ArgumentParser()
@@ -111,7 +56,7 @@ while stream.isOpen():
     line = stream.read(1)
     if len(line) > 0:
         buff.append(line[0])
-        while decode(buff) is True:
+        while decode_packet(buff, process_packet) is True:
             pass
 if args.img:
     time.sleep(2)

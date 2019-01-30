@@ -1,4 +1,3 @@
-
 from chaac.chaac_packet import ChaacPacket
 
 PACKET_TYPE_DATA = 1

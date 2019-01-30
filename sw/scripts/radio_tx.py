@@ -9,25 +9,9 @@ import struct
 import serial
 import sys
 import time
-from crc import crc16
 import collections
 from chaac import packets
-
-HEADER_LEN = 4
-CRC_LEN = 2
-START_BYTES = 0xaa55
-
-
-# Encode serial packet with CRC
-def encode_packet(data):
-    buff = bytearray(len(data)+HEADER_LEN+CRC_LEN)
-    struct.pack_into("HH", buff, 0, START_BYTES, len(data))
-    struct.pack_into("{}s".format(len(data)), buff, HEADER_LEN, data)
-    crc = crc16(buff[0:-CRC_LEN])
-    struct.pack_into("H",buff,HEADER_LEN+len(data),crc)
-
-    return buff
-
+from serial_packet import encode_packet
 
 parser = argparse.ArgumentParser()
 
