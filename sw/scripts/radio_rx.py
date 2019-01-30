@@ -13,7 +13,7 @@ import time
 from crc import crc16
 from datetime import datetime
 import collections
-from chaac_packet import ChaacPacket
+from chaac import packets
 
 HEADER_LEN = 4
 CRC_LEN = 2
@@ -34,51 +34,6 @@ data_columns = [
     "wind_dir",
 ]
 
-PACKET_TYPE_DATA = 1
-PACKET_TYPE_GPS = 2
-PACKET_TYPE_CMD = 3
-
-
-WeatherPacket = ChaacPacket(
-    "WeatherPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("wind_speed", "f"),
-        ("wind_dir", "f"),
-        ("rain", "f"),
-        ("temperature", "f"),
-        ("humidity", "f"),
-        ("temperature_in", "f"),
-        ("pressure", "f"),
-        ("light", "f"),
-        ("battery", "f"),
-    ],
-)
-
-GPSPacket = ChaacPacket(
-    "GPSPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("lat_degrees", "i"),
-        ("lat_minutes", "d"),
-        ("lat_cardinal", "c"),
-        ("lon_degrees", "i"),
-        ("lon_minutes", "d"),
-        ("lon_cardinal", "c"),
-    ],
-)
-
-CMDPacket = ChaacPacket(
-    "CMDPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("cmd", "B"),
-    ],
-)
-
 
 sql_insert = "INSERT INTO samples VALUES(NULL,{})".format(
     ",".join(["?"] * len(data_columns))
@@ -88,18 +43,15 @@ devices = {}
 
 
 def process_data_packet(packet):
-    data = WeatherPacket.decode(packet)
+    data = packets.WeatherPacket.decode(packet)
     print(data)
 
     if args.db:
         save_sqlite_data(data)
 
-    if args.csvfile:
-        save_csv_data(data)
-
 
 def process_gps_packet(packet):
-    data = GPSPacket.decode(packet)
+    data = packets.GPSPacket.decode(packet)
     print(data)
 
     if args.db:
@@ -108,8 +60,8 @@ def process_gps_packet(packet):
 
 
 packet_processors = {
-    PACKET_TYPE_DATA: process_data_packet,
-    PACKET_TYPE_GPS: process_gps_packet,
+    packets.PACKET_TYPE_DATA: process_data_packet,
+    packets.PACKET_TYPE_GPS: process_gps_packet,
 }
 
 
@@ -186,26 +138,6 @@ def save_sqlite_data(data):
             continue
 
 
-def save_csv_data(data):
-    line = datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d %H:%M:%S")
-
-    for key in data_columns:
-        if key != "timestamp":
-            line += str(getattr(data, key))
-
-        line += ","
-
-    csvfile.write(line + "\n")
-    csvfile.flush()
-
-
-def write_csv_header():
-    header = ""
-    for item in data_columns:
-        header += str(item) + ","
-    csvfile.write(header + "\n")
-
-
 def check_crc(packet):
     packet_crc = struct.unpack("H", packet[-CRC_LEN:])[0]
     computed_crc = crc16(packet[0:-CRC_LEN])
@@ -267,22 +199,9 @@ parser.add_argument("--baud_rate", default=115200, type=int, help="xbee baud rat
 
 parser.add_argument("--port", required=True, help="xbee device to connect to")
 
-parser.add_argument("--csvfile", help="Output csvfile (csv format)")
-
-parser.add_argument("--db", help="Sqlite db csvfile")
+parser.add_argument("--db", help="Sqlite db file")
 
 args = parser.parse_args()
-
-if args.csvfile and os.path.isfile(args.csvfile):
-    need_header = False
-else:
-    need_header = True
-
-if args.csvfile:
-    csvfile = open(args.csvfile, mode="a")
-
-    if need_header:
-        write_csv_header()
 
 if args.db:
     con = None

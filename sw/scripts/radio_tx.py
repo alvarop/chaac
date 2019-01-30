@@ -11,20 +11,12 @@ import sys
 import time
 from crc import crc16
 import collections
-from chaac_packet import ChaacPacket
+from chaac import packets
 
 HEADER_LEN = 4
 CRC_LEN = 2
 START_BYTES = 0xaa55
 
-CMDPacket = ChaacPacket(
-    "CMDPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("cmd", "B"),
-    ],
-)
 
 # Encode serial packet with CRC
 def encode_packet(data):
@@ -48,7 +40,7 @@ args = parser.parse_args()
 stream = serial.Serial(args.port, baudrate=args.baud_rate, timeout=0.01)
 stream.flushInput()
 
-data = CMDPacket.encode((123,3,0xAA))
+data = packets.CMDPacket.encode((123,3,0xAA))
 
 stream.write(encode_packet(data))
 

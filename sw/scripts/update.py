@@ -14,52 +14,12 @@ import time
 from crc import crc16
 from datetime import datetime
 import collections
-from chaac_packet import ChaacPacket
+from chaac import packets
 import subprocess
 
 HEADER_LEN = 4
 CRC_LEN = 2
 START_BYTES = 0xaa55
-
-PACKET_TYPE_DATA = 1
-PACKET_TYPE_GPS = 2
-PACKET_TYPE_CMD = 3
-
-PacketHeader = ChaacPacket("PacketHeader", [("uid", "I"), ("packet_type", "B")])
-
-WeatherPacket = ChaacPacket(
-    "WeatherPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("wind_speed", "f"),
-        ("wind_dir", "f"),
-        ("rain", "f"),
-        ("temperature", "f"),
-        ("humidity", "f"),
-        ("temperature_in", "f"),
-        ("pressure", "f"),
-        ("light", "f"),
-        ("battery", "f"),
-    ],
-)
-
-GPSPacket = ChaacPacket(
-    "GPSPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("lat_degrees", "i"),
-        ("lat_minutes", "d"),
-        ("lat_cardinal", "c"),
-        ("lon_degrees", "i"),
-        ("lon_minutes", "d"),
-        ("lon_cardinal", "c"),
-    ],
-)
-
-CMDPacket = ChaacPacket("CMDPacket", [("uid", "I"), ("packet_type", "B"), ("cmd", "B")])
-
 
 devices = {}
 
@@ -85,11 +45,11 @@ def process_packet(packet):
 
     try:
         packet_bytes = packet[HEADER_LEN:-CRC_LEN]
-        header = PacketHeader.decode(packet_bytes)
+        header = packets.PacketHeader.decode(packet_bytes)
 
-        if header.packet_type == PACKET_TYPE_DATA:
+        if header.packet_type == packets.PACKET_TYPE_DATA:
             print("Sending reset command to {:08X}".format(header.uid))
-            data = CMDPacket.encode((header.uid, PACKET_TYPE_CMD, 0xAA))
+            data = packets.CMDPacket.encode((header.uid, packets.PACKET_TYPE_CMD, 0xAA))
             stream.write(encode_packet(data))
             stream.flushOutput()
             stream.close()
@@ -154,7 +114,7 @@ while stream.isOpen():
         while decode(buff) is True:
             pass
 if args.img:
-    time.sleep(1)
+    time.sleep(2)
     print("Loading image...")
     subprocess.call(
         [

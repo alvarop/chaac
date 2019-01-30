@@ -7,3 +7,4 @@ verify_ssl = true
 
 [packages]
 pyserial = "*"
+chaac = {editable = true,path = "./../chaac"}
