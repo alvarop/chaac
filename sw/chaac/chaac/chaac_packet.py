@@ -17,8 +17,8 @@ class ChaacPacket:
         return struct.pack(self.struct_str, *args)
 
     def round(self, namedtuple):        
-        packet_dict = packet._asdict()
-        for key,val in packet_dict.items():
+        data_dict = namedtuple._asdict()
+        for key,val in data_dict.items():
             if isinstance(val, float):
-                packet_dict[key] = round(val, 3)
-        return self.named_tuple._make(**packet_dict)
+                data_dict[key] = round(val, 3)
+        return self.named_tuple(**data_dict)
