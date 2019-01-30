@@ -1,6 +1,6 @@
 # Chaac Firmware
 
-The latest Ostur hardware uses the STM32L432KC microcontroller and the [Apache Mynewt](https://mynewt.apache.org/) OS for the firmware.
+The latest Chaac hardware uses the STM32L432KC microcontroller and the [Apache Mynewt](https://mynewt.apache.org/) OS for the firmware.
 
 ## Building the Firmware
 **NOTE: This project currently uses mynewt's top-of-tree code, so the newt-tool will have to be compiled from source. Sorry :(**
