@@ -11,4 +11,12 @@
 If you just changed a few files and don't want to go through the whole pipenv process again, you can use `./support/update.sh`. This will just rsync the changed files over and restart the services.
 
 ## Local Development
-Run `export DATABASE=~/Desktop/chaac.db; pipenv run gunicorn --workers 5 src:app`
+
+### Gunicorn
+Run `export DATABASE=/path/to/chaac.db; pipenv run gunicorn src:app`
+
+### Flask Profiler
+
+Temporarily install `pipenv install werkzeug`
+
+Run `export DATABASE=/path/to/chaac.db; pipenv run python ./src/profile-flask.py`
