@@ -13,7 +13,7 @@ If you just changed a few files and don't want to go through the whole pipenv pr
 ## Local Development
 
 ### Gunicorn
-Run `export DATABASE=/path/to/chaac.db; pipenv run gunicorn src:app`
+Run `export DATABASE=/path/to/chaac.db; pipenv run gunicorn --reload src:app`
 
 ### Flask Profiler
 
