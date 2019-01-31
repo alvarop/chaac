@@ -17,7 +17,7 @@ app.config.update(dict(DATABASE=os.getenv("DATABASE")))
 
 # Get column names from database and use with WXRecord
 db = sqlite3.connect(app.config["DATABASE"])
-cur = db.execute("PRAGMA table_info(samples)")
+cur = db.execute("PRAGMA table_info(day_samples)")
 cols = cur.fetchall()
 col_names = []
 for col in cols:
@@ -79,15 +79,24 @@ def summary():
 
 
 def get_json_str(start_date, end_date):
+
+    td = int(end_date) - int(start_date)
+    if td <= 60 * 60 * 24:
+        table = "day"
+    elif td <= 60 * 60 * 24 * 7:
+        table = "week"
+    else:  # if td <= 60 * 24 * 31:
+        table = "month"
+
     # Get last sample
     db = get_db()
     query = """
-        SELECT * FROM samples
+        SELECT * FROM {}_samples
         WHERE timestamp > {}
         AND timestamp < {}
         ORDER BY timestamp
         """.format(
-        int(start_date), int(end_date)
+        table, int(start_date), int(end_date)
     )
 
     cur = db.execute(query)
@@ -142,7 +151,7 @@ def test():
 @app.route("/all")
 def show_all():
     db = get_db()
-    cur = db.execute("select * from samples")
+    cur = db.execute("select * from day_samples")
     rows = cur.fetchall()
     samples = []
     for row in rows:

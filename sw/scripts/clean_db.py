@@ -41,7 +41,6 @@ parser.add_argument("--out_db", help="Sqlite db")
 args = parser.parse_args()
 
 
-
 con = None
 con = sqlite3.connect(args.in_db)
 
@@ -56,8 +55,16 @@ for col in cols:
 
 WXRecord = collections.namedtuple("WXRecord", col_names)
 
+
 def wx_row_factory(cursor, row):
     return WXRecord(*row)
+
+def round_record(namedtuple):
+    data_dict = namedtuple._asdict()
+    for key,val in data_dict.items():
+        if isinstance(val, float):
+            data_dict[key] = round(val, 3)
+    return WXRecord(**data_dict)
 
 con.row_factory = wx_row_factory
 cur = con.execute(
@@ -88,28 +95,14 @@ cur.execute(
     + "devices(uid INTEGER PRIMARY KEY, name TEXT, gps TEXT)"
 )
 
-prev_row = None
 for row in rows:
-    rain = 0
-
-    if prev_row is not None:
-        rain_delta = row.rain - prev_row.rain
-
-        if rain_delta > 0:
-            rain = rain_delta
-
-    prev_row = row
+    rounded_row = round_record(row)
 
     line = []
     for key in data_columns:
-        if key == 'rain':
-            line.append(rain)
-        elif key == 'temperature_in':
-            line.append(getattr(row, 'temperatre_in'))
-        else:
-            line.append(getattr(row, key))
+        line.append(getattr(rounded_row, key))
 
-    print(line)
+    # print(line)
     cur.execute(sql_insert, line)
 
 con.commit()
