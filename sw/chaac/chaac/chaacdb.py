@@ -3,9 +3,9 @@ import sqlite3
 import time
 from statistics import mean
 
-
-WEEK_TIME_DELTA_S = 60 * 7
-MONTH_TIME_DELTA_S = 60 * 31
+SAMPLE_PERIOD_S = 60
+WEEK_TIME_DELTA_S = SAMPLE_PERIOD_S * 7
+MONTH_TIME_DELTA_S = SAMPLE_PERIOD_S * 31
 
 # timestamp and uid must be the first two
 data_columns = [
@@ -241,10 +241,12 @@ class ChaacDB:
         rows = self.cur.fetchall()
 
         if len(rows) == 0:
+            # TODO - get rid of these debug prints
             print("No rows to downsample :(")
             # No rows to downsample!
             return
         else:
+            # TODO - get rid of these debug prints
             print(
                 "Downsampling {} rows for {}. ({}, {})".format(
                     len(rows), table, start_time, end_time
