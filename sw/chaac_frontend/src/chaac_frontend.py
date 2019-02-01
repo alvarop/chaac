@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 import json
 from flask import Flask, request, g, render_template, jsonify
-
+from chaac.chaacdb import ChaacDB
 
 app = Flask(__name__)
 
@@ -15,35 +15,13 @@ app.config.from_object(__name__)  # load config from this file , flaskr.py
 # Load default config and override config from an environment variable
 app.config.update(dict(DATABASE=os.getenv("DATABASE")))
 
-# Get column names from database and use with WXRecord
-db = sqlite3.connect(app.config["DATABASE"])
-cur = db.execute("PRAGMA table_info(day_samples)")
-cols = cur.fetchall()
-col_names = []
-for col in cols:
-    col_names.append(col[1])
-db.close()
-
-WXRecord = collections.namedtuple("WXRecord", col_names)
-
-
-def wx_row_factory(cursor, row):
-    return WXRecord(*row)
-
-
-def connect_db():
-    """Connects to the specific database."""
-    rv = sqlite3.connect(app.config["DATABASE"])
-    rv.row_factory = wx_row_factory
-    return rv
-
 
 def get_db():
     """Opens a new database connection if there is none yet for the
     current application context.
     """
     if not hasattr(g, "sqlite_db"):
-        g.sqlite_db = connect_db()
+        g.sqlite_db = ChaacDB(app.config["DATABASE"])
     return g.sqlite_db
 
 
@@ -59,23 +37,17 @@ def summary():
 
     # Get last sample
     db = get_db()
-    query = "select * from samples order by timestamp desc limit 1"
-    cur = db.execute(query)
-    rows = cur.fetchall()
+    rows = db.get_records("day", order="desc", limit=1)
 
-    samples = []
-    for row in rows:
-        sample = {}
-        # Convert the units
-        for key, val in row._asdict().items():
-            if key == "timestamp":
-                sample[key] = datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                sample[key] = round(float(val), 2)
+    sample = {}
+    # Convert the units
+    for key, val in rows[0]._asdict().items():
+        if key == "timestamp":
+            sample[key] = datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            sample[key] = round(float(val), 2)
 
-        samples.append(sample)
-
-    return render_template("status.html", sample=samples[0])
+    return render_template("status.html", sample=sample)
 
 
 def get_json_str(start_date, end_date):
@@ -88,19 +60,9 @@ def get_json_str(start_date, end_date):
     else:  # if td <= 60 * 24 * 31:
         table = "month"
 
-    # Get last sample
     db = get_db()
-    query = """
-        SELECT * FROM {}_samples
-        WHERE timestamp > {}
-        AND timestamp < {}
-        ORDER BY timestamp
-        """.format(
-        table, int(start_date), int(end_date)
-    )
 
-    cur = db.execute(query)
-    rows = cur.fetchall()
+    rows = db.get_records(table, start_date=start_date, end_date=end_date)
 
     plot = {}
 
@@ -108,6 +70,8 @@ def get_json_str(start_date, end_date):
         "%Y-%m-%d %H:%M:%S"
     )
     plot["end_date"] = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d %H:%M:%S")
+
+    col_names = rows[0]._asdict().keys()
 
     for name in col_names:
         plot[name] = []
@@ -146,23 +110,3 @@ def json_month_str():
 @app.route("/plots")
 def test():
     return render_template("plots.html")
-
-
-@app.route("/all")
-def show_all():
-    db = get_db()
-    cur = db.execute("select * from day_samples")
-    rows = cur.fetchall()
-    samples = []
-    for row in rows:
-        sample = {}
-        # Convert the units
-        for key, val in row._asdict().items():
-            if key == "timestamp":
-                sample[key] = datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                sample[key] = float(val) / 1000.0
-
-        samples.append(sample)
-
-    return render_template("show_samples.html", samples=samples)

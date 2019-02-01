@@ -23,6 +23,7 @@ data_columns = [
     # "solar_voltage"
 ]
 
+
 class KeyValueStore(collections.MutableMapping):
     """ From https://stackoverflow.com/questions/47237807/use-sqlite-as-a-keyvalue-store """
 
@@ -165,7 +166,9 @@ class ChaacDB:
     def __wx_row_factory(self, cursor, row):
         return self.WXRecord(*row)
 
-    def get_records(self, table, limit=None, start_date=None, end_date=None):
+    def get_records(
+        self, table, start_date=None, end_date=None, order=None, limit=None
+    ):
         if table not in self.tables:
             raise KeyError("Invalid table!")
 
@@ -173,15 +176,18 @@ class ChaacDB:
 
         query = "SELECT * FROM {}".format(self.tables[table])
 
-        if limit is not None:
-            query += " LIMIT {}".format(int(limit))
-
         if start_date is not None:
             query += " WHERE timestamp >= {}".format(int(start_date))
 
         # TODO - handle end data with no start date
         if end_date is not None:
-            query += " AND timestamp >= {}".format(int(end_date))
+            query += " AND timestamp < {}".format(int(end_date))
+
+        if order == "desc":
+            query += " ORDER BY timestamp DESC"
+
+        if limit is not None:
+            query += " LIMIT {}".format(int(limit))
 
         self.cur.execute(query)
 
