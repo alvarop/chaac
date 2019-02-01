@@ -36,10 +36,7 @@ with tempfile.NamedTemporaryFile(prefix="jlink", delete=False) as scriptfile:
     write_line(scriptfile, "halt")
 
     if args.erase == True:
-        write_line(
-            scriptfile,
-            "erase",
-        )
+        write_line(scriptfile, "erase")
     elif args.dump == True:
         write_line(
             scriptfile,

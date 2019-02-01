@@ -1,6 +1,7 @@
 import struct
 import collections
 
+
 class ChaacPacket:
     def __init__(self, name, packet_struct):
         self.packet_struct = packet_struct
@@ -20,7 +21,7 @@ class ChaacPacket:
         # Round all floating point items to 3 decimal places
         # TODO - have precision and other options set in packet_struct
         data_dict = namedtuple._asdict()
-        for key,val in data_dict.items():
+        for key, val in data_dict.items():
             if isinstance(val, float):
                 data_dict[key] = round(val, 3)
         return self.named_tuple(**data_dict)

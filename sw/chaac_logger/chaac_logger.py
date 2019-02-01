@@ -29,6 +29,7 @@ if args.db:
 else:
     db = None
 
+
 def process_data_packet(packet):
     data = packets.WeatherPacket.decode(packet)
     data = packets.WeatherPacket.round(data)
@@ -37,10 +38,12 @@ def process_data_packet(packet):
     if db is not None:
         db.add_record(data)
 
+
 packet_processors = {
     packets.PACKET_TYPE_DATA: process_data_packet,
     # packets.PACKET_TYPE_GPS: process_gps_packet,
 }
+
 
 def process_packet(packet_bytes):
 

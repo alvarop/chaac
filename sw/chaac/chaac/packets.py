@@ -5,13 +5,7 @@ PACKET_TYPE_GPS = 2
 PACKET_TYPE_CMD = 3
 
 
-PacketHeader = ChaacPacket(
-    "PacketHeader",
-    [
-        ("uid", "I"),
-        ("packet_type", "B")
-    ]
-)
+PacketHeader = ChaacPacket("PacketHeader", [("uid", "I"), ("packet_type", "B")])
 
 WeatherPacket = ChaacPacket(
     "WeatherPacket",
@@ -44,12 +38,4 @@ GPSPacket = ChaacPacket(
     ],
 )
 
-CMDPacket = ChaacPacket(
-    "CMDPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("cmd", "B"),
-    ],
-)
-
+CMDPacket = ChaacPacket("CMDPacket", [("uid", "I"), ("packet_type", "B"), ("cmd", "B")])

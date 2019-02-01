@@ -59,12 +59,14 @@ WXRecord = collections.namedtuple("WXRecord", col_names)
 def wx_row_factory(cursor, row):
     return WXRecord(*row)
 
+
 def round_record(namedtuple):
     data_dict = namedtuple._asdict()
-    for key,val in data_dict.items():
+    for key, val in data_dict.items():
         if isinstance(val, float):
             data_dict[key] = round(val, 3)
     return WXRecord(**data_dict)
+
 
 con.row_factory = wx_row_factory
 cur = con.execute(
