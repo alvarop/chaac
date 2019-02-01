@@ -28,7 +28,7 @@ data_columns = [
     "wind_dir",
 ]
 
-sql_insert = "INSERT INTO samples VALUES(NULL,{})".format(
+sql_insert = "INSERT INTO day_samples VALUES(NULL,{})".format(
     ",".join(["?"] * len(data_columns))
 )
 
@@ -86,7 +86,7 @@ if con is None:
 cur = con.cursor()
 cur.execute(
     "CREATE TABLE IF NOT EXISTS "
-    + "samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
+    + "day_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
     + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
 )
 
