@@ -30,18 +30,6 @@ data_columns = [
     # "solar_voltage"
 ]
 
-sql_insert_day = "INSERT INTO day_samples VALUES(NULL,{})".format(
-    ",".join(["?"] * len(data_columns))
-)
-
-sql_insert_week = "INSERT INTO week_samples VALUES(NULL,{})".format(
-    ",".join(["?"] * len(data_columns))
-)
-
-sql_insert_month = "INSERT INTO month_samples VALUES(NULL,{})".format(
-    ",".join(["?"] * len(data_columns))
-)
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--in_db", required=True, help="Sqlite db")
@@ -103,15 +91,14 @@ class ChaacDB:
     def close(self):
         self.conn.close()
 
-    def wx_row_factory(cursor, row):
-        print("AAH")
+    def wx_row_factory(self, cursor, row):
         return self.WXRecord(*row)
 
     def get_records(self, table, limit=None, start_date=None, end_date=None):
         if table not in self.tables:
             raise KeyError("Invalid table!")
 
-        self.conn.row_factory = self.wx_row_factory
+        self.cur.row_factory = self.wx_row_factory
 
         query = "SELECT * FROM {}".format(self.tables[table])
 
@@ -128,12 +115,56 @@ class ChaacDB:
         self.cur.execute(query)
         return self.cur.fetchall()
 
+    def __insert_line(self, line):
+        table = self.tables['day']
+        query = "INSERT INTO {} VALUES(NULL,{})".format(
+            table,
+            ",".join(["?"] * len(data_columns))
+        )
+
+        self.cur.execute(query, line)
+
+        # TODO - figure out downsampling here
+
+    def __commit(self):
+        retries = 5
+        while retries > 0:
+            try:
+                self.conn.commit()
+                break
+            except sqlite3.OperationalError:
+                retries -= 1
+                continue
+
+    def add_record(self, record, timestamp=None):
+        # If timestamp is none, use current time
+        if timestamp is None:
+            timestamp = int(time.time())
+
+        line = [timestamp]
+
+        for key in data_columns:
+            if key != "timestamp":
+                line.append(getattr(record, key))
+
+        self.__insert_line(line)
+        # self.__commit();
+
+        print(line)
+        
+
 in_db = ChaacDB(args.in_db)
+
+if args.out_db:
+    out_db = ChaacDB(args.out_db)
 
 rows = in_db.get_records('day')
 in_db.close()
 for row in rows:
     print(row)
+    if args.out_db:
+        out_db.add_record(row, row.timestamp)
+
 
 
 # con_out = None
