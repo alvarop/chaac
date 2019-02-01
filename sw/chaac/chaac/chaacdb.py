@@ -160,6 +160,13 @@ class ChaacDB:
             + "devices(uid INTEGER PRIMARY KEY, name TEXT, gps TEXT)"
         )
 
+        # Table to store rainfall data (hourly)
+        self.conn.execute(
+            "CREATE TABLE IF NOT EXISTS "
+            + "rain_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
+            + "rain FLOAT)"
+        )
+
         # Save the new tables
         self.__commit()
 
@@ -199,6 +206,14 @@ class ChaacDB:
         )
 
         self.cur.execute(query, line)
+
+    def __insert_rain(self, timestamp, rain):
+        print("RAIN", timestamp, rain)
+        # query = "INSERT INTO {} VALUES(NULL,{})".format(
+        #     self.tables[table], ",".join(["?"] * len(data_columns))
+        # )
+
+        # self.cur.execute(query, line)
 
     def __commit(self):
         retries = 5
@@ -305,6 +320,9 @@ class ChaacDB:
         self.__insert_line(line)
 
         self.__downsample_check(timestamp)
+
+        if record.rain > 0:
+            self.__insert_rain(timestamp, record.rain)
 
         if commit:
             self.__commit()

@@ -9,7 +9,6 @@ import serial
 import sys
 import time
 from datetime import datetime
-import collections
 from chaac import packets
 from chaac.chaacdb import ChaacDB
 from serial_packet.serial_packet import decode_packet
