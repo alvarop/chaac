@@ -352,17 +352,8 @@ class ChaacDB:
         rows = self.cur.fetchall()
 
         if len(rows) == 0:
-            # TODO - get rid of these debug prints
-            print("No rows to downsample :(")
             # No rows to downsample!
             return
-        else:
-            # TODO - get rid of these debug prints
-            print(
-                "Downsampling {} rows for {}. ({}, {})".format(
-                    len(rows), table, start_time, end_time
-                )
-            )
 
         lines = []
         for row in rows:
