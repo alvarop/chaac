@@ -44,6 +44,16 @@ def summary():
         else:
             sample[key] = round(float(val), 2)
 
+    # Past 24 hours
+    end_time = rows[0].timestamp
+    start_time = end_time - (60 * 60 * 24)
+    rain_day = db.get_rain(start_time, end_time, rows[0].uid)
+    rain_total = 0
+    for rain_hour in rain_day:
+        rain_total += rain_hour[3]
+
+    sample["rain"] = rain_total
+
     return render_template("status.html", sample=sample)
 
 
