@@ -2,6 +2,7 @@ import collections
 import sqlite3
 import time
 from statistics import mean
+from datetime import datetime
 
 SAMPLE_PERIOD_S = 60
 WEEK_TIME_DELTA_S = SAMPLE_PERIOD_S * 7
@@ -104,6 +105,8 @@ class ChaacDB:
         if self.conn is None:
             raise IOError("Unable to open sqlite database")
 
+        self.cur = self.conn.cursor()
+
         self.WXRecord = collections.namedtuple("WXRecord", ["id"] + data_columns)
 
         self.tables = {
@@ -114,19 +117,20 @@ class ChaacDB:
 
         self.__init_tables()
 
+        self.devices = {}
+        self.__load_devices()
+
         self.config = KeyValueStore(conn=self.conn)
 
-        if "week_sample_start" not in self.config:
-            self.config["week_sample_start"] = 0
+        self.week_start = {}
+        self.month_start = {}
 
-        if "month_sample_start" not in self.config:
-            self.config["month_sample_start"] = 0
+        for device in self.devices:
+            if "{}_week_start".format(device) in self.config:
+                self.week_start[device] = int(self.config["{}_week_start".format(device)])
 
-        # Use these to keep track of averaged samples
-        self.week_sample_start = int(self.config["week_sample_start"])
-        self.month_sample_start = int(self.config["month_sample_start"])
-
-        self.cur = self.conn.cursor()
+            if "{}_month_start".format(device) in self.config:
+                self.month_start[device] = int(self.config["{}_month_start".format(device)])
 
     def close(self):
         self.__commit()
@@ -170,11 +174,40 @@ class ChaacDB:
         # Save the new tables
         self.__commit()
 
+    def __load_devices(self):
+        query = "SELECT * FROM devices"
+
+        self.cur.execute(query)
+        rows = self.cur.fetchall()
+
+        for row in rows:
+            self.devices[row[0]] = row[1]
+
+    def __add_device(self, uid, name=None, gps="\"\""):
+        if name is None:
+            name = uid
+
+        query = """
+        REPLACE INTO devices (uid, name, gps) VALUES ({}, {}, {})
+        """.format(
+            uid, name, gps
+        )
+
+        self.cur.execute(query)
+
+        self.devices[uid] = name
+
+        # Update downsampling time
+        self.config["{}_week_start".format(uid)] = 0
+        self.config["{}_month_start".format(uid)] = 0
+        self.week_start[uid] = 0
+        self.month_start[uid] = 0
+
     def __wx_row_factory(self, cursor, row):
         return self.WXRecord(*row)
 
     def get_records(
-        self, table, start_date=None, end_date=None, order=None, limit=None
+        self, table, start_date=None, end_date=None, order=None, limit=None, uid=None
     ):
         if table not in self.tables:
             raise KeyError("Invalid table!")
@@ -183,12 +216,18 @@ class ChaacDB:
 
         query = "SELECT * FROM {}".format(self.tables[table])
 
+        options = []
         if start_date is not None:
-            query += " WHERE timestamp >= {}".format(int(start_date))
+            options.append("timestamp >= {}".format(int(start_date)))
 
-        # TODO - handle end data with no start date
         if end_date is not None:
-            query += " AND timestamp < {}".format(int(end_date))
+            options.append("timestamp < {}".format(int(end_date)))
+
+        if uid is not None:
+            options.append("uid == {}".format(uid))
+
+        if len(options) > 0:
+            query += " WHERE " + " AND ".join(options)
 
         if order == "desc":
             query += " ORDER BY timestamp DESC"
@@ -207,13 +246,64 @@ class ChaacDB:
 
         self.cur.execute(query, line)
 
-    def __insert_rain(self, timestamp, rain):
-        print("RAIN", timestamp, rain)
-        # query = "INSERT INTO {} VALUES(NULL,{})".format(
-        #     self.tables[table], ",".join(["?"] * len(data_columns))
-        # )
+    def get_rain(self, start_time, end_time=None, uid=None):
 
-        # self.cur.execute(query, line)
+        # Ignore minutes and seconds
+        start_time = start_time - start_time % (60 * 60)
+
+        # Just select the single sample if there's no end time
+        if end_time is None:
+            end_time = start_time + 1
+        else:
+            # Ignore minutes and seconds
+            end_time = end_time - end_time % (60 * 60)
+
+        query = """
+            SELECT * FROM rain_samples
+            WHERE timestamp >= {}
+            AND timestamp < {}
+            """.format(
+            int(start_time), int(end_time)
+        )
+
+        if uid is not None:
+            query += " AND uid == {}".format(uid)
+
+        self.cur.row_factory = sqlite3.Row
+        self.cur.execute(query)
+
+        return self.cur.fetchall()
+
+    def __insert_rain(self, timestamp, rain, uid):
+        # Remove minutes and seconds to tally rain hourly
+        hour = timestamp - timestamp % (60 * 60)
+
+        past_rain_record = self.get_rain(hour)
+        if len(past_rain_record) == 1:
+            past_rain_val = past_rain_record[0][3]
+
+            rain += past_rain_val
+
+            query = """
+            REPLACE INTO rain_samples
+            (id, timestamp, uid, rain)
+            VALUES
+            ({}, {}, {}, {})
+            """.format(
+                past_rain_record[0][0],
+                past_rain_record[0][1],
+                past_rain_record[0][2],
+                round(rain, 3),
+            )
+        else:
+            query = """
+            INSERT INTO rain_samples
+            VALUES (NULL, {}, {}, {})
+            """.format(
+                hour, uid, round(rain, 3)
+            )
+
+        self.cur.execute(query)
 
     def __commit(self):
         retries = 5
@@ -225,26 +315,26 @@ class ChaacDB:
                 retries -= 1
                 continue
 
-    def __downsample_check(self, timestamp):
+    def __downsample_check(self, timestamp, uid):
         """ See if current timestamp is outside of the latest
             averaging range. If so, downsample chunk and commit """
 
-        if timestamp > (self.week_sample_start + WEEK_TIME_DELTA_S):
-            self.__downsample("week")
-            self.week_sample_start = timestamp
-            self.config["week_sample_start"] = timestamp
+        if timestamp > (self.week_start[uid] + WEEK_TIME_DELTA_S):
+            self.__downsample("week", uid)
+            self.week_start[uid] = timestamp
+            self.config["{}_week_start".format(uid)] = timestamp
 
-        if timestamp > (self.month_sample_start + MONTH_TIME_DELTA_S):
-            self.__downsample("month")
-            self.month_sample_start = timestamp
-            self.config["month_sample_start"] = timestamp
+        if timestamp > (self.month_start[uid] + MONTH_TIME_DELTA_S):
+            self.__downsample("month", uid)
+            self.month_start[uid] = timestamp
+            self.config["{}_month_start".format(uid)] = timestamp
 
-    def __downsample(self, table):
+    def __downsample(self, table, uid):
         if table == "week":
-            start_time = self.week_sample_start
+            start_time = self.week_start[uid]
             end_time = start_time + WEEK_TIME_DELTA_S
         elif table == "month":
-            start_time = self.month_sample_start
+            start_time = self.month_start[uid]
             end_time = start_time + MONTH_TIME_DELTA_S
         else:
             raise ValueError("Invalid table!")
@@ -307,6 +397,9 @@ class ChaacDB:
         self.__insert_line(avg_line, table=table)
 
     def add_record(self, record, timestamp=None, commit=True):
+        if record.uid not in self.devices:
+            self.__add_device(record.uid)
+
         # If timestamp is none, use current time
         if timestamp is None:
             timestamp = int(time.time())
@@ -319,10 +412,10 @@ class ChaacDB:
 
         self.__insert_line(line)
 
-        self.__downsample_check(timestamp)
+        self.__downsample_check(timestamp, record.uid)
 
         if record.rain > 0:
-            self.__insert_rain(timestamp, record.rain)
+            self.__insert_rain(timestamp, record.rain, record.uid)
 
         if commit:
             self.__commit()
