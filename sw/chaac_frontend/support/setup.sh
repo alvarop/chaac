@@ -12,9 +12,11 @@ echo "pipenv setup"
 rm ./Pipfile
 export PIPENV_VENV_IN_PROJECT=true; pipenv install --three
 export PIPENV_VENV_IN_PROJECT=true; pipenv install flask gunicorn
+export PIPENV_VENV_IN_PROJECT=true; pipenv install -e ../chaac
 
 echo "Remove old setup"
 sudo rm -r /var/flaskapp/chaac_frontend
+sudo rm -r /var/flaskapp/chaac
 
 cd -
 
