@@ -1,0 +1,10 @@
+syscfg.vals:
+  CONSOLE_UART_DEV: '"uart1"'
+  XBEE_UART_DEV: '"uart0"'
+
+  CHAAC_SAMPLE_RATE_S: 5
+
+  # UART_0: 0
+  # UART_1: 0
+  # I2C_0: 0
+  # ADC_1: 0
