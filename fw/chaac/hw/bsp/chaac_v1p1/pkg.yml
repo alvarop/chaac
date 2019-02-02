@@ -13,7 +13,7 @@ pkg.cflags.HARDFLOAT:
     - -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 pkg.deps:
-    - "@apache-mynewt-core/hw/mcu/stm/stm32l4xx"
+    - "hw/mcu/stm/stm32l4xx"
     - "@apache-mynewt-core/libc/baselibc"
     - "hw/drivers/adc_stm32l432"
 
