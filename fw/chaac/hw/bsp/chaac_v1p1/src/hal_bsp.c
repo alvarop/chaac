@@ -54,8 +54,13 @@
 
 #if MYNEWT_VAL(UART_0)
 static struct uart_dev hal_uart0;
-static struct uart_dev hal_uart1;
+#endif
 
+#if MYNEWT_VAL(UART_1)
+static struct uart_dev hal_uart1;
+#endif
+
+#if MYNEWT_VAL(UART_0) || MYNEWT_VAL(UART_1)
 static const struct stm32_uart_cfg uart_cfg[UART_CNT] = {
     [0] = {
         .suc_uart = USART2,

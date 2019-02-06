@@ -44,6 +44,15 @@ int32_t simple_adc_init(void) {
     return rval;
 }
 
+int32_t simple_adc_uninit(void) {
+    int32_t rval = 0;
+
+    rval = os_dev_close((struct os_dev *)adc);
+    assert(rval == 0);
+
+    return rval;
+}
+
 int32_t simple_adc_read_ch(uint8_t ch, int32_t *val_mv) {
     int32_t rval = 0;
     int result = 0;

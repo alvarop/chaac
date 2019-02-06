@@ -73,7 +73,6 @@ void weather_init() {
         console_printf("Error initializing BMP280 (%ld)\n", rval);
     }
 
-    simple_adc_init();
 
     windrain_init();
 
@@ -90,6 +89,7 @@ void weather_sample_fn(struct os_event *ev) {
     os_callout_reset(&sample_callout, OS_TICKS_PER_SEC * MYNEWT_VAL(CHAAC_SAMPLE_RATE_S));
 
     hal_gpio_write(LED1_PIN, 1);
+    simple_adc_init();
 
     weather_data_packet_t packet;
 
@@ -169,6 +169,8 @@ void weather_sample_fn(struct os_event *ev) {
 
     packet_tx(sizeof(weather_data_packet_t), (void*)&packet);
 
+    // Turn off ADC for some small power savings
+    simple_adc_uninit();
     hal_gpio_write(LED1_PIN, 0);
 }
 
