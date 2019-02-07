@@ -67,7 +67,7 @@ if args.img:
             "--conntype",
             "serial",
             "--connstring",
-            "dev={},mtu=256".format(args.port),
+            "dev={},mtu=128,baud={}".format(args.port, args.baud_rate),
             "image",
             "upload",
             "-e",
@@ -84,7 +84,7 @@ if args.img:
             "--conntype",
             "serial",
             "--connstring",
-            "dev={},mtu=256".format(args.port),
+            "dev={},mtu=128,baud={}".format(args.port, args.baud_rate),
             "reset",
             # "-l",
             # "debug"
