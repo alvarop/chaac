@@ -4,6 +4,8 @@ syscfg.vals:
   CONSOLE_UART_DEV: '"uart0"'
   # XBEE_UART_DEV: '"uart0"'
 
+  CONSOLE_UART_BAUD: 19200
+
   BOOT_SERIAL: 1
 
   BOOT_SERIAL_REPORT_FREQ: 8
