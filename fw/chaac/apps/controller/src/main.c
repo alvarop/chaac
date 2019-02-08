@@ -33,9 +33,9 @@ void packet_tx_fn(int16_t len, void* data) {
 
     xbee_uart_tx(len, data);
 
-    // Wait ~62ms for response packets
+    // Wait ~124ms for response packets
     // This is enough time to get a response if any
-    os_time_delay(OS_TICKS_PER_SEC/16);
+    os_time_delay(OS_TICKS_PER_SEC/8);
     xbee_disable();
 }
 
@@ -59,8 +59,6 @@ void chaac_packet_handler(int16_t len, void* data) {
 
 void weather_init() {
     hal_gpio_init_out(FAN_EN_PIN, 0);
-    hal_gpio_init_in(XBEE_ON_PIN, HAL_GPIO_PULL_DOWN);
-    hal_gpio_init_out(XBEE_nSBY_PIN, 1); // XBEE nSBY
     hal_gpio_init_out(LED1_PIN, 1);
 
     hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_OFF);

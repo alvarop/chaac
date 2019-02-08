@@ -78,6 +78,8 @@ int32_t xbee_uart_init(void (*rx_ev_fn)(struct os_event *ev)) {
         }
     }
 
+    hal_gpio_init_in(XBEE_ON_PIN, HAL_GPIO_PULL_DOWN);
+    hal_gpio_init_out(XBEE_nSBY_PIN, 1); // XBEE nSBY
 
     return rval;
 }

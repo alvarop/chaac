@@ -3,7 +3,7 @@ syscfg.defs:
 
     XBEE_UART_BAUD:
         description: 'XBee UART baud rate.'
-        value: 19200
+        value: 57600
 
     XBEE_UART_DEV:
         description: 'XBee UART device.'
