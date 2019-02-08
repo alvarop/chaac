@@ -1,8 +1,10 @@
 from chaac.chaac_packet import ChaacPacket
 
+# Note, if you update this, make sure to update the corresponding enum
+# packet_type_t in fw/chaac/apps/controller/src/chaac_packet.h
 PACKET_TYPE_DATA = 1
 PACKET_TYPE_GPS = 2
-PACKET_TYPE_CMD = 3
+PACKET_TYPE_BOOT = 3
 
 
 PacketHeader = ChaacPacket("PacketHeader", [("uid", "I"), ("packet_type", "B")])
@@ -38,4 +40,6 @@ GPSPacket = ChaacPacket(
     ],
 )
 
-CMDPacket = ChaacPacket("CMDPacket", [("uid", "I"), ("packet_type", "B"), ("cmd", "B")])
+BootPacket = ChaacPacket(
+    "BootPacket", [("uid", "I"), ("packet_type", "B"), ("flags", "B")]
+)

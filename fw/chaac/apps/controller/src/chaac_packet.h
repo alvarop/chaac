@@ -1,10 +1,12 @@
 #ifndef __CHAAC_PACKET_H__
 #define __CHAAC_PACKET_H__
 
+// Note, if you update this, make sure to update the corresponding
+// definitoins in sw/chaac/chaac/packets.py
 typedef enum {
     PACKET_TYPE_DATA = 1,
     PACKET_TYPE_GPS = 2,
-    PACKET_TYPE_CMD = 3,
+    PACKET_TYPE_BOOT = 3,
 } packet_type_t;
 
 typedef struct {
@@ -38,7 +40,7 @@ typedef struct {
 
 typedef struct {
     chaac_header_t  header;
-    uint8_t         cmd;
-} __attribute__((packed)) cmd_packet_t;
+    uint8_t         flags;
+} __attribute__((packed)) boot_packet_t;
 
 #endif

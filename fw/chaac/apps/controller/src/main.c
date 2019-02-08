@@ -49,9 +49,8 @@ void xbee_rx_handler(struct os_event *ev) {
 
 void chaac_packet_handler(int16_t len, void* data) {
     chaac_header_t *header = (chaac_header_t*)data;
-    if (header->type == PACKET_TYPE_CMD && header->uid == DEVICE_UID) {
-        // ack?
-        // TODO - have actual reset command
+    if (header->type == PACKET_TYPE_BOOT && header->uid == DEVICE_UID) {
+        // Reset to bootloader
         hal_nvreg_write(0, 0xB7);
         NVIC_SystemReset();
     }

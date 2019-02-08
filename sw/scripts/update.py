@@ -27,7 +27,9 @@ def process_packet(packet_bytes):
 
         if header.packet_type == packets.PACKET_TYPE_DATA:
             print("Sending reset command to {:08X}".format(header.uid))
-            data = packets.CMDPacket.encode((header.uid, packets.PACKET_TYPE_CMD, 0xAA))
+            data = packets.BootPacket.encode(
+                (header.uid, packets.PACKET_TYPE_BOOT, 0x00)
+            )
             stream.write(encode_packet(data))
 
             # Raspberry Pi doesn't seem to flush the output
