@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 from chaac import packets
 from chaac.chaacdb import ChaacDB
-from serial_packet.serial_packet import decode_packet
+from serial_packet.serial_packet import decode_packet, encode_packet
 
 parser = argparse.ArgumentParser()
 
@@ -28,11 +28,24 @@ if args.db:
 else:
     db = None
 
+stream = serial.Serial(args.port, baudrate=args.baud_rate, timeout=0.01)
+stream.flushInput()
+
+
+def clear_rain(uid):
+    # Clear the rain count
+    # This way if we miss a packet, we don't lose the rain data
+    packet = packets.BootPacket.encode((uid, packets.PACKET_TYPE_CLEAR_RAIN, 0x00))
+    stream.write(encode_packet(packet))
+
 
 def process_data_packet(packet):
     data = packets.WeatherPacket.decode(packet)
     data = packets.WeatherPacket.round(data)
     print(data)
+
+    if data.rain > 0:
+        clear_rain(data.uid)
 
     if db is not None:
         db.add_record(data)
@@ -58,9 +71,6 @@ def process_packet(packet_bytes):
         print("unicode error")
         pass
 
-
-stream = serial.Serial(args.port, baudrate=args.baud_rate, timeout=0.01)
-stream.flushInput()
 
 buff = bytearray()
 

@@ -5,6 +5,7 @@ from chaac.chaac_packet import ChaacPacket
 PACKET_TYPE_DATA = 1
 PACKET_TYPE_GPS = 2
 PACKET_TYPE_BOOT = 3
+PACKET_TYPE_CLEAR_RAIN = 4
 
 
 PacketHeader = ChaacPacket("PacketHeader", [("uid", "I"), ("packet_type", "B")])

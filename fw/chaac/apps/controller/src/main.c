@@ -49,11 +49,31 @@ void xbee_rx_handler(struct os_event *ev) {
 
 void chaac_packet_handler(int16_t len, void* data) {
     chaac_header_t *header = (chaac_header_t*)data;
-    if (header->type == PACKET_TYPE_BOOT && header->uid == DEVICE_UID) {
-        // Reset to bootloader
-        hal_nvreg_write(0, 0xB7);
-        NVIC_SystemReset();
-    }
+
+    do {
+        if (header->uid != DEVICE_UID) {
+            break;
+        }
+
+        switch(header->type) {
+            case PACKET_TYPE_BOOT: {
+                 // Reset to bootloader
+                hal_nvreg_write(0, 0xB7);
+                NVIC_SystemReset();
+                break;
+            }
+
+            case PACKET_TYPE_CLEAR_RAIN: {
+                windrain_clear_rain();
+                break;
+            }
+
+            default: {
+                break;
+            }
+        }
+    } while(0);
+
 }
 
 void weather_init() {

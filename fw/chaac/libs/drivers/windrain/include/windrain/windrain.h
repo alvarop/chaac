@@ -3,6 +3,7 @@
 
 void windrain_init();
 uint32_t windrain_get_rain();
+void windrain_clear_rain();
 uint32_t windrain_get_speed();
 int16_t windrain_get_dir();
 

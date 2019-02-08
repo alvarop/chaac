@@ -7,6 +7,7 @@ typedef enum {
     PACKET_TYPE_DATA = 1,
     PACKET_TYPE_GPS = 2,
     PACKET_TYPE_BOOT = 3,
+    PACKET_TYPE_CLEAR_RAIN = 4,
 } packet_type_t;
 
 typedef struct {
@@ -42,5 +43,10 @@ typedef struct {
     chaac_header_t  header;
     uint8_t         flags;
 } __attribute__((packed)) boot_packet_t;
+
+typedef struct {
+    chaac_header_t  header;
+    uint8_t         flags;
+} __attribute__((packed)) clear_rain_packet_t;
 
 #endif

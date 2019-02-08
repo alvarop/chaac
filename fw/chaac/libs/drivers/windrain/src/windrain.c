@@ -57,10 +57,11 @@ uint32_t windrain_get_rain() {
 
     // 0.2794 mm of rain per tick
     rain = rain_ticks * 2794;
-
-    rain_ticks = 0;
-
     return rain;
+}
+
+void windrain_clear_rain() {
+    rain_ticks = 0;
 }
 
 uint32_t windrain_get_speed() {
