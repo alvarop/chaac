@@ -30,6 +30,12 @@ def process_packet(packet_bytes):
             data = packets.CMDPacket.encode((header.uid, packets.PACKET_TYPE_CMD, 0xAA))
             stream.write(encode_packet(data))
             stream.flushOutput()
+
+            # Raspberry Pi doesn't seem to flush the output
+            # Workaround so all data goes out before closing port
+            # TODO - investigate
+            time.sleep(0.05)
+
             stream.close()
 
     except UnicodeDecodeError:
