@@ -298,18 +298,36 @@ hal_bsp_init(void)
 #if MYNEWT_VAL(BOOT_SERIAL)
     // Bootloader needs to enable XBEE to communicate
     hal_gpio_init_out(XBEE_nSBY_PIN, 0);
-#endif
+
+    // Configure boot pin to see who triggered the reset
+    hal_gpio_init_in(MYNEWT_VAL(BOOT_SERIAL_DETECT_PIN),
+                      MYNEWT_VAL(BOOT_SERIAL_DETECT_PIN_CFG));
+
+    if(hal_gpio_read(MYNEWT_VAL(BOOT_SERIAL_DETECT_PIN)) ==
+        MYNEWT_VAL(BOOT_SERIAL_DETECT_PIN_VAL)) {
+      // If the boot pin is not low, use the xbee uart
+      rc = os_dev_create((struct os_dev *) &hal_uart1, "uart0",
+      OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[1]);
+      assert(rc == 0);
+    } else {
+      // If the boot pin was used to reboot, select debug uart for bootloader
+      rc = os_dev_create((struct os_dev *) &hal_uart0, "uart0",
+      OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
+      assert(rc == 0);
+    }
+#else
 
 #if MYNEWT_VAL(UART_0)
     rc = os_dev_create((struct os_dev *) &hal_uart0, "uart0",
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[0]);
     assert(rc == 0);
 #endif
-
 #if MYNEWT_VAL(UART_1)
     rc = os_dev_create((struct os_dev *) &hal_uart1, "uart1",
       OS_DEV_INIT_PRIMARY, 0, uart_hal_init, (void *)&uart_cfg[1]);
     assert(rc == 0);
+#endif
+
 #endif
 
 #if MYNEWT_VAL(ADC_1)

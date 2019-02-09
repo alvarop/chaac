@@ -1,9 +1,6 @@
 syscfg.vals:
   ADC_1: 0
 
-  CONSOLE_UART_DEV: '"uart0"'
-  # XBEE_UART_DEV: '"uart0"'
-
   CONSOLE_UART_BAUD: 57600
 
   BOOT_SERIAL: 1
