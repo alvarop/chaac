@@ -77,7 +77,6 @@ void chaac_packet_handler(int16_t len, void* data) {
 }
 
 void weather_init() {
-    hal_gpio_init_out(FAN_EN_PIN, 0);
     hal_gpio_init_out(LED1_PIN, 1);
 
     hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_OFF);
