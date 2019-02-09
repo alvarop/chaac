@@ -1,0 +1,23 @@
+
+pkg.name: hw/bsp/chaac_v1p2
+pkg.type: bsp
+pkg.description: BSP definition for the Chaac v1.2 Board
+pkg.author: "Alvaro Prieto"
+pkg.homepage: "https://alvarop.com/"
+pkg.keywords:
+
+pkg.cflags:
+    - -DSTM32L432xx
+
+pkg.cflags.HARDFLOAT:
+    - -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
+pkg.deps:
+    - "@apache-mynewt-core/hw/mcu/stm/stm32l4xx"
+    - "@apache-mynewt-core/libc/baselibc"
+    - "hw/drivers/adc_stm32l432"
+
+pkg.deps.UART_0:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
+pkg.deps.UART_1:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
