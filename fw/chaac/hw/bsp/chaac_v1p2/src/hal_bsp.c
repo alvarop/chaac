@@ -175,7 +175,7 @@ ADC_HandleTypeDef adc1_handle = STM32L432_DEFAULT_ADC1_HANDLE;
     .c_cnum = 11\
 }
 
-//WDIR
+// WDIR
 #define ADC_CH15_SAC_CFG {\
     .c_refmv = 3300,\
     .c_res   = 12,\
@@ -183,9 +183,17 @@ ADC_HandleTypeDef adc1_handle = STM32L432_DEFAULT_ADC1_HANDLE;
     .c_cnum = 15\
 }
 
+// VSOLAR
+#define ADC_CH16_SAC_CFG {\
+    .c_refmv = 3300,\
+    .c_res   = 12,\
+    .c_configured = 1,\
+    .c_cnum = 16\
+}
+
 #define STM32L432_ADC1_DEFAULT_CONFIG {\
-    .sac_chan_count = 16,\
-    .sac_chans = (struct adc_chan_config [16]){\
+    .sac_chan_count = 17,\
+    .sac_chans = (struct adc_chan_config [17]){\
         {0},\
         {0},\
         {0},\
@@ -201,7 +209,8 @@ ADC_HandleTypeDef adc1_handle = STM32L432_DEFAULT_ADC1_HANDLE;
         {0},\
         {0},\
         {0},\
-        ADC_CH15_SAC_CFG   /* WDIR pin (PB0) */   \
+        ADC_CH15_SAC_CFG,  /* WDIR pin (PB0) */   \
+        ADC_CH16_SAC_CFG,  /* VSOLAR pin (PB1) */   \
       },\
     .sac_adc_handle = &adc1_handle,\
   }
