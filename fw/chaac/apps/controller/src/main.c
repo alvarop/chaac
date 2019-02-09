@@ -26,6 +26,7 @@
                         ((uint32_t *)(0x1FFF7590))[2])
 
 struct os_callout sample_callout;
+static uint32_t sample_num;
 
 void packet_tx_fn(int16_t len, void* data) {
     // Seems to take ~500-600 'units' to wake up. 1000 to be safe
@@ -95,6 +96,8 @@ void weather_init() {
     xbee_uart_init(&xbee_rx_handler);
     packet_init_cb(chaac_packet_handler);
     packet_init_tx_fn(packet_tx_fn);
+
+    sample_num = 0;
 }
 
 void weather_sample_fn(struct os_event *ev) {
@@ -111,6 +114,8 @@ void weather_sample_fn(struct os_event *ev) {
 
     packet.header.uid = DEVICE_UID;
     packet.header.type = PACKET_TYPE_DATA;
+
+    packet.sample = sample_num;
 
     hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_ON);
     // Measured rise time in WX_DIR pin ~1ms (with 0.1uF cap)
@@ -136,6 +141,20 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)(packet.light),
             (int32_t)((packet.light-(int32_t)(packet.light))*1000));
     }
+
+#if CHAAC_HW_VERS > 0x101
+    rval = simple_adc_read_ch(VSOLAR_ADC_CH, &result);
+    if(rval) {
+        console_printf("simple_adc_read_ch error %ld\n", rval);
+    } else {
+        packet.solar_panel = (float)result * 2.0 / 1000.0;
+        console_printf("S: %ld.%ld\n",
+            (int32_t)(packet.solar_panel),
+            (int32_t)((packet.solar_panel-(int32_t)(packet.solar_panel))*1000));
+    }
+#else
+    packet.solar_panel = 0;
+#endif
 
     rval = am2315_read(&packet.temperature, &packet.humidity);
     if (rval) {
@@ -185,9 +204,12 @@ void weather_sample_fn(struct os_event *ev) {
 
     packet_tx(sizeof(weather_data_packet_t), (void*)&packet);
 
+    sample_num++;
+
     // Turn off ADC for some small power savings
     simple_adc_uninit();
     hal_gpio_write(LED1_PIN, 0);
+
 }
 
 int main(int argc, char **argv) {

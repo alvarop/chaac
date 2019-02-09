@@ -15,6 +15,7 @@ WeatherPacket = ChaacPacket(
     [
         ("uid", "I"),
         ("packet_type", "B"),
+        ("sample", "I"),
         ("wind_speed", "f"),
         ("wind_dir", "f"),
         ("rain", "f"),
@@ -24,6 +25,7 @@ WeatherPacket = ChaacPacket(
         ("pressure", "f"),
         ("light", "f"),
         ("battery", "f"),
+        ("solar_panel", "f"),
     ],
 )
 

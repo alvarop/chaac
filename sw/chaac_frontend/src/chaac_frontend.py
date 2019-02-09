@@ -143,7 +143,7 @@ def get_json_str(start_date, end_date):
 
     # TODO - set start date to the beginning of that day
     # That way the bins are accurate to the day
-    
+
     # Get rain data for the time period
     rain_data = db.get_rain(int(start_date), int(end_date))
     rain_total = 0
@@ -151,7 +151,7 @@ def get_json_str(start_date, end_date):
     # Bin data into the appropriate size for histograms
     idx = get_start_bin(int(end_date), table)
     bins = range(int(start_date), int(end_date), rain_mod[table])
-    
+
     # Loop through each rain bin
     for rain_bin in bins:
         plot["rain_time"].append(get_rain_label(idx, table))

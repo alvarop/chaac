@@ -81,7 +81,16 @@
             y_label: "Light Level (0-1)",
             div: "div-light",
             type: "scatter"
-          }
+          },
+          {
+            title:"Solar Panel",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "solar_panel",
+            y_label: "Voltage (V)",
+            div: "div-solar",
+            type: "scatter"
+          },
         ];
 
         // Draw each plot here
@@ -180,6 +189,13 @@
           <div id="div-battery" ></div>
         </div>
       </div>
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-solar" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
       <div class="column">
         <div class="notification has-text-centered">
           <div id="div-light" ></div>

@@ -17,6 +17,7 @@ typedef struct {
 
 typedef struct {
     chaac_header_t  header;
+    uint32_t        sample;
     float           wind_speed;
     float           wind_dir;
     float           rain;
@@ -26,6 +27,7 @@ typedef struct {
     float           pressure;
     float           light;
     float           battery;
+    float           solar_panel;
 } __attribute__((packed)) weather_data_packet_t;
 
 // TODO

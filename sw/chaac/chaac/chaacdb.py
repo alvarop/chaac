@@ -21,7 +21,7 @@ data_columns = [
     "rain",
     "wind_speed",
     "wind_dir",
-    # "solar_voltage"
+    "solar_panel"
 ]
 
 
