@@ -18,6 +18,7 @@ echo "Remove old setup"
 sudo rm -r /var/flaskapp/chaac_frontend
 sudo rm -r /var/flaskapp/chaac
 
+bash ./support/update.sh
+
 cd -
 
-bash ./support/update.sh
