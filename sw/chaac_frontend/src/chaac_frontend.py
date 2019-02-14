@@ -53,7 +53,7 @@ def summary():
     for rain_hour in rain_day:
         rain_total += rain_hour[3]
 
-    sample["rain"] = rain_total
+    sample["rain"] = round(rain_total, 3)
 
     return render_template("status.html", sample=sample)
 
