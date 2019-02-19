@@ -258,6 +258,9 @@ class ChaacDB:
             # Ignore minutes and seconds
             end_time = end_time - end_time % (60 * 60)
 
+            # Add an hour to catch everything in the current hour
+            end_time += (60 * 60)
+
         query = """
             SELECT * FROM rain_samples
             WHERE timestamp >= {}
