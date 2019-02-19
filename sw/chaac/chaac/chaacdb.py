@@ -248,18 +248,9 @@ class ChaacDB:
 
     def get_rain(self, start_time, end_time=None, uid=None):
 
-        # Ignore minutes and seconds
-        start_time = start_time - start_time % (60 * 60)
-
         # Just select the single sample if there's no end time
         if end_time is None:
             end_time = start_time + 1
-        else:
-            # Ignore minutes and seconds
-            end_time = end_time - end_time % (60 * 60)
-
-            # Add an hour to catch everything in the current hour
-            end_time += (60 * 60)
 
         query = """
             SELECT * FROM rain_samples
