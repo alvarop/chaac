@@ -1,7 +1,7 @@
 
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, request, g, render_template, jsonify
 from chaac.chaacdb import ChaacDB
 
@@ -31,7 +31,7 @@ def close_db(error):
 
 @app.route("/")
 def summary():
-    """ Get latest weather data (and past 24 hour rainfall) """
+    """ Get latest weather data (and past day's rainfall) """
 
     # Get last sample
     db = get_db()
@@ -45,10 +45,15 @@ def summary():
         else:
             sample[key] = round(float(val), 2)
 
-    # Past 24 hours
-    end_time = rows[0].timestamp
-    start_time = end_time - (60 * 60 * 24)
+    # Past day
+    now = datetime.fromtimestamp(int(time.time()))
+    end_time = start_time = time.mktime(now.timetuple())
+
+    # Start at midnight today
+    start_time = time.mktime(now.replace(hour=0, minute=0, second=0).timetuple())
+
     rain_day = db.get_rain(start_time, end_time, rows[0].uid)
+
     rain_total = 0
     for rain_hour in rain_day:
         rain_total += rain_hour[3]
@@ -91,22 +96,14 @@ def get_rain_label(idx, table):
     elif table == "week":
         return days[idx]
     elif table == "month":
+        # TODO: Deal with days=0 etc
         return "(" + str(idx) + ")"
     else:
         return None
 
 
-def get_json_str(start_date, end_date):
+def get_json_str(start_date, end_date, table="day"):
     """ Get weather data for the specified weather period """
-
-    # Figure out what data range we're dealing with
-    td = int(end_date) - int(start_date)
-    if td <= 60 * 60 * 24:
-        table = "day"
-    elif td <= 60 * 60 * 24 * 7:
-        table = "week"
-    else:  # if td <= 60 * 24 * 31:
-        table = "month"
 
     db = get_db()
 
@@ -149,7 +146,7 @@ def get_json_str(start_date, end_date):
     rain_total = 0
 
     # Bin data into the appropriate size for histograms
-    idx = get_start_bin(int(end_date), table)
+    idx = get_start_bin(int(end_date - 1), table)
     bins = range(int(start_date), int(end_date), rain_mod[table])
 
     # Loop through each rain bin
@@ -172,17 +169,61 @@ def get_json_str(start_date, end_date):
 
 @app.route("/json/day")
 def json_day_str():
-    return get_json_str(time.time() - 60 * 60 * 24, time.time())
+    # time.time() is utc time, but now is a "naive"
+    # datetime object in current timezone
+    now = datetime.fromtimestamp(int(time.time()))
+
+    # Start 24 hours before the next full hour
+    start_time = time.mktime(
+        (
+            now.replace(minute=0, second=0) + timedelta(hours=1) - timedelta(days=1)
+        ).timetuple()
+    )
+
+    end_time = time.mktime(now.timetuple())
+
+    return get_json_str(start_time, end_time, "day")
 
 
 @app.route("/json/week")
 def json_week_str():
-    return get_json_str(time.time() - 60 * 60 * 24 * 7, time.time())
+    # time.time() is utc time, but now is a "naive"
+    # datetime object in current timezone
+    now = datetime.fromtimestamp(int(time.time()))
+
+    # Round to the full day, start 7 days ago
+    start_time = time.mktime(
+        (
+            now.replace(hour=0, minute=0, second=0)
+            + timedelta(days=1)
+            - timedelta(weeks=1)
+        ).timetuple()
+    )
+
+    end_time = time.mktime(now.timetuple())
+
+    return get_json_str(start_time, end_time, "week")
 
 
 @app.route("/json/month")
 def json_month_str():
-    return get_json_str(time.time() - 60 * 60 * 24 * 31, time.time())
+    # time.time() is utc time, but now is a "naive"
+    # datetime object in current timezone
+    now = datetime.fromtimestamp(int(time.time()))
+
+    # TODO - round to the month?
+    # Round to the full day, start 31 days ago
+    start_time = time.mktime(
+        (
+            now.replace(hour=0, minute=0, second=0)
+            + timedelta(days=1)
+            - timedelta(days=31)
+        ).timetuple()
+    )
+
+    end_time = time.mktime(now.timetuple())
+
+    return get_json_str(start_time, end_time, "month")
 
 
 @app.route("/plots")
