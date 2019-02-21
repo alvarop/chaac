@@ -1,6 +1,31 @@
 {% extends "layout.html" %}
 {% block body %}
+<script type="text/javascript">
+  pressure_hpa = {{ sample.pressure }};
 
+  function show_pressure(units) {
+    switch(units) {
+      case "hPa": {
+        converted_pressure = pressure_hpa;
+        unit_str = "hPa";
+        break;
+      };
+
+      case "inHg": {
+        converted_pressure = pressure_hpa / 33.8638866;
+        converted_pressure = converted_pressure.toFixed(2)
+        unit_str = "inHg";
+        break;
+      };
+    }
+    document.getElementById("pressure").innerHTML = converted_pressure + " " + unit_str;
+  };
+
+  window.onload = function(){
+        
+        show_pressure("hPa");
+    };
+</script>
 <div class="container">
       <div class="columns is-desktop">
         <div class="column">
@@ -22,8 +47,8 @@
         </div>
         <div class="column">
           <div class="notification has-text-centered">
-            <h2 class="title is-2">Pressure</h2>
-            <h3 class="subtitle is-3 ">{{ sample.pressure }} hPa</h3>
+            <h2 class="title is-2">Pressure (<a onclick="show_pressure('hPa')">hPa</a>/<a onclick="show_pressure('inHg')">inHg</a>)</h2>
+            <h3 class="subtitle is-3 " id="pressure">...</h3>
           </div>
         </div>
       </div>
