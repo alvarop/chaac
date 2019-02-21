@@ -1,20 +1,18 @@
 {% extends "layout.html" %}
 {% block body %}
 <script type="text/javascript">
-  pressure_hpa = {{ sample.pressure }};
 
   function show_pressure(units) {
-    localStorage.pressure_units = units;
     switch(units) {
       case "hPa": {
-        converted_pressure = pressure_hpa;
+        converted_pressure = {{ sample.pressure }};
         unit_str = "hPa";
         break;
       };
 
       case "inHg": {
-        converted_pressure = pressure_hpa / 33.8638866;
-        converted_pressure = converted_pressure.toFixed(2)
+        converted_pressure = {{ sample.pressure }} / 33.8638866;
+        converted_pressure = converted_pressure.toFixed(2);
         unit_str = "inHg";
         break;
       };
@@ -23,12 +21,7 @@
   };
 
   window.onload = function(){
-        if(localStorage.pressure_units == null) {
-          localStorage.pressure_units = "hPa";
-        }
-
         show_pressure(localStorage.pressure_units);
-        
     };
 </script>
 <div class="container">
@@ -52,7 +45,7 @@
         </div>
         <div class="column">
           <div class="notification has-text-centered">
-            <h2 class="title is-2">Pressure (<a onclick="show_pressure('hPa')">hPa</a>/<a onclick="show_pressure('inHg')">inHg</a>)</h2>
+            <h2 class="title is-2">Pressure</h2>
             <h3 class="subtitle is-3 " id="pressure">...</h3>
           </div>
         </div>

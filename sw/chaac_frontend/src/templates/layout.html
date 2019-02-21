@@ -32,6 +32,16 @@
 
       });
     </script>
+    <script type="text/javascript">
+      if(localStorage.pressure_units == null) {
+        localStorage.pressure_units = "hPa";
+      }
+
+      function change_pressure(units) {
+        localStorage.pressure_units = units;
+        location.reload();
+      }
+    </script>
     {% block head %}{% endblock %}
   </head>
   <body>
@@ -57,6 +67,21 @@
         <a class="navbar-item" href="/plots">
           Plots
         </a>
+
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            Settings
+          </a>
+
+          <div class="navbar-dropdown">
+            <a class="navbar-item" onclick="change_pressure('hPa')">
+              Pressure hPa
+            </a>
+            <a class="navbar-item" onclick="change_pressure('inHg')">
+              Pressure inHg
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </nav>

@@ -2,10 +2,6 @@
 {% block head %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
-      if(localStorage.pressure_units == null) {
-        localStorage.pressure_units = "hPa";
-      }
-
       function load_plots(url) {
         fetch(url)
         .then(function(response) {
