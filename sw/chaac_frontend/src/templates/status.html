@@ -4,6 +4,7 @@
   pressure_hpa = {{ sample.pressure }};
 
   function show_pressure(units) {
+    localStorage.pressure_units = units;
     switch(units) {
       case "hPa": {
         converted_pressure = pressure_hpa;
@@ -22,8 +23,12 @@
   };
 
   window.onload = function(){
+        if(localStorage.pressure_units == null) {
+          localStorage.pressure_units = "hPa";
+        }
+
+        show_pressure(localStorage.pressure_units);
         
-        show_pressure("hPa");
     };
 </script>
 <div class="container">

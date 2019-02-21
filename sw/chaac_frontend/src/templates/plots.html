@@ -2,6 +2,9 @@
 {% block head %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
+      if(localStorage.pressure_units == null) {
+        localStorage.pressure_units = "hPa";
+      }
 
       function load_plots(url) {
         fetch(url)
@@ -24,7 +27,7 @@
             xdata: "timestamp",
             x_label: "Time",
             ydata: "pressure",
-            y_label: "Pressure (hPa)",
+            y_label: "Pressure (" + localStorage.pressure_units + ")",
             div: "div-pressure",
             type: "scatter"
           },
@@ -92,6 +95,14 @@
             type: "scatter"
           },
         ];
+
+        if (localStorage.pressure_units == "inHg") {
+          // Convert from hPa to inHg if necessary
+          for(x = 0; x < plot["pressure"].length; x++) {
+            num = plot["pressure"][x] / 33.8638866;
+            plot["pressure"][x] = num.toFixed(3);
+          }
+        }
 
         // Draw each plot here
         plots.forEach(function(item){
