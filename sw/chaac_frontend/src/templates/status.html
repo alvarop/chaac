@@ -2,8 +2,8 @@
 {% block body %}
 <script type="text/javascript">
 
-  function show_pressure(units) {
-    switch(units) {
+  function show_pressure() {
+    switch(localStorage.pressure_units) {
       case "hPa": {
         converted_pressure = {{ sample.pressure }};
         unit_str = "hPa";
@@ -20,8 +20,26 @@
     document.getElementById("pressure").innerHTML = converted_pressure + " " + unit_str;
   };
 
+  function show_temperature() {
+    switch(localStorage.temperature_units) {
+      case "c": {
+        converted_temperature = {{ sample.temperature }};
+        unit_str = "C";
+        break;
+      };
+      case "f": {
+        converted_temperature = {{ sample.temperature }} * (9.0/5.0) + 32;
+        converted_temperature = converted_temperature.toFixed(2);
+        unit_str = "F";
+        break;
+      };
+    }
+    document.getElementById("temperature").innerHTML = converted_temperature + " °" + unit_str;
+  }
+
   window.onload = function(){
-        show_pressure(localStorage.pressure_units);
+        show_pressure();
+        show_temperature();
     };
 </script>
 <div class="container">
@@ -34,7 +52,7 @@
         <div class="column">
           <div class="notification has-text-centered">
             <h2 class="title is-2">Temperature</h2>
-            <h3 class="subtitle is-3 ">{{ sample.temperature }} °C</h3>
+            <h3 class="subtitle is-3 " id="temperature">...</h3>
           </div>
         </div>
         <div class="column">

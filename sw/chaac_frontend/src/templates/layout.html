@@ -33,15 +33,101 @@
       });
     </script>
     <script type="text/javascript">
-      if(localStorage.pressure_units == null) {
-        localStorage.pressure_units = "hPa";
-      }
+      'use strict';
 
-      function change_pressure(units) {
-        localStorage.pressure_units = units;
+      document.addEventListener('DOMContentLoaded', function () {
+
+        // Modals
+
+        var rootEl = document.documentElement;
+        var $modals = getAll('.modal');
+        var $modalButtons = getAll('.modal-button');
+        var $modalCloses = getAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button');
+
+        if ($modalButtons.length > 0) {
+          $modalButtons.forEach(function ($el) {
+            $el.addEventListener('click', function () {
+              var target = $el.dataset.target;
+              var $target = document.getElementById(target);
+              rootEl.classList.add('is-clipped');
+              $target.classList.add('is-active');
+            });
+          });
+        }
+
+        if ($modalCloses.length > 0) {
+          $modalCloses.forEach(function ($el) {
+            $el.addEventListener('click', function () {
+              closeModals();
+            });
+          });
+        }
+
+        document.addEventListener('keydown', function (event) {
+          var e = event || window.event;
+          if (e.keyCode === 27) {
+            closeModals();
+          }
+        });
+
+        function closeModals() {
+          rootEl.classList.remove('is-clipped');
+          $modals.forEach(function ($el) {
+            $el.classList.remove('is-active');
+          });
+        }
+
+        // Functions
+
+        function getAll(selector) {
+          return Array.prototype.slice.call(document.querySelectorAll(selector), 0);
+        }
+
+        function set_default_radio_buttons() {
+          if(localStorage.pressure_units == null) {
+            localStorage.pressure_units = "hPa";
+          }
+
+          if(localStorage.temperature_units == null) {
+            localStorage.temperature_units = "c";
+          }
+
+          if (localStorage.pressure_units == "hPa") {
+            document.getElementById("pressure_units_hpa").checked = true;
+          } else {
+            document.getElementById("pressure_units_inhg").checked = true;
+          }
+
+          if (localStorage.temperature_units == "c") {
+            document.getElementById("temperature_units_c").checked = true;
+          } else {
+            document.getElementById("temperature_units_f").checked = true;
+          }
+        }
+
+      function save_settings() {
+        if (document.getElementById("pressure_units_hpa").checked) {
+          localStorage.pressure_units = "hPa";
+        } else {
+          localStorage.pressure_units = "inHg";
+        }
+
+        if (document.getElementById("temperature_units_c").checked) {
+          localStorage.temperature_units = "c";
+        } else {
+          localStorage.temperature_units = "f";
+        }
+        // TODO - redraw instead of reload
         location.reload();
       }
-    </script>
+
+        document.getElementById("save_settings_btn").addEventListener('click', save_settings);
+        document.getElementById("cancel_settings_btn").addEventListener('click', set_default_radio_buttons);
+
+        set_default_radio_buttons();
+
+      });
+      </script>
     {% block head %}{% endblock %}
   </head>
   <body>
@@ -68,23 +154,49 @@
           Plots
         </a>
 
-        <div class="navbar-item has-dropdown is-hoverable">
-          <a class="navbar-link">
-            Settings
-          </a>
-
-          <div class="navbar-dropdown">
-            <a class="navbar-item" onclick="change_pressure('hPa')">
-              Pressure hPa
-            </a>
-            <a class="navbar-item" onclick="change_pressure('inHg')">
-              Pressure inHg
-            </a>
-          </div>
-        </div>
+        <a class="navbar-item modal-button" data-target="settings-modal">
+          Settings
+        </a>
       </div>
     </div>
   </nav>
+  <div id="settings-modal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Settings</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="control">
+        <b>Pressure Units: </b>
+        <label class="radio">
+          <input type="radio" name="pressure_units" id="pressure_units_hpa" value="hPa">
+          hPa
+        </label>
+        <label class="radio">
+          <input type="radio" name="pressure_units" id="pressure_units_inhg" value="inHg">
+          inHg
+        </label>
+      </div>
+      <div class="control">
+        <b>Temperature Units: </b>
+        <label class="radio">
+          <input type="radio" name="temperature_units" id="temperature_units_c" value="c">
+          C
+        </label>
+        <label class="radio">
+          <input type="radio" name="temperature_units" id="temperature_units_f" value="f">
+          F
+        </label>
+      </div>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-success" id="save_settings_btn">Save changes</button>
+      <button class="button"  id="cancel_settings_btn">Cancel</button>
+    </footer>
+  </div>
+</div>
   <section class="section">
     {% block body %}{% endblock %}
   </section>
