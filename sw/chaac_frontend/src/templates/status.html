@@ -5,13 +5,13 @@
   function show_pressure() {
     switch(localStorage.pressure_units) {
       case "hPa": {
-        converted_pressure = {{ sample.pressure }};
+        converted_pressure = ({{ sample.pressure }});
         unit_str = "hPa";
         break;
       };
 
       case "inHg": {
-        converted_pressure = {{ sample.pressure }} / 33.8638866;
+        converted_pressure = ({{ sample.pressure }}) / 33.8638866;
         converted_pressure = converted_pressure.toFixed(2);
         unit_str = "inHg";
         break;
@@ -23,24 +23,29 @@
   function show_temperature() {
     switch(localStorage.temperature_units) {
       case "c": {
-        converted_temperature = {{ sample.temperature }};
+        converted_temperature = ({{ sample.temperature }});
         unit_str = "C";
         break;
       };
       case "f": {
-        converted_temperature = {{ sample.temperature }} * (9.0/5.0) + 32;
+        converted_temperature = ({{ sample.temperature }}) * (9.0/5.0) + 32;
         converted_temperature = converted_temperature.toFixed(2);
         unit_str = "F";
         break;
       };
     }
     document.getElementById("temperature").innerHTML = converted_temperature + " °" + unit_str;
-  }
+  };
+
+  // Function to update data when settings change or page is loaded
+  function draw_chaac() {
+    show_pressure();
+    show_temperature();
+  };
 
   window.onload = function(){
-        show_pressure();
-        show_temperature();
-    };
+    draw_chaac();
+  };
 </script>
 <div class="container">
       <div class="columns is-desktop">

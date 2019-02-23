@@ -2,19 +2,27 @@
 {% block head %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
+      current_plot = '/json/day';
+
       function load_plots(url) {
+        current_plot = url;
         fetch(url)
         .then(function(response) {
           return response.json();
         })
         .then(function(plot) {
-          plots = [
+          draw_plots(plot);
+        });
+      };
+
+      function draw_plots(plot) {
+        plots = [
           {
             title:"Temperature",
             xdata: "timestamp",
             x_label: "Time",
             ydata: "temperature",
-            y_label: "Temperature (C)",
+            y_label: "Temperature (°" + localStorage.temperature_units.toUpperCase() + ")",
             div: "div-temperature",
             type: "scatter"
           },
@@ -100,6 +108,14 @@
           }
         }
 
+        if (localStorage.temperature_units == "f") {
+          // Convert from c to f if necessary
+          for(x = 0; x < plot["temperature"].length; x++) {
+            num = plot["temperature"][x] * (9.0/5.0) + 32;
+            plot["temperature"][x] = num.toFixed(3);
+          }
+        }
+
         // Draw each plot here
         plots.forEach(function(item){
           var layout = {
@@ -119,7 +135,6 @@
           };
 
           // TODO - Also add html elements here for more flexibility
-
           Plotly.purge(document.getElementById(item["div"]));
           Plotly.plot(document.getElementById(item["div"]),
             [{x:plot[item["xdata"]],
@@ -130,13 +145,19 @@
               {responsive: true} );
           });
 
-          document.getElementById("div-header").innerHTML = "Weather from <b>" + plot["start_date"] + "</b> to <b>" + plot["end_date"] +"</b>";
-        });
-      }
+        document.getElementById("div-header").innerHTML = "Weather from <b>" + plot["start_date"] + "</b> to <b>" + plot["end_date"] +"</b>";
+      };
+
+      // Function to update data when settings change or page is loaded
+      function draw_chaac() {
+        load_plots(current_plot);
+      };
 
       window.onload = function(){
-        load_plots('/json/day');
+        draw_chaac();
       };
+
+
     </script>
 {% endblock %}
 

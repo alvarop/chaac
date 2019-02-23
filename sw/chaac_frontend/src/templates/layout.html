@@ -33,51 +33,8 @@
       });
     </script>
     <script type="text/javascript">
-      'use strict';
 
       document.addEventListener('DOMContentLoaded', function () {
-
-        // Modals
-
-        var rootEl = document.documentElement;
-        var $modals = getAll('.modal');
-        var $modalButtons = getAll('.modal-button');
-        var $modalCloses = getAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button');
-
-        if ($modalButtons.length > 0) {
-          $modalButtons.forEach(function ($el) {
-            $el.addEventListener('click', function () {
-              var target = $el.dataset.target;
-              var $target = document.getElementById(target);
-              rootEl.classList.add('is-clipped');
-              $target.classList.add('is-active');
-            });
-          });
-        }
-
-        if ($modalCloses.length > 0) {
-          $modalCloses.forEach(function ($el) {
-            $el.addEventListener('click', function () {
-              closeModals();
-            });
-          });
-        }
-
-        document.addEventListener('keydown', function (event) {
-          var e = event || window.event;
-          if (e.keyCode === 27) {
-            closeModals();
-          }
-        });
-
-        function closeModals() {
-          rootEl.classList.remove('is-clipped');
-          $modals.forEach(function ($el) {
-            $el.classList.remove('is-active');
-          });
-        }
-
-        // Functions
 
         function getAll(selector) {
           return Array.prototype.slice.call(document.querySelectorAll(selector), 0);
@@ -103,24 +60,37 @@
           } else {
             document.getElementById("temperature_units_f").checked = true;
           }
+
+          document.getElementById("settings").style.display = "none";
         }
 
-      function save_settings() {
-        if (document.getElementById("pressure_units_hpa").checked) {
-          localStorage.pressure_units = "hPa";
-        } else {
-          localStorage.pressure_units = "inHg";
+        function save_settings() {
+          if (document.getElementById("pressure_units_hpa").checked) {
+            localStorage.pressure_units = "hPa";
+          } else {
+            localStorage.pressure_units = "inHg";
+          }
+
+          if (document.getElementById("temperature_units_c").checked) {
+            localStorage.temperature_units = "c";
+          } else {
+            localStorage.temperature_units = "f";
+          }
+
+          // Check to see if the page has a draw_chaac function and run it
+          // This should re-draw any elements that were changed here
+          if (typeof draw_chaac === "function") {
+            draw_chaac();
+          }
+
+          document.getElementById("settings").style.display = "none";
         }
 
-        if (document.getElementById("temperature_units_c").checked) {
-          localStorage.temperature_units = "c";
-        } else {
-          localStorage.temperature_units = "f";
+        function show_settings() {
+          document.getElementById("settings").style.display = "block";
         }
-        // TODO - redraw instead of reload
-        location.reload();
-      }
 
+        document.getElementById("settings_button").addEventListener('click', show_settings);
         document.getElementById("save_settings_btn").addEventListener('click', save_settings);
         document.getElementById("cancel_settings_btn").addEventListener('click', set_default_radio_buttons);
 
@@ -154,49 +124,65 @@
           Plots
         </a>
 
-        <a class="navbar-item modal-button" data-target="settings-modal">
+        <a class="navbar-item" id="settings_button">
           Settings
         </a>
       </div>
     </div>
   </nav>
-  <div id="settings-modal" class="modal">
-  <div class="modal-background"></div>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title">Settings</p>
-      <button class="delete" aria-label="close"></button>
-    </header>
-    <section class="modal-card-body">
-      <div class="control">
-        <b>Pressure Units: </b>
-        <label class="radio">
-          <input type="radio" name="pressure_units" id="pressure_units_hpa" value="hPa">
-          hPa
-        </label>
-        <label class="radio">
-          <input type="radio" name="pressure_units" id="pressure_units_inhg" value="inHg">
-          inHg
-        </label>
-      </div>
-      <div class="control">
-        <b>Temperature Units: </b>
-        <label class="radio">
-          <input type="radio" name="temperature_units" id="temperature_units_c" value="c">
-          C
-        </label>
-        <label class="radio">
-          <input type="radio" name="temperature_units" id="temperature_units_f" value="f">
-          F
-        </label>
-      </div>
-    </section>
-    <footer class="modal-card-foot">
-      <button class="button is-success" id="save_settings_btn">Save changes</button>
-      <button class="button"  id="cancel_settings_btn">Cancel</button>
-    </footer>
-  </div>
-</div>
+  <section class="section" id="settings">
+    <div class="container">
+      <article class="message is-dark">
+        <div class="message-header">
+          <p>Settings</p>
+          <div class="field is-grouped">
+            <p class="control">
+              <a class="button is-link" id="save_settings_btn">
+                Save
+              </a>
+            </p>
+            <p class="control">
+              <a class="button" id="cancel_settings_btn">
+                Cancel
+              </a>
+            </p>
+          </div>
+        </div>
+        <div class="message-body">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Pressure Units: </td>
+                <td>
+                  <label class="radio">
+                    <input type="radio" name="pressure_units" id="pressure_units_hpa" value="hPa">
+                    hPa
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="pressure_units" id="pressure_units_inhg" value="inHg">
+                    inHg
+                  </label>
+                </td>
+              </tr>
+              <tr>
+                <td>Temperature Units: </td>
+                <td>
+                  <label class="radio">
+                    <input type="radio" name="temperature_units" id="temperature_units_c" value="c">
+                    C
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="temperature_units" id="temperature_units_f" value="f">
+                    F
+                  </label>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+  </section>
   <section class="section">
     {% block body %}{% endblock %}
   </section>
