@@ -2,16 +2,42 @@
 {% block body %}
 <script type="text/javascript">
 
-  function show_pressure() {
+  function load_latest() {
+    fetch('/latest')
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(latest) {
+      update_fields(latest);
+    });
+  };
+
+  function update_fields(latest) {
+    document.getElementById("timestamp").innerHTML = latest["timestamp"];
+    document.getElementById("humidity").innerHTML = latest["humidity"] + "%";
+    document.getElementById("battery").innerHTML = latest["battery"] + " V";
+    document.getElementById("rain").innerHTML = latest["rain"] + " mm";
+    document.getElementById("wind").innerHTML = latest["wind_speed"] + " kph @ " + latest["wind_dir"];
+    document.getElementById("solar_panel").innerHTML = latest["solar_panel"] + " V";
+    show_pressure(latest["pressure"]);
+    show_temperature(latest["temperature"]);
+  };
+
+  function show_pressure(pressure) {
+
+    if(!(typeof pressure === "undefined")) {
+      this.pressure = pressure;
+    }
+
     switch(localStorage.pressure_units) {
       case "hPa": {
-        converted_pressure = ({{ sample.pressure }});
+        converted_pressure = this.pressure;
         unit_str = "hPa";
         break;
       };
 
       case "inHg": {
-        converted_pressure = ({{ sample.pressure }}) / 33.8638866;
+        converted_pressure = this.pressure / 33.8638866;
         converted_pressure = converted_pressure.toFixed(2);
         unit_str = "inHg";
         break;
@@ -20,15 +46,20 @@
     document.getElementById("pressure").innerHTML = converted_pressure + " " + unit_str;
   };
 
-  function show_temperature() {
+  function show_temperature(temperature) {
+
+    if(!(typeof temperature === "undefined")) {
+      this.temperature = temperature;
+    }
+
     switch(localStorage.temperature_units) {
       case "c": {
-        converted_temperature = ({{ sample.temperature }});
+        converted_temperature = this.temperature;
         unit_str = "C";
         break;
       };
       case "f": {
-        converted_temperature = ({{ sample.temperature }}) * (9.0/5.0) + 32;
+        converted_temperature = this.temperature * (9.0/5.0) + 32;
         converted_temperature = converted_temperature.toFixed(2);
         unit_str = "F";
         break;
@@ -39,8 +70,7 @@
 
   // Function to update data when settings change or page is loaded
   function draw_chaac() {
-    show_pressure();
-    show_temperature();
+    load_latest();
   };
 
   window.onload = function(){
@@ -50,7 +80,7 @@
 <div class="container">
       <div class="columns is-desktop">
         <div class="column">
-          <h3 class="subtitle is-3 ">Weather as of <b>{{ sample.timestamp }}</b></h3>
+          <h3 class="subtitle is-3 ">Weather as of <b id="timestamp"></b></h3>
         </div>
       </div>
       <div class="columns is-desktop">
@@ -63,7 +93,7 @@
         <div class="column">
           <div class="notification has-text-centered">
             <h2 class="title is-2">Humidity</h2>
-            <h3 class="subtitle is-3 ">{{ sample.humidity }}%</h3>
+            <h3 class="subtitle is-3 " id="humidity">...</h3>
           </div>
         </div>
         <div class="column">
@@ -77,19 +107,19 @@
         <div class="column">
           <div class="notification has-text-centered">
             <h2 class="title is-2">Battery</h2>
-            <h3 class="subtitle is-3 ">{{ sample.battery }} V</h3>
+            <h3 class="subtitle is-3 " id="battery">...</h3>
           </div>
         </div>
         <div class="column">
           <div class="notification has-text-centered">
             <h2 class="title is-2">Rain</h2>
-            <h3 class="subtitle is-3 ">{{ sample.rain }} mm</h3>
+            <h3 class="subtitle is-3 " id="rain">...</h3>
           </div>
         </div>
         <div class="column">
           <div class="notification has-text-centered">
             <h2 class="title is-2">Wind</h2>
-            <h3 class="subtitle is-3 ">{{ sample.wind_speed }} kph @ {{ sample.wind_dir }}</h3>
+            <h3 class="subtitle is-3 " id="wind">...</h3>
           </div>
         </div>
       </div>
@@ -97,7 +127,7 @@
         <div class="column">
           <div class="notification has-text-centered">
             <h2 class="title is-2">Solar Panel</h2>
-            <h3 class="subtitle is-3 ">{{ sample.solar_panel }} V</h3>
+            <h3 class="subtitle is-3 " id="solar_panel">...</h3>
           </div>
       </div>
     </div>

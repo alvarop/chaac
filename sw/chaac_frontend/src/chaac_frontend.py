@@ -1,6 +1,7 @@
 
 import os
 import time
+import socket
 from datetime import datetime, timedelta
 from flask import Flask, request, g, render_template, jsonify
 from chaac.chaacdb import ChaacDB
@@ -11,6 +12,8 @@ app.config.from_object(__name__)  # load config from this file , flaskr.py
 
 # Load default config and override config from an environment variable
 app.config.update(dict(DATABASE=os.getenv("DATABASE")))
+
+hostname = socket.gethostname()
 
 
 def get_db():
@@ -29,15 +32,14 @@ def close_db(error):
         g.sqlite_db.close()
 
 
-@app.route("/")
-def summary():
+def get_latest_sample():
     """ Get latest weather data (and past day's rainfall) """
 
     # Get last sample
     db = get_db()
     rows = db.get_records("day", order="desc", limit=1)
 
-    sample = {}
+    sample = {"hotsname": hostname}
     # Convert the units
     for key, val in rows[0]._asdict().items():
         if key == "timestamp":
@@ -60,7 +62,19 @@ def summary():
 
     sample["rain"] = round(rain_total, 3)
 
-    return render_template("status.html", sample=sample)
+    return sample
+
+
+@app.route("/latest")
+def latest_json():
+    return jsonify(get_latest_sample())
+
+
+@app.route("/")
+def summary():
+    sample = get_latest_sample()
+
+    return render_template("status.html", hostname=hostname)
 
 
 rain_mod = {"day": (60 * 60), "week": (60 * 60 * 24), "month": (60 * 60 * 24)}
@@ -109,7 +123,7 @@ def get_json_str(start_date, end_date, table="day"):
 
     rows = db.get_records(table, start_date=start_date, end_date=end_date)
 
-    plot = {}
+    plot = {"hotsname": hostname}
 
     plot["start_date"] = datetime.fromtimestamp(start_date).strftime(
         "%Y-%m-%d %H:%M:%S"
@@ -228,4 +242,4 @@ def json_month_str():
 
 @app.route("/plots")
 def test():
-    return render_template("plots.html")
+    return render_template("plots.html", hostname=hostname)
