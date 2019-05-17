@@ -3,15 +3,14 @@
 <div class="container">
       <div class="columns is-desktop">
         <div class="column">
-          <h3 class="subtitle is-3 ">Chaac.network</h3>
+          <h3 class="subtitle is-3 ">Locations</h3>
         </div>
       </div>
-      <div class="columns is-desktop">
+      <div class="list is-hoverable has-text-centered">
         {% for hostname in hosts %}
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2"><a href="/{{ hostname }}">{{ hostname }}</a></h2>
-          </div>
+          <a class="list-item is-size-1" href="/{{ hostname }}">
+          {{ hostname}}
+          </a>
         {% endfor %}
       </div>
     </div>

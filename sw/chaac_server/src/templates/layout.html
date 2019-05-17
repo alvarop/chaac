@@ -103,15 +103,9 @@
   <body>
     <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-      {% if host is defined %}
-      <a class="navbar-item" href="/{{ host }}">
-        {{ host }} - Latest
-      </a>
-      {% else %}
       <a class="navbar-item" href="/">
         Chaac.network
       </a>
-      {% endif %}
 
       <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
         <span aria-hidden="true"></span>
@@ -123,16 +117,16 @@
     {% if host is defined %}
     <div id="navbarBasicExample" class="navbar-menu">
       <div class="navbar-start">
+        <a class="navbar-item" href="/{{ host }}">
+        {{ host }} - Latest
+        </a>
+
         <a class="navbar-item" href="/{{ host }}/plots">
           Plots
         </a>
 
         <a class="navbar-item" id="settings_button">
           Settings
-        </a>
-
-        <a class="navbar-item" href="/">
-        Chaac.network
         </a>
       </div>
     </div>
