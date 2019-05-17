@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div>
+    <table class="table is-striped">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Temperature (C)</th>
+                <th>Humidity (% RH)</th>
+                <th>Pressure (hPa)</th>
+                <th>Battery (V)</th>
+                <th>Rain (mm)</th>
+                <th>Wind (kph)</th>
+            </tr>
+        </thead>
+        <tbody>
+    {% for sample in samples %}
+            <tr>
+                <td>{{ sample.timestamp }}</td>
+                <td>{{ sample.temperature }}</td>
+                <td>{{ sample.humidity }}</td>
+                <td>{{ sample.pressure }}</td>
+                <td>{{ sample.battery }}</td>
+                <td>{{ sample.rain }}</td>
+                <td>{{ sample.wind_speed }} @ {{ sample.wind_dir }}</td>
+            </tr>
+    {% else %}
+    <tr>
+        <td>:(</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+</div>
+{% endblock %}

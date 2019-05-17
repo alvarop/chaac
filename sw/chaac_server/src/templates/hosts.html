@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+      <div class="columns is-desktop">
+        <div class="column">
+          <h3 class="subtitle is-3 ">Chaac.network</h3>
+        </div>
+      </div>
+      <div class="columns is-desktop">
+        {% for hostname in hosts %}
+        <div class="column">
+          <div class="notification has-text-centered">
+            <h2 class="title is-2"><a href="/{{ hostname }}">{{ hostname }}</a></h2>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+{% endblock %}

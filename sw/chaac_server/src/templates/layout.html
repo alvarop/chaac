@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chaac</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+    <script type="text/javascript">
+      document.addEventListener('DOMContentLoaded', () => {
+
+        // Get all "navbar-burger" elements
+        const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+        // Check if there are any navbar burgers
+        if ($navbarBurgers.length > 0) {
+
+          // Add a click event on each of them
+          $navbarBurgers.forEach( el => {
+            el.addEventListener('click', () => {
+
+              // Get the target from the "data-target" attribute
+              const target = el.dataset.target;
+              const $target = document.getElementById(target);
+
+              // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+              el.classList.toggle('is-active');
+              $target.classList.toggle('is-active');
+
+            });
+          });
+        }
+
+      });
+    </script>
+    <script type="text/javascript">
+
+      document.addEventListener('DOMContentLoaded', function () {
+
+        function getAll(selector) {
+          return Array.prototype.slice.call(document.querySelectorAll(selector), 0);
+        }
+
+        function set_default_radio_buttons() {
+          if(localStorage.pressure_units == null) {
+            localStorage.pressure_units = "hPa";
+          }
+
+          if(localStorage.temperature_units == null) {
+            localStorage.temperature_units = "c";
+          }
+
+          if (localStorage.pressure_units == "hPa") {
+            document.getElementById("pressure_units_hpa").checked = true;
+          } else {
+            document.getElementById("pressure_units_inhg").checked = true;
+          }
+
+          if (localStorage.temperature_units == "c") {
+            document.getElementById("temperature_units_c").checked = true;
+          } else {
+            document.getElementById("temperature_units_f").checked = true;
+          }
+
+          document.getElementById("settings").style.display = "none";
+        }
+
+        function save_settings() {
+          if (document.getElementById("pressure_units_hpa").checked) {
+            localStorage.pressure_units = "hPa";
+          } else {
+            localStorage.pressure_units = "inHg";
+          }
+
+          if (document.getElementById("temperature_units_c").checked) {
+            localStorage.temperature_units = "c";
+          } else {
+            localStorage.temperature_units = "f";
+          }
+
+          // Check to see if the page has a draw_chaac function and run it
+          // This should re-draw any elements that were changed here
+          if (typeof draw_chaac === "function") {
+            draw_chaac();
+          }
+
+          document.getElementById("settings").style.display = "none";
+        }
+
+        function show_settings() {
+          document.getElementById("settings").style.display = "block";
+        }
+
+        document.getElementById("settings_button").addEventListener('click', show_settings);
+        document.getElementById("save_settings_btn").addEventListener('click', save_settings);
+        document.getElementById("cancel_settings_btn").addEventListener('click', set_default_radio_buttons);
+
+        set_default_radio_buttons();
+
+      });
+      </script>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      {% if host is defined %}
+      <a class="navbar-item" href="/{{ host }}">
+        {{ host }} - Latest
+      </a>
+      {% else %}
+      <a class="navbar-item" href="/">
+        Chaac.network
+      </a>
+      {% endif %}
+
+      <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    {% if host is defined %}
+    <div id="navbarBasicExample" class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item" href="/{{ host }}/plots">
+          Plots
+        </a>
+
+        <a class="navbar-item" id="settings_button">
+          Settings
+        </a>
+
+        <a class="navbar-item" href="/">
+        Chaac.network
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </nav>
+  {% if host is defined %}
+  <section class="section" id="settings">
+    <div class="container">
+      <article class="message is-dark">
+        <div class="message-header">
+          <p>Settings</p>
+          <div class="field is-grouped">
+            <p class="control">
+              <a class="button is-link" id="save_settings_btn">
+                Save
+              </a>
+            </p>
+            <p class="control">
+              <a class="button" id="cancel_settings_btn">
+                Cancel
+              </a>
+            </p>
+          </div>
+        </div>
+        <div class="message-body">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Pressure Units: </td>
+                <td>
+                  <label class="radio">
+                    <input type="radio" name="pressure_units" id="pressure_units_hpa" value="hPa">
+                    hPa
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="pressure_units" id="pressure_units_inhg" value="inHg">
+                    inHg
+                  </label>
+                </td>
+              </tr>
+              <tr>
+                <td>Temperature Units: </td>
+                <td>
+                  <label class="radio">
+                    <input type="radio" name="temperature_units" id="temperature_units_c" value="c">
+                    C
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="temperature_units" id="temperature_units_f" value="f">
+                    F
+                  </label>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+  </section>
+  {% endif %}
+  <section class="section">
+    {% block body %}{% endblock %}
+  </section>
+  </body>
+</html>
