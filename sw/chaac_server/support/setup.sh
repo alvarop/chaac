@@ -17,6 +17,16 @@ echo "Remove old setup"
 sudo rm -r /var/flaskapp/chaac_server
 sudo rm -r /var/flaskapp/chaac
 
+echo "Updating nginx config setup"
+echo "NOTE: This will get rid of all certbot fun..."
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo cp support/nginx_chaac_server /etc/nginx/sites-available/chaac_server
+sudo ln -s /etc/nginx/sites-available/chaac_server /etc/nginx/sites-enabled/
+
+sudo rm -f /etc/nginx/nginx.conf
+sudo cp support/nginx.conf /etc/nginx/nginx.conf
+
+
 bash ./support/update.sh
 
 cd -
