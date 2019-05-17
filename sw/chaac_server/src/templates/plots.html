@@ -2,11 +2,11 @@
 {% block head %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
-      current_plot = '/{{ host }}/json/day';
+      current_plot = '/json/day';
 
       function load_plots(url) {
-        current_plot = "/{{ host }}" + url;
-        fetch(url)
+        current_plot = url;
+        fetch("/{{ host }}" + current_plot)
         .then(function(response) {
           return response.json();
         })
