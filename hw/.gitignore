@@ -8,3 +8,4 @@ gerber/
 *.xml
 *.pdf
 _autosave*
+fp-info-cache
