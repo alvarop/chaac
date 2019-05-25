@@ -4,9 +4,9 @@ EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
-Title "Chaac"
-Date "2019-05-23"
-Rev "2.0"
+Title "NRF52811_USB"
+Date "2019-05-24"
+Rev "1.0"
 Comp "@alvaroprieto"
 Comment1 ""
 Comment2 ""
@@ -105,17 +105,6 @@ Wire Wire Line
 	2100 3050 2100 3000
 Wire Wire Line
 	2650 3050 2650 2850
-$Comp
-L power:GND #PWR010
-U 1 1 5BAB8AD3
-P 3600 1550
-F 0 "#PWR010" H 3600 1300 50  0001 C CNN
-F 1 "GND" H 3605 1377 50  0000 C CNN
-F 2 "" H 3600 1550 50  0001 C CNN
-F 3 "" H 3600 1550 50  0001 C CNN
-	1    3600 1550
-	0    -1   -1   0   
-$EndComp
 NoConn ~ 14100 6700
 Text Label 850  2550 2    50   ~ 0
 VIN
@@ -265,28 +254,13 @@ SWDIO
 Text Label 11400 4000 2    50   ~ 0
 SWCLK
 Wire Wire Line
-	9800 4600 9800 5150
+	8700 3900 8150 3900
 Wire Wire Line
-	9700 4600 9700 5150
-Text Label 9700 5150 1    50   ~ 0
+	8700 3800 8150 3800
+Text Label 8150 3800 0    50   ~ 0
 UART_TX
-Text Label 9800 5150 1    50   ~ 0
+Text Label 8150 3900 0    50   ~ 0
 UART_RX
-$Comp
-L Connector_Generic:Conn_01x03 J2
-U 1 1 5C923533
-P 3300 1650
-F 0 "J2" H 3220 1967 50  0000 C CNN
-F 1 "UART" H 3220 1876 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 3300 1650 50  0001 C CNN
-F 3 "~" H 3300 1650 50  0001 C CNN
-	1    3300 1650
-	-1   0    0    -1  
-$EndComp
-Wire Wire Line
-	3600 1550 3500 1550
-Text Label 4250 1750 2    50   ~ 0
-UART_TX
 $Comp
 L Device:C_Small C15
 U 1 1 5C2FB65B
@@ -349,12 +323,6 @@ Text Label 6400 4500 2    50   ~ 0
 TX_LED
 Wire Wire Line
 	5200 4500 5200 4550
-Wire Wire Line
-	3500 1750 4250 1750
-Wire Wire Line
-	3500 1650 4250 1650
-Text Label 4250 1650 2    50   ~ 0
-UART_RX
 Wire Wire Line
 	850  2550 1450 2550
 Wire Wire Line
@@ -1072,7 +1040,7 @@ U 1 1 5CF5FFBB
 P 1500 7250
 F 0 "J1" H 1557 7717 50  0000 C CNN
 F 1 "USB_A" H 1557 7626 50  0000 C CNN
-F 2 "" H 1650 7200 50  0001 C CNN
+F 2 "alvarop:MOLEX-0480371000" H 1650 7200 50  0001 C CNN
 F 3 " ~" H 1650 7200 50  0001 C CNN
 	1    1500 7250
 	1    0    0    -1  
@@ -1409,8 +1377,8 @@ Text Label 9600 5150 1    50   ~ 0
 STATUS_LED
 Wire Wire Line
 	9600 4600 9600 5150
-NoConn ~ 8700 3900
-NoConn ~ 8700 3800
+NoConn ~ 9700 4600
+NoConn ~ 9800 4600
 NoConn ~ 8700 3700
 NoConn ~ 8700 3500
 NoConn ~ 8700 3400
@@ -1451,4 +1419,82 @@ Wire Wire Line
 	1400 7800 1400 7650
 Wire Wire Line
 	1400 8100 1400 8000
+$Comp
+L Connector:TestPoint TP2
+U 1 1 5D271B59
+P 7500 4650
+F 0 "TP2" V 7454 4838 50  0000 L CNN
+F 1 "RX" V 7545 4838 50  0000 L CNN
+F 2 "TestPoint:TestPoint_Pad_D1.5mm" H 7700 4650 50  0001 C CNN
+F 3 "~" H 7700 4650 50  0001 C CNN
+	1    7500 4650
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:TestPoint TP1
+U 1 1 5D272E09
+P 7500 4450
+F 0 "TP1" V 7454 4638 50  0000 L CNN
+F 1 "TX" V 7545 4638 50  0000 L CNN
+F 2 "TestPoint:TestPoint_Pad_D1.5mm" H 7700 4450 50  0001 C CNN
+F 3 "~" H 7700 4450 50  0001 C CNN
+	1    7500 4450
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:TestPoint TP3
+U 1 1 5D275EFD
+P 7500 4850
+F 0 "TP3" V 7454 5038 50  0000 L CNN
+F 1 "GND" V 7545 5038 50  0000 L CNN
+F 2 "TestPoint:TestPoint_Pad_D1.5mm" H 7700 4850 50  0001 C CNN
+F 3 "~" H 7700 4850 50  0001 C CNN
+	1    7500 4850
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:TestPoint TP4
+U 1 1 5D275F03
+P 7500 5050
+F 0 "TP4" V 7454 5238 50  0000 L CNN
+F 1 "3V3" V 7545 5238 50  0000 L CNN
+F 2 "TestPoint:TestPoint_Pad_D1.5mm" H 7700 5050 50  0001 C CNN
+F 3 "~" H 7700 5050 50  0001 C CNN
+	1    7500 5050
+	0    1    1    0   
+$EndComp
+Text Label 7100 4450 0    50   ~ 0
+UART_TX
+Wire Wire Line
+	7100 4450 7500 4450
+Text Label 7100 4650 0    50   ~ 0
+UART_RX
+Wire Wire Line
+	7100 4650 7500 4650
+$Comp
+L power:GND #PWR0101
+U 1 1 5D34C3EB
+P 7350 4850
+F 0 "#PWR0101" H 7350 4600 50  0001 C CNN
+F 1 "GND" H 7355 4677 50  0000 C CNN
+F 2 "" H 7350 4850 50  0001 C CNN
+F 3 "" H 7350 4850 50  0001 C CNN
+	1    7350 4850
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7350 4850 7500 4850
+$Comp
+L power:+3.3V #PWR0102
+U 1 1 5D3564B9
+P 7350 5050
+F 0 "#PWR0102" H 7350 4900 50  0001 C CNN
+F 1 "+3.3V" H 7365 5223 50  0000 C CNN
+F 2 "" H 7350 5050 50  0001 C CNN
+F 3 "" H 7350 5050 50  0001 C CNN
+	1    7350 5050
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	7350 5050 7500 5050
 $EndSCHEMATC
