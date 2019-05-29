@@ -1,4 +1,0 @@
-pkg.name: libs/drivers/simple_adc
-pkg.deps:
-    - "@apache-mynewt-core/hw/hal"
-    - "hw/drivers/adc_stm32l432"

@@ -18,6 +18,10 @@
 #
 
 syscfg.defs:
+    CHAAC_MCU_STM32L4xx:
+        description: 'Uses STM32L4xx family'
+        value: 1
+
     STM32_FLASH_SIZE_KB:
         description: 'Total flash size in KB.'
         value: 256

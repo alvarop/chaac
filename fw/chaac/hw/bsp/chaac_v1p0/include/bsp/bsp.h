@@ -40,6 +40,11 @@ extern uint8_t _ram_start;
 
 #define CHAAC_HW_VERS   (0x0100)
 
+// XOR uid 32-bit words to have a single 32-bit uid
+#define DEVICE_UID (   ((uint32_t *)(0x1FFF7590))[0] ^ \
+                        ((uint32_t *)(0x1FFF7590))[1] ^ \
+                        ((uint32_t *)(0x1FFF7590))[2])
+
 #define XBEE_ON_PIN     MCU_GPIO_PORTA(0)
 #define XBEE_nSBY_PIN   MCU_GPIO_PORTA(1)
 

@@ -20,11 +20,6 @@
 
 #include "chaac_packet.h"
 
-// XOR uid 32-bit words to have a single 32-bit uid
-#define DEVICE_UID (   ((uint32_t *)(0x1FFF7590))[0] ^ \
-                        ((uint32_t *)(0x1FFF7590))[1] ^ \
-                        ((uint32_t *)(0x1FFF7590))[2])
-
 struct os_callout sample_callout;
 static uint32_t sample_num;
 
