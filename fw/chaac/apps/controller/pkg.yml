@@ -21,3 +21,4 @@ pkg.deps.CHAAC_MCU_STM32L4xx:
     - "libs/drivers/simple_adc_stm32l4"
 
 pkg.deps.CHAAC_MCU_NRF528xx:
+    - "libs/drivers/simple_adc_nrf52"
