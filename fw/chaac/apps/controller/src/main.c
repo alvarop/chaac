@@ -197,7 +197,7 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)(packet.rain),
             (int32_t)((packet.rain-(int32_t)(packet.rain))*10000));
 
-    packet_tx(sizeof(weather_data_packet_t), (void*)&packet);
+    // packet_tx(sizeof(weather_data_packet_t), (void*)&packet);
 
     sample_num++;
 
