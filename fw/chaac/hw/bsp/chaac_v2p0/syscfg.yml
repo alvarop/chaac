@@ -39,8 +39,8 @@ syscfg.vals:
     I2C_0: 0
 
     UART_0: 1
-    UART_0_PIN_TX: 9
-    UART_0_PIN_RX: 10
+    UART_0_PIN_TX: 13
+    UART_0_PIN_RX: 14
 
 
 syscfg.vals.BLE_LP_CLOCK:
