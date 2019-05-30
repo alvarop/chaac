@@ -25,6 +25,7 @@ NOTICE: This file has been modified by Nordic Semiconductor ASA.
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "mcu/cmsis_nvic.h"
 #include "nrf.h"
 #include "system_nrf52811.h"
 
@@ -150,6 +151,8 @@ void SystemInit(void)
     #endif
 
     SystemCoreClockUpdate();
+
+    NVIC_Relocate();
 }
 
 static bool errata_31(void)
