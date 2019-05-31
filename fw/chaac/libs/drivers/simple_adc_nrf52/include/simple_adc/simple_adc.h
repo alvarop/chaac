@@ -2,6 +2,7 @@
 #define __SIMPLE_ADC__
 
 #include <stdint.h>
+#include <nrf_saadc.h>
 
 int32_t simple_adc_init(void);
 int32_t simple_adc_uninit(void);

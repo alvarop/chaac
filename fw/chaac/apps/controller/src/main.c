@@ -127,6 +127,7 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)((packet.battery-(int32_t)(packet.battery))*1000));
     }
 
+#ifndef NO_LIGHT_SENSOR
     rval = simple_adc_read_ch(LIGHT_ADC_CH, &result);
     if(rval) {
         console_printf("simple_adc_read_ch error %ld\n", rval);
@@ -136,6 +137,9 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)(packet.light),
             (int32_t)((packet.light-(int32_t)(packet.light))*1000));
     }
+#else
+    packet.light = 0;
+#endif
 
 #if CHAAC_HW_VERS > 0x101
     rval = simple_adc_read_ch(VSOLAR_ADC_CH, &result);
@@ -197,7 +201,7 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)(packet.rain),
             (int32_t)((packet.rain-(int32_t)(packet.rain))*10000));
 
-    // packet_tx(sizeof(weather_data_packet_t), (void*)&packet);
+    packet_tx(sizeof(weather_data_packet_t), (void*)&packet);
 
     sample_num++;
 

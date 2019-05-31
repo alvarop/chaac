@@ -37,6 +37,8 @@ syscfg.vals:
     MCU_LFCLK_SOURCE: LFXO
     HARDFLOAT: 0
 
+    ADC_0: 1
+
     I2C_0: 1
     I2C_0_PIN_SCL: 9
     I2C_0_PIN_SDA: 8
@@ -44,8 +46,6 @@ syscfg.vals:
     UART_0: 1
     UART_0_PIN_TX: 13
     UART_0_PIN_RX: 14
-
-
 
 syscfg.vals.BLE_LP_CLOCK:
     OS_CPUTIME_FREQ: 32768

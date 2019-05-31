@@ -55,10 +55,10 @@ extern uint8_t _ram_start;
 
 #define BATT_PIN        30
 #define BATT_ADC_CH     6
+#define BATT_SAADC      NRF_SAADC_INPUT_AIN6
 
 // UNUSED
-#define LIGHT_PIN       20
-#define LIGHT_ADC_CH    0
+#define NO_LIGHT_SENSOR
 
 #define WX_SPEED_PIN    4
 #define WX_RAIN_PIN     7
@@ -73,9 +73,11 @@ extern uint8_t _ram_start;
 
 #define WX_DIR_PIN      5
 #define WX_DIR_ADC_CH   3
+#define WX_DIR_SAADC    NRF_SAADC_INPUT_AIN3
 
 #define VSOLAR_PIN      31
 #define VSOLAR_ADC_CH   7
+#define VSOLAR_SAADC    NRF_SAADC_INPUT_AIN7
 
 #define WX_DIR_EN_PIN   29
 #define WX_DIR_EN_ON    (0)
@@ -87,7 +89,7 @@ extern uint8_t _ram_start;
 #define LED_BLINK_PIN   LED1_PIN
 
 /* UART */
-#define UART_CNT 2
+#define UART_CNT 1
 
 #ifdef __cplusplus
 }
