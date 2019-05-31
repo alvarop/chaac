@@ -44,8 +44,15 @@ syscfg.vals:
     I2C_0_PIN_SDA: 8
 
     UART_0: 1
-    UART_0_PIN_TX: 13
-    UART_0_PIN_RX: 14
+
+    # UART
+    # UART_0_PIN_TX: 13
+    # UART_0_PIN_RX: 14
+
+    # XBEE
+    UART_0_PIN_TX: 27
+    UART_0_PIN_RX: 28
+
 
 syscfg.vals.BLE_LP_CLOCK:
     OS_CPUTIME_FREQ: 32768
