@@ -40,7 +40,7 @@ with tempfile.NamedTemporaryFile(prefix="jlink", delete=False) as scriptfile:
     elif args.dump == True:
         write_line(
             scriptfile,
-            "savebin {} 0x{:X} 0x{:X}".format(args.filename, args.addr, args.len),
+            "savebin {} 0x{:X} 0x{:X}".format(args.filename, int(args.addr,0), int(args.len, 0)),
         )
 
     write_line(scriptfile, "go")
