@@ -13,7 +13,7 @@ app.config.from_object(__name__)  # load config from this file , flaskr.py
 # Load default config and override config from an environment variable
 # app.config.update(dict(DATABASE=os.getenv("DATABASE")))
 
-hosts = {"San Mateo": "10.1.1.10", "Merida": "10.1.1.11"}
+hosts = {"San Mateo": "10.1.1.10", "Merida": "10.1.1.11", "chaac-dev": "10.1.1.20"}
 
 
 def json_error(message):
