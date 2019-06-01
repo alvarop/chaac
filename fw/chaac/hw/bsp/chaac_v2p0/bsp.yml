@@ -21,10 +21,10 @@ bsp.arch: cortex_m4
 bsp.compiler: "@apache-mynewt-core/compiler/arm-none-eabi-m4"
 bsp.linkerscript:
     - "hw/bsp/chaac_v2p0/nrf52xxaa.ld"
-    - "hw/mcu/nordic/nrf52811/nrf52.ld"
+    - "@apache-mynewt-core/hw/mcu/nordic/nrf52xxx/nrf52.ld"
 bsp.linkerscript.BOOT_LOADER.OVERWRITE:
     - "hw/bsp/chaac_v2p0/boot-nrf52xxaa.ld"
-    - "hw/mcu/nordic/nrf52811/nrf52.ld"
+    - "@apache-mynewt-core/hw/mcu/nordic/nrf52xxx/nrf52.ld"
 bsp.part2linkerscript: "hw/bsp/chaac_v2p0/split-nrf52dk.ld"
 bsp.downloadscript: "hw/bsp/chaac_v2p0/nrf52dk_download.sh"
 bsp.debugscript: "hw/bsp/chaac_v2p0/nrf52dk_debug.sh"

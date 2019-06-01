@@ -9,15 +9,19 @@ pkg.keywords:
 
 pkg.cflags:
     - '-DNRF52811_XXAA'
-    - '-DNRF52'
+    # - '-DNRF52'
     # - '-DNRFX_SPIM_ENABLED=1'
     # - '-DNRFX_SPIM0_ENABLED=1'
 
+pkg.cflags.HARDFLOAT:
+    - -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
 
 pkg.deps:
-    - "hw/mcu/nordic/nrf52811"
+    - "@apache-mynewt-core/hw/mcu/nordic/nrf52xxx"
     - "@apache-mynewt-core/libc/baselibc"
-
+    - "@apache-mynewt-core/sys/flash_map"
+    
 pkg.deps.BLE_DEVICE:
     - "@apache-mynewt-core/hw/drivers/nimble/nrf52"
 
@@ -31,12 +35,6 @@ pkg.deps.ADC_0:
     - "@apache-mynewt-core/hw/drivers/adc/adc_nrf52"
 
 pkg.deps.PWM_0:
-    - "@apache-mynewt-core/hw/drivers/pwm/pwm_nrf52"
-
-pkg.deps.PWM_1:
-    - "@apache-mynewt-core/hw/drivers/pwm/pwm_nrf52"
-
-pkg.deps.PWM_2:
     - "@apache-mynewt-core/hw/drivers/pwm/pwm_nrf52"
 
 pkg.deps.SOFT_PWM:
