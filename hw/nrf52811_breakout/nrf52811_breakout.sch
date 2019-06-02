@@ -5,8 +5,8 @@ EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
-Title "NRF52811_USB"
-Date "2019-05-24"
+Title "Chaac Radio"
+Date "2019-06-02"
 Rev "1.0"
 Comp "@alvaroprieto"
 Comment1 ""
@@ -722,18 +722,6 @@ Wire Wire Line
 Wire Wire Line
 	10300 1700 10300 1500
 Wire Wire Line
-	6750 1750 6150 1750
-Wire Wire Line
-	6750 1850 6150 1850
-Wire Wire Line
-	6750 1950 6150 1950
-Wire Wire Line
-	6750 2050 6150 2050
-Wire Wire Line
-	6750 2150 6150 2150
-Wire Wire Line
-	6750 2250 6150 2250
-Wire Wire Line
 	7250 1750 7850 1750
 Wire Wire Line
 	7250 1850 7850 1850
@@ -746,9 +734,21 @@ Wire Wire Line
 Wire Wire Line
 	7250 2250 7850 2250
 Wire Wire Line
-	7250 2350 7850 2350
+	6750 1750 6150 1750
 Wire Wire Line
-	6150 1650 6750 1650
+	6750 1850 6150 1850
+Wire Wire Line
+	6750 1950 6150 1950
+Wire Wire Line
+	6750 2050 6150 2050
+Wire Wire Line
+	6750 2150 6150 2150
+Wire Wire Line
+	6750 2250 6150 2250
+Wire Wire Line
+	6750 2350 6150 2350
+Wire Wire Line
+	7850 1650 7250 1650
 Wire Wire Line
 	9950 1800 10550 1800
 Wire Wire Line
@@ -764,7 +764,7 @@ Wire Wire Line
 Wire Wire Line
 	9950 2400 10550 2400
 Wire Wire Line
-	7250 1650 7850 1650
+	6750 1650 6150 1650
 Wire Wire Line
 	11050 1800 11650 1800
 Wire Wire Line
@@ -851,20 +851,20 @@ Wire Wire Line
 Wire Wire Line
 	11650 2400 11050 2400
 Wire Wire Line
-	6750 2350 6150 2350
+	7250 2350 7850 2350
 $Comp
 L power:GND #PWR0102
 U 1 1 5D13DFAA
-P 11350 1700
-F 0 "#PWR0102" H 11350 1450 50  0001 C CNN
-F 1 "GND" H 11355 1527 50  0000 C CNN
-F 2 "" H 11350 1700 50  0001 C CNN
-F 3 "" H 11350 1700 50  0001 C CNN
-	1    11350 1700
+P 11150 1700
+F 0 "#PWR0102" H 11150 1450 50  0001 C CNN
+F 1 "GND" H 11155 1527 50  0000 C CNN
+F 2 "" H 11150 1700 50  0001 C CNN
+F 3 "" H 11150 1700 50  0001 C CNN
+	1    11150 1700
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	11050 1700 11350 1700
+	11050 1700 11150 1700
 Text Label 7000 5650 0    50   ~ 0
 P0.02-AIN0
 Text Label 7000 5750 0    50   ~ 0
@@ -923,4 +923,64 @@ Text Label 9100 4150 3    50   ~ 0
 P0.27
 Text Label 9300 4150 3    50   ~ 0
 P0.25
+Text Label 9950 1800 0    50   ~ 0
+P0.24
+Text Label 11650 1800 2    50   ~ 0
+P0.23
+Text Label 9950 1900 0    50   ~ 0
+P0.22
+Text Label 11650 1900 2    50   ~ 0
+nRST
+Text Label 9950 2000 0    50   ~ 0
+P0.20
+Text Label 11650 2000 2    50   ~ 0
+P0.19
+Text Label 9950 2100 0    50   ~ 0
+P0.18
+Text Label 11650 2100 2    50   ~ 0
+P0.17
+Text Label 9950 2200 0    50   ~ 0
+P0.16
+Text Label 11650 2200 2    50   ~ 0
+P0.15
+Text Label 11650 2300 2    50   ~ 0
+P0.13
+Text Label 9950 2300 0    50   ~ 0
+P0.14
+Text Label 9950 2400 0    50   ~ 0
+P0.12
+Text Label 11650 2400 2    50   ~ 0
+P0.11
+Text Label 7850 1650 2    50   ~ 0
+P0.25
+Text Label 6150 1650 0    50   ~ 0
+P0.26
+Text Label 7850 1750 2    50   ~ 0
+P0.27
+Text Label 6150 1750 0    50   ~ 0
+P0.28-AIN4
+Text Label 7850 1850 2    50   ~ 0
+P0.29-AIN5
+Text Label 6150 1850 0    50   ~ 0
+P0.30-AIN6
+Text Label 7850 1950 2    50   ~ 0
+P0.31-AIN7
+Text Label 6150 1950 0    50   ~ 0
+P0.02-AIN0
+Text Label 7850 2050 2    50   ~ 0
+P0.03-AIN1
+Text Label 6150 2050 0    50   ~ 0
+P0.04-AIN2
+Text Label 7850 2150 2    50   ~ 0
+P0.05-AIN3
+Text Label 6150 2150 0    50   ~ 0
+P0.06
+Text Label 7850 2250 2    50   ~ 0
+P0.07
+Text Label 6150 2250 0    50   ~ 0
+P0.08
+Text Label 7850 2350 2    50   ~ 0
+P0.09
+Text Label 6150 2350 0    50   ~ 0
+P0.10
 $EndSCHEMATC
