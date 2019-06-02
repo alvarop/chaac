@@ -302,15 +302,15 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x04 J7
 U 1 1 5BAAE247
-P 9050 10450
-F 0 "J7" H 8970 10767 50  0000 C CNN
-F 1 "AM2315" H 8970 10676 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 9050 10450 50  0001 C CNN
-F 3 "~" H 9050 10450 50  0001 C CNN
-F 4 "ED10563-ND" H 0   0   50  0001 C CNN "DKPN"
-F 5 "OSTVN04A150" H 0   0   50  0001 C CNN "MPN"
-	1    9050 10450
-	-1   0    0    -1  
+P 9050 10550
+F 0 "J7" H 8970 10867 50  0000 C CNN
+F 1 "AM2315" H 8970 10776 50  0000 C CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-4_1x04_P2.54mm_Horizontal" H 9050 10550 50  0001 C CNN
+F 3 "~" H 9050 10550 50  0001 C CNN
+F 4 "ED10563-ND" H 0   100 50  0001 C CNN "DKPN"
+F 5 "OSTVN04A150" H 0   100 50  0001 C CNN "MPN"
+	1    9050 10550
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	9250 10350 9550 10350
@@ -350,40 +350,6 @@ Text Label 9550 10450 2    50   ~ 0
 SDA
 Text Label 9550 10350 2    50   ~ 0
 SCL
-$Comp
-L Connector_Generic:Conn_01x03 J5
-U 1 1 5BAB4149
-P 3300 1000
-F 0 "J5" H 3220 1317 50  0000 C CNN
-F 1 "Power" H 3220 1226 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 3300 1000 50  0001 C CNN
-F 3 "~" H 3300 1000 50  0001 C CNN
-	1    3300 1000
-	-1   0    0    -1  
-$EndComp
-Wire Wire Line
-	3500 1000 3850 1000
-Wire Wire Line
-	3850 1000 3850 1100
-Wire Wire Line
-	3500 900  3850 900 
-Wire Wire Line
-	3850 900  3850 800 
-Wire Wire Line
-	3500 1100 3750 1100
-Text Label 3750 1100 2    50   ~ 0
-VIN
-$Comp
-L power:+3.3V #PWR011
-U 1 1 5BAB8AA0
-P 3850 800
-F 0 "#PWR011" H 3850 650 50  0001 C CNN
-F 1 "+3.3V" H 3865 973 50  0000 C CNN
-F 2 "" H 3850 800 50  0001 C CNN
-F 3 "" H 3850 800 50  0001 C CNN
-	1    3850 800 
-	1    0    0    -1  
-$EndComp
 $Comp
 L power:GND #PWR012
 U 1 1 5BAB8AD3
@@ -661,14 +627,6 @@ Wire Wire Line
 	5200 3600 5250 3600
 Text Label 5850 3600 0    50   ~ 0
 nRST
-Wire Wire Line
-	9700 4600 9700 5150
-Wire Wire Line
-	9600 4600 9600 5150
-Text Label 9600 5150 1    50   ~ 0
-UART_TX
-Text Label 9700 5150 1    50   ~ 0
-UART_RX
 $Comp
 L Connector_Generic:Conn_01x03 J3
 U 1 1 5C923533
@@ -725,17 +683,6 @@ Wire Wire Line
 	1000 1100 1000 1150
 Text Label 1550 1100 2    50   ~ 0
 BATT
-$Comp
-L power:GND #PWR0133
-U 1 1 5CAFFDD5
-P 3850 1100
-F 0 "#PWR0133" H 3850 850 50  0001 C CNN
-F 1 "GND" H 3855 927 50  0000 C CNN
-F 2 "" H 3850 1100 50  0001 C CNN
-F 3 "" H 3850 1100 50  0001 C CNN
-	1    3850 1100
-	1    0    0    -1  
-$EndComp
 $Comp
 L power:GND #PWR0134
 U 1 1 5CAFFF76
@@ -1258,7 +1205,7 @@ U 1 1 5D47D6EF
 P 9750 6250
 F 0 "J10" V 9716 6062 50  0000 R CNN
 F 1 "Solar Panel" H 9625 6062 50  0000 R CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 9750 6250 50  0001 C CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 9750 6250 50  0001 C CNN
 F 3 "~" H 9750 6250 50  0001 C CNN
 F 4 "ED10561-ND" H 0   0   50  0001 C CNN "DKPN"
 F 5 "OSTVN02A150" H 0   0   50  0001 C CNN "MPN"
@@ -1524,32 +1471,10 @@ Wire Wire Line
 Wire Wire Line
 	2000 4400 2000 4250
 Connection ~ 2000 4250
-$Comp
-L Device:C_Small C7
-U 1 1 5C97805D
-P 2450 4000
-F 0 "C7" H 2250 4050 50  0000 L CNN
-F 1 "DNP" H 2150 3950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 2450 4000 50  0001 C CNN
-F 3 "~" H 2450 4000 50  0001 C CNN
-	1    2450 4000
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2450 4100 2450 4250
-Wire Wire Line
-	2450 4250 2000 4250
-Wire Wire Line
-	2200 3800 2450 3800
-Wire Wire Line
-	2450 3900 2450 3800
-Connection ~ 2450 3800
 Wire Wire Line
 	2000 4600 2000 4750
 Wire Wire Line
 	2000 4750 1450 4750
-Wire Wire Line
-	2450 3800 2900 3800
 Text Label 1450 4750 0    50   ~ 0
 SNS_3V3_EN
 Text Label 2900 3800 2    50   ~ 0
@@ -1717,15 +1642,9 @@ Text Label 6350 5000 2    50   ~ 0
 LED2
 Wire Wire Line
 	5200 5000 5200 5050
-Text Label 10400 5150 1    50   ~ 0
-nRST
-Wire Wire Line
-	10400 5150 10400 4600
 Wire Wire Line
 	5700 3600 5850 3600
 Connection ~ 5700 3600
-Wire Wire Line
-	9300 4600 9300 4750
 Wire Wire Line
 	2450 3050 2650 3050
 Wire Wire Line
@@ -1744,146 +1663,92 @@ F 3 "~" H 2450 3100 50  0001 C CNN
 	1    2450 3100
 	-1   0    0    1   
 $EndComp
-Text Label 9500 5150 1    50   ~ 0
-LED2
-Wire Wire Line
-	9500 4600 9500 5150
-Wire Wire Line
-	9400 4600 9400 5150
-Text Label 9400 5150 1    50   ~ 0
-LED1
-Wire Wire Line
-	11250 2600 11250 2050
-Text Label 11250 2050 3    50   ~ 0
-SNS_3V3_EN
-Text Label 11150 2200 3    50   ~ 0
-BATT
-Wire Wire Line
-	11150 2600 11150 2200
-Text Label 11050 2050 3    50   ~ 0
-VSOLAR
-Wire Wire Line
-	11050 2600 11050 2050
 Wire Wire Line
 	6700 6750 7250 6750
-Text Label 7250 6750 2    50   ~ 0
-P0.26
+Text Label 4600 8050 0    50   ~ 0
+SNS_3V3_EN
 Wire Wire Line
 	6700 6850 7250 6850
-Text Label 7250 6850 2    50   ~ 0
-P0.28-AIN4
 Wire Wire Line
 	6700 6950 7250 6950
-Text Label 7250 6950 2    50   ~ 0
-P0.30-AIN6
 Wire Wire Line
 	6700 7050 7250 7050
-Text Label 7250 7050 2    50   ~ 0
-P0.02-AIN0
 Wire Wire Line
 	6700 7150 7250 7150
 Text Label 7250 7150 2    50   ~ 0
-P0.04-AIN2
+VSOLAR
 Wire Wire Line
 	6700 7250 7250 7250
-Text Label 7250 7250 2    50   ~ 0
-P0.06
 Wire Wire Line
 	6700 7350 7250 7350
-Text Label 7250 7350 2    50   ~ 0
-P0.08
 Wire Wire Line
 	6700 7450 7250 7450
 Wire Wire Line
 	5100 6750 4550 6750
-Text Label 4550 6750 0    50   ~ 0
-P0.25
 Wire Wire Line
 	5100 6850 4550 6850
-Text Label 4550 6850 0    50   ~ 0
-P0.27
 Wire Wire Line
 	5100 6950 4550 6950
-Text Label 4550 6950 0    50   ~ 0
-P0.29-AIN5
 Wire Wire Line
 	5100 7050 4550 7050
-Text Label 4550 7050 0    50   ~ 0
-P0.31-AIN7
 Wire Wire Line
 	5100 7150 4550 7150
-Text Label 4550 7150 0    50   ~ 0
-P0.03-AIN1
 Wire Wire Line
 	5100 7250 4550 7250
 Text Label 4550 7250 0    50   ~ 0
-P0.05-AIN3
+BATT
 Wire Wire Line
 	5100 7350 4550 7350
-Text Label 4550 7350 0    50   ~ 0
-P0.07
 Wire Wire Line
-	5100 7450 4550 7450
+	7200 8050 6650 8050
 Wire Wire Line
 	5150 8550 4600 8550
-Text Label 4600 8550 0    50   ~ 0
-P0.13
 Wire Wire Line
 	5150 8650 4600 8650
-Text Label 4600 8650 0    50   ~ 0
-P0.11
+Text Label 4600 8550 0    50   ~ 0
+WSPEED
 Wire Wire Line
 	5150 8350 4600 8350
-Text Label 4600 8350 0    50   ~ 0
-P0.17
 Wire Wire Line
 	5150 8450 4600 8450
-Text Label 4600 8450 0    50   ~ 0
-P0.15
 Wire Wire Line
 	5150 8150 4600 8150
 Text Label 4600 8150 0    50   ~ 0
 nRST
 Wire Wire Line
 	5150 8250 4600 8250
-Text Label 4600 8250 0    50   ~ 0
-P0.19
 Wire Wire Line
 	5150 7950 4600 7950
 Wire Wire Line
 	5150 8050 4600 8050
-Text Label 4600 8050 0    50   ~ 0
-P0.23
-Wire Wire Line
-	6650 8550 7200 8550
-Text Label 7200 8550 2    50   ~ 0
-P0.14
-Wire Wire Line
-	6650 8650 7200 8650
-Text Label 7200 8650 2    50   ~ 0
-P0.12
-Wire Wire Line
-	6650 8350 7200 8350
-Text Label 7200 8350 2    50   ~ 0
-P0.18
-Wire Wire Line
-	6650 8450 7200 8450
-Text Label 7200 8450 2    50   ~ 0
-P0.16
-Wire Wire Line
-	6650 8150 7200 8150
-Text Label 7200 8150 2    50   ~ 0
-P0.22
 Wire Wire Line
 	6650 8250 7200 8250
 Text Label 7200 8250 2    50   ~ 0
-P0.20
+SCL
+Text Label 4600 8650 0    50   ~ 0
+RAIN
+Wire Wire Line
+	6650 8450 7200 8450
+Text Label 7200 8450 2    50   ~ 0
+LED1
+Wire Wire Line
+	6650 8150 7200 8150
+Text Label 7200 8150 2    50   ~ 0
+SDA
+Wire Wire Line
+	6650 8650 7200 8650
+Text Label 7200 8650 2    50   ~ 0
+UART_RX
+Wire Wire Line
+	6650 8350 7200 8350
+Text Label 7200 8350 2    50   ~ 0
+LED2
 Wire Wire Line
 	6650 7950 7200 7950
 Wire Wire Line
-	6650 8050 7200 8050
-Text Label 7200 8050 2    50   ~ 0
-P0.24
+	6650 8550 7200 8550
+Text Label 7200 8550 2    50   ~ 0
+UART_TX
 $Comp
 L power:GND #PWR0106
 U 1 1 5D1F1544
@@ -1908,17 +1773,6 @@ F 3 "" H 7200 7950 50  0001 C CNN
 $EndComp
 $Comp
 L alvarop:CHAAC_RADIO U2
-U 1 1 5D1FF521
-P 5100 6750
-F 0 "U2" H 5900 7040 60  0000 C CNN
-F 1 "CHAAC_RADIO" H 5900 6934 60  0000 C CNN
-F 2 "alvarop:CHAAC_RADIO" H 5100 6750 50  0001 C CNN
-F 3 "" H 5100 6750 50  0001 C CNN
-	1    5100 6750
-	1    0    0    -1  
-$EndComp
-$Comp
-L alvarop:CHAAC_RADIO U2
 U 2 1 5D2018F9
 P 5150 7950
 F 0 "U2" H 5900 8240 60  0000 C CNN
@@ -1928,10 +1782,6 @@ F 3 "" H 5150 7950 50  0001 C CNN
 	2    5150 7950
 	1    0    0    -1  
 $EndComp
-Text Label 7250 7450 0    50   ~ 0
-SDA
-Text Label 4550 7450 0    50   ~ 0
-SCL
 Wire Wire Line
 	11350 7900 11350 8000
 Wire Wire Line
@@ -1949,4 +1799,39 @@ F 5 "PTS820J25MSMTRLFS" H -50 -1550 50  0001 C CNN "MPN"
 	1    5400 2050
 	1    0    0    -1  
 $EndComp
+Text Label 7250 6850 2    50   ~ 0
+WDIR
+Wire Wire Line
+	2200 3800 2900 3800
+$Comp
+L alvarop:CHAAC_RADIO U2
+U 1 1 5D1FF521
+P 5100 6750
+F 0 "U2" H 5900 7040 60  0000 C CNN
+F 1 "CHAAC_RADIO" H 5900 6934 60  0000 C CNN
+F 2 "alvarop:CHAAC_RADIO" H 5100 6750 50  0001 C CNN
+F 3 "" H 5100 6750 50  0001 C CNN
+	1    5100 6750
+	1    0    0    -1  
+$EndComp
+Text Label 7200 8050 2    50   ~ 0
+BOOT
+NoConn ~ 4600 8450
+NoConn ~ 4600 8350
+NoConn ~ 4600 8250
+NoConn ~ 4550 7350
+NoConn ~ 4550 7150
+NoConn ~ 4550 7050
+NoConn ~ 4550 6950
+NoConn ~ 4550 6850
+NoConn ~ 4550 6750
+NoConn ~ 7250 6750
+NoConn ~ 7250 6950
+NoConn ~ 7250 7250
+NoConn ~ 7250 7350
+NoConn ~ 7250 7450
+NoConn ~ 7250 7050
+Wire Wire Line
+	5100 7450 4550 7450
+NoConn ~ 4550 7450
 $EndSCHEMATC
