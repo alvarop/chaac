@@ -44,7 +44,7 @@ def get_latest_sample():
     for key, val in rows[0]._asdict().items():
         if key == "timestamp":
             sample[key] = datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
-        elif key == None:
+        elif val == None:
             sample[key] = 0
         else:
             sample[key] = round(float(val), 2)
