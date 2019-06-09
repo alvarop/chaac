@@ -21,7 +21,7 @@ data_columns = [
     "rain",
     "wind_speed",
     "wind_dir",
-    "solar_panel"
+    "solar_panel",
 ]
 
 
@@ -127,10 +127,14 @@ class ChaacDB:
 
         for device in self.devices:
             if "{}_week_start".format(device) in self.config:
-                self.week_start[device] = int(self.config["{}_week_start".format(device)])
+                self.week_start[device] = int(
+                    self.config["{}_week_start".format(device)]
+                )
 
             if "{}_month_start".format(device) in self.config:
-                self.month_start[device] = int(self.config["{}_month_start".format(device)])
+                self.month_start[device] = int(
+                    self.config["{}_month_start".format(device)]
+                )
 
     def close(self):
         self.__commit()
@@ -183,7 +187,7 @@ class ChaacDB:
         for row in rows:
             self.devices[row[0]] = row[1]
 
-    def __add_device(self, uid, name=None, gps="\"\""):
+    def __add_device(self, uid, name=None, gps='""'):
         if name is None:
             name = uid
 
@@ -382,8 +386,8 @@ class ChaacDB:
         self.__insert_line(avg_line, table=table)
 
     def add_record(self, record, timestamp=None, commit=True):
-        if record.uid not in self.devices:
-            self.__add_device(record.uid)
+        if getattr(record, "uid") not in self.devices:
+            self.__add_device(getattr(record, "uid"))
 
         # If timestamp is none, use current time
         if timestamp is None:
@@ -393,14 +397,17 @@ class ChaacDB:
 
         for key in data_columns:
             if key != "timestamp":
-                line.append(getattr(record, key))
+                try:
+                    line.append(getattr(record, key))
+                except AttributeError:
+                    line.append(None)
 
         self.__insert_line(line)
 
-        self.__downsample_check(timestamp, record.uid)
+        self.__downsample_check(timestamp, getattr(record, "uid"))
 
-        if record.rain > 0:
-            self.__insert_rain(timestamp, record.rain, record.uid)
+        if getattr(record, "rain") > 0:
+            self.__insert_rain(timestamp, getattr(record, "rain"), getattr(record, "uid"))
 
         if commit:
             self.__commit()

@@ -11,6 +11,13 @@ class ChaacPacket:
         )
         self.struct_str = "<" + "".join(list(list(zip(*packet_struct))[1]))
 
+    def from_dict(self, packet_dict):
+        items = []
+        for item in self.packet_struct:
+            items.append(packet_dict[item[0]])
+
+        return self.named_tuple._make(items)
+
     def decode(self, packet):
         return self.named_tuple._make(struct.unpack_from(self.struct_str, packet, 0))
 
