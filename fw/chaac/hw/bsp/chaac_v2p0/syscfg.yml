@@ -39,6 +39,7 @@ syscfg.vals:
     MCU_DCDC_ENABLED: 1
     MCU_LFCLK_SOURCE: LFXO
     HARDFLOAT: 0
+    GPIO_AS_PIN_RESET: 1
 
     ADC_0: 1
 
@@ -49,12 +50,12 @@ syscfg.vals:
     UART_0: 1
 
     # UART
-    # UART_0_PIN_TX: 13
-    # UART_0_PIN_RX: 14
+    UART_0_PIN_TX: 13
+    UART_0_PIN_RX: 14
 
     # XBEE
-    UART_0_PIN_TX: 27
-    UART_0_PIN_RX: 28
+    # UART_0_PIN_TX: 27
+    # UART_0_PIN_RX: 28
 
 
 syscfg.vals.BLE_LP_CLOCK:

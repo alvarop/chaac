@@ -46,3 +46,23 @@ GPSPacket = ChaacPacket(
 BootPacket = ChaacPacket(
     "BootPacket", [("uid", "I"), ("packet_type", "B"), ("flags", "B")]
 )
+
+BLEWeatherPacket = ChaacPacket(
+    "BLEWeatherPacket",
+    [
+        ("uid", "L"),
+        ("addr_pad", "H"),
+        ("index", "B"),
+        ("wind_dir", "B"),
+        ("rain", "B"),
+        ("rsvd", "B"),
+        ("wind_speed", "H"),
+        ("temperature", "h"),
+        ("humidity", "H"),
+        ("pressure", "H"),
+        ("battery", "H"),
+        ("solar_panel", "H"),
+        ("rssi", "b")
+    ],
+)
+
