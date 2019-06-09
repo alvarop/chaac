@@ -4,11 +4,14 @@
 #include <simple_adc/simple_adc.h>
 #include <bsp.h>
 #include <os/os_time.h>
+#include <windrain/windrain.h>
+#include <console/console.h>
 
 typedef struct {
     uint16_t voltage;
-    uint16_t direction;
-} wind_dir_t;
+    uint16_t degrees;
+    wind_dir_t direction;
+} wind_dir_lut_t;
 
 static uint32_t speed_ticks;
 static int64_t last_speed_time_s;
@@ -16,26 +19,26 @@ static int64_t last_speed_time_s;
 static uint32_t rain_ticks;
 
 // Lookup table to get wind direction from voltage
-// Auto-generated with winddircalc.py
+// Auto-generated with winddircalc.py (modified to add enums)
 // VDD3.30= R_PU=4700 R_S=2000
-static const wind_dir_t wind_dir_lut[] = {
-    {1229, 1125},
-    {1271, 675},
-    {1337, 900},
-    {1472, 1575},
-    {1640, 1350},
-    {1780, 2025},
-    {1984, 1800},
-    {2195, 225},
-    {2407, 450},
-    {2586, 2475},
-    {2687, 2250},
-    {2833, 3375},
-    {2946, 0},
-    {3033, 2925},
-    {3131, 3150},
-    {3384, 2700},
-    {0 ,0}};
+static const wind_dir_lut_t wind_dir_lut[] = {
+    {1229,  1125,    WIND_ESE},
+    {1271,  675,     WIND_ENE},
+    {1337,  900,     WIND_E},
+    {1472,  1575,    WIND_SSE},
+    {1640,  1350,    WIND_SE},
+    {1780,  2025,    WIND_SSW},
+    {1984,  1800,    WIND_S},
+    {2195,  225,     WIND_NNE},
+    {2407,  450,     WIND_NE},
+    {2586,  2475,    WIND_WSW},
+    {2687,  2250,    WIND_SW},
+    {2833,  3375,    WIND_NNW},
+    {2946,  0,       WIND_N},
+    {3033,  2925,    WIND_WNW},
+    {3131,  3150,    WIND_NW},
+    {3384,  2700,    WIND_W},
+    {0,     0,       WIND_N}};
 
 
 static void wind_speed_irq(void *arg) {
@@ -83,11 +86,31 @@ uint32_t windrain_get_speed() {
     return wind_speed;
 }
 
-int16_t windrain_get_dir() {
+int16_t windrain_get_dir_degrees() {
     int32_t mv = 0;
-    int16_t direction = -1;
+    int16_t degrees = -1;
 
     simple_adc_read_ch(WX_DIR_ADC_CH, &mv);
+    console_printf("deg: %ld\n", mv);
+
+    for (uint8_t dir = 0; dir < sizeof(wind_dir_lut)/sizeof(wind_dir_t); dir++) {
+        if (mv < wind_dir_lut[dir].voltage) {
+            degrees = wind_dir_lut[dir].degrees;
+            break;
+        }
+
+        // TODO add invalid check
+    }
+
+    return degrees;
+}
+
+wind_dir_t windrain_get_dir() {
+    int32_t mv = 0;
+    wind_dir_t direction = -1;
+
+    simple_adc_read_ch(WX_DIR_ADC_CH, &mv);
+    console_printf("dir: %ld\n", mv);
 
     for (uint8_t dir = 0; dir < sizeof(wind_dir_lut)/sizeof(wind_dir_t); dir++) {
         if (mv < wind_dir_lut[dir].voltage) {
@@ -97,8 +120,6 @@ int16_t windrain_get_dir() {
 
         // TODO add invalid check
     }
-
-
 
     return direction;
 }
