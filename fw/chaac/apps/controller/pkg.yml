@@ -15,7 +15,7 @@ pkg.deps:
     - "libs/drivers/bmp280"
     - "libs/drivers/windrain"
     - "libs/drivers/xbee_uart"
-    - "libs/radio/packet"
+    - "libs/serial/packet"
 
 pkg.deps.CHAAC_MCU_STM32L4xx:
     - "libs/drivers/simple_adc_stm32l4"

@@ -1,5 +1,5 @@
-pkg.name: libs/radio/packet
-pkg.description: Library for creating and processing radio packets
+pkg.name: libs/serial/packet
+pkg.description: Library for creating and processing serial packets
 pkg.author: "Alvaro Prieto"
 pkg.homepage:
 pkg.keywords:
