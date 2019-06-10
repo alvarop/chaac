@@ -152,7 +152,10 @@ def get_json_str(start_date, end_date, table="day"):
             elif name == "uid" or name == "id" or name == "rain":
                 continue
             else:
-                plot[name].append(round(getattr(row, name), 3))
+                if getattr(row, name) is None:
+                    plot[name].append(0)
+                else:
+                    plot[name].append(round(getattr(row, name), 3))
 
     # TODO - set start date to the beginning of that day
     # That way the bins are accurate to the day
