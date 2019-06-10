@@ -27,7 +27,7 @@ def json_from_url(url):
         if json_request.status_code != 200:
             return json_error("Request error ({})".format(json_request.status_code))
 
-        return Response(json_request.text, mimetype='application/json')
+        return Response(json_request.text, mimetype="application/json")
     except ConnectionError:
         return json_error("Error connecting to host")
 
@@ -78,6 +78,7 @@ def plots(host):
         return render_template("error.html", error_string="Error: Invalid Host.")
 
     return render_template("plots.html", host=host)
+
 
 @app.route("/")
 def list():
