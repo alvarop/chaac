@@ -1,0 +1,3 @@
+target.app: "@mcuboot/boot/mynewt"
+target.bsp: hw/bsp/nrf52811_usb
+target.build_profile: optimized

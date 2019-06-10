@@ -1,0 +1,39 @@
+pkg.name: hw/bsp/nrf52811_usb
+pkg.type: bsp
+pkg.description: NRF52811 usb dongle
+pkg.author:
+pkg.homepage:
+pkg.keywords:
+    - nrf52
+    - nrf52dk
+
+pkg.cflags:
+    - '-DNRF52811_XXAA'
+    # - '-DNRF52'
+
+pkg.cflags.HARDFLOAT:
+    - -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
+pkg.deps:
+    - "@apache-mynewt-core/hw/mcu/nordic/nrf52xxx"
+    - "@apache-mynewt-core/libc/baselibc"
+    - "@apache-mynewt-core/sys/flash_map"
+
+pkg.deps.BLE_DEVICE:
+    - "@apache-mynewt-core/hw/drivers/nimble/nrf52"
+
+pkg.deps.UART_0:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
+
+pkg.deps.UART_1:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_bitbang"
+
+pkg.deps.ADC_0:
+    - "@apache-mynewt-core/hw/drivers/adc/adc_nrf52"
+
+pkg.deps.PWM_0:
+    - "@apache-mynewt-core/hw/drivers/pwm/pwm_nrf52"
+
+pkg.deps.SOFT_PWM:
+    - "@apache-mynewt-core/hw/drivers/pwm/soft_pwm"
+

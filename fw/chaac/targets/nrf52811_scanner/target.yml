@@ -1,0 +1,3 @@
+target.app: apps/scanner
+target.bsp: hw/bsp/nrf52811_usb
+target.build_profile: debug

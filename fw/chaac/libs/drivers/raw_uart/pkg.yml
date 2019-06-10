@@ -1,0 +1,12 @@
+
+pkg.name: libs/drivers/raw_uart
+pkg.description: raw uart interface
+pkg.author: "Alvaro Prieto <source@alvaroprieto.com>"
+pkg.homepage: "https://github.com/alvarop/"
+pkg.keywords:
+
+pkg.deps:
+    - "@apache-mynewt-core/hw/hal"
+    - "@apache-mynewt-core/kernel/os"
+    - "@apache-mynewt-core/hw/drivers/uart"
+    - "libs/misc/fifo"

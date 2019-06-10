@@ -1,0 +1,3 @@
+syscfg.vals:
+    # BLE_ROLE_CENTRAL: 1
+    BLE_ROLE_OBSERVER: 1

@@ -1,0 +1,11 @@
+
+syscfg.defs:
+
+    RAW_UART_BAUD:
+        description: 'UART baud rate.'
+        value: 115200
+
+    RAW_UART_DEV:
+        description: 'UART device.'
+        value: '"uart0"'
+
