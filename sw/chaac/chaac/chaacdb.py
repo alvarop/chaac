@@ -400,7 +400,7 @@ class ChaacDB:
                 try:
                     line.append(getattr(record, key))
                 except AttributeError:
-                    line.append(None)
+                    line.append(0)
 
         self.__insert_line(line)
 
