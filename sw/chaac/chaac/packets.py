@@ -52,7 +52,7 @@ BLEWeatherPacket = ChaacPacket(
     [
         ("uid", "L"),
         ("addr_pad", "H"),
-        ("index", "B"),
+        ("sample", "B"),
         ("wind_dir", "B"),
         ("rain", "B"),
         ("rsvd", "B"),
