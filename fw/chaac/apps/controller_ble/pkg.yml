@@ -17,6 +17,5 @@ pkg.deps:
     - "libs/drivers/am2315"
     - "libs/drivers/bmp280"
     - "libs/drivers/windrain"
-    - "libs/drivers/xbee_uart"
     - "libs/serial/packet"
     - "libs/drivers/simple_adc_nrf52"

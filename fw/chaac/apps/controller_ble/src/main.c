@@ -12,9 +12,7 @@
 #include <bmp280/bmp280.h>
 #include <simple_adc/simple_adc.h>
 #include <windrain/windrain.h>
-#include <xbee_uart/xbee_uart.h>
 #include <packet/packet.h>
-#include <fifo/fifo.h>
 #include <hal/hal_nvreg.h>
 #include <host/ble_hs.h>
 
@@ -134,8 +132,6 @@ void weather_sample_fn(struct os_event *ev) {
 
     packet.wind_dir = windrain_get_dir();
     hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_OFF);
-
-    console_printf("%d %d\n", packet.wind_dir, windrain_get_dir_degrees());
 
     console_printf("ws: %ld.%ld kph %s\n",
             (int32_t)(packet.wind_speed/100),

@@ -5,7 +5,6 @@
 #include <bsp.h>
 #include <os/os_time.h>
 #include <windrain/windrain.h>
-#include <console/console.h>
 
 typedef struct {
     uint16_t voltage;
@@ -91,7 +90,6 @@ int16_t windrain_get_dir_degrees() {
     int16_t degrees = -1;
 
     simple_adc_read_ch(WX_DIR_ADC_CH, &mv);
-    console_printf("deg: %ld\n", mv);
 
     for (uint8_t dir = 0; dir < sizeof(wind_dir_lut)/sizeof(wind_dir_t); dir++) {
         if (mv < wind_dir_lut[dir].voltage) {
@@ -110,7 +108,6 @@ wind_dir_t windrain_get_dir() {
     wind_dir_t direction = -1;
 
     simple_adc_read_ch(WX_DIR_ADC_CH, &mv);
-    console_printf("dir: %ld\n", mv);
 
     for (uint8_t dir = 0; dir < sizeof(wind_dir_lut)/sizeof(wind_dir_t); dir++) {
         if (mv < wind_dir_lut[dir].voltage) {
