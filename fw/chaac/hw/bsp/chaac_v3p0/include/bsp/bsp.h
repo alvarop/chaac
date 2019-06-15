@@ -39,7 +39,7 @@ extern "C" {
 extern uint8_t _ram_start;
 #define RAM_SIZE        0x10000
 
-#define CHAAC_HW_VERS   (0x0102)
+#define CHAAC_HW_VERS   (0x0300)
 
 // XOR uid 32-bit words to have a single 32-bit uid
 #define DEVICE_UID      (NRF_FICR->DEVICEID[0] ^ NRF_FICR->DEVICEID[1])
@@ -49,7 +49,7 @@ extern uint8_t _ram_start;
 #define BATT_SAADC      NRF_SAADC_INPUT_AIN3
 
 #define WX_SPEED_PIN    13
-#define WX_RAIN_PIN     31
+#define WX_RAIN_PIN     11
 
 #define SCL_PIN         20
 #define SDA_PIN         22
