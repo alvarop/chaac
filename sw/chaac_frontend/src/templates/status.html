@@ -12,12 +12,18 @@
     });
   };
 
+  var wind_dir_str = [
+    "N", "NNE", "NE", "ENE",
+    "E", "ESE", "SE", "SSE",
+    "S", "SSW", "SW", "WSW",
+    "W", "WNW", "NW", "NNW"];
+
   function update_fields(latest) {
     document.getElementById("timestamp").innerHTML = latest["timestamp"];
     document.getElementById("humidity").innerHTML = latest["humidity"] + "%";
     document.getElementById("battery").innerHTML = latest["battery"] + " V";
     document.getElementById("rain").innerHTML = latest["rain"] + " mm";
-    document.getElementById("wind").innerHTML = latest["wind_speed"] + " kph @ " + latest["wind_dir"];
+    document.getElementById("wind").innerHTML = wind_dir_str[Math.trunc(latest["wind_dir"]*16/360)] + " @ " + latest["wind_speed"] + " kph";
     document.getElementById("solar_panel").innerHTML = latest["solar_panel"] + " V";
     show_pressure(latest["pressure"]);
     show_temperature(latest["temperature"]);
