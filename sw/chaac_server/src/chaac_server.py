@@ -17,6 +17,7 @@ hosts = {"San Mateo": "10.1.1.10", "Merida": "10.1.1.11", "chaac-dev": "10.1.1.2
 
 
 def json_error(message):
+    error = {}
     error["error"] = message
     return jsonify(error)
 
