@@ -9,3 +9,4 @@ verify_ssl = true
 gunicorn = "*"
 flask = "*"
 requests = "*"
+pyyaml = "*"
