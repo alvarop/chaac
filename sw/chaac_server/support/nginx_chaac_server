@@ -1,7 +1,7 @@
 # nginx config for flask app
 # Copy to: /etc/nginx/sites-enabled/chaac_server
 server {
-        server_name chaac_server;
+        server_name chaac.network www.chaac.network;
         listen 80;
         root /var/flaskapp/chaac_server/static;
 
