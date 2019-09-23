@@ -1,0 +1,10 @@
+# Supported hosts
+hosts:
+  Merida: 10.1.1.11
+  San Mateo: 10.1.1.10
+  # chaac-dev: 10.1.1.20
+
+# Chaac cache settings
+cache_dir: /tmp/chaac_cache
+refresh_rate: 50
+request_timeout: 5
