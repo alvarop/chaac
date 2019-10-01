@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 #include <bsp.h>
 #include <hal/hal_i2c.h>
 
@@ -83,13 +84,16 @@ int32_t bme280_read_cal() {
             break;
         }
 
-        i2c_data.len = 25;
+        // First part of the cal data (t1 through h1) can be read right
+        // into the data structure
+        i2c_data.len = offsetof(bme280_cal_t, h1) + 1;
         i2c_data.buffer = (uint8_t *)&cal->t1;
         rval = hal_i2c_master_read(0, &i2c_data, 10, 1);
 
         if(rval != 0) {
             break;
         }
+
 
         cmd[0] = BME280_DIG_H2_ADDR;
 
@@ -101,6 +105,9 @@ int32_t bme280_read_cal() {
             break;
         }
 
+
+        // The second part of the cal data (h2 through h6) has a few fields
+        // that don't map exactly, so we have to process them first
         i2c_data.len = sizeof(rx_buff);
         i2c_data.buffer = &rx_buff;
         rval = hal_i2c_master_read(0, &i2c_data, 10, 1);
@@ -168,7 +175,7 @@ int32_t bme280_read(float *temperature, float *pressure, float *humidity) {
     uint32_t temp_raw;
     uint32_t press_raw;
     int32_t t_fine;
-    float var1, var2;
+    float var1, var2, var3, var4, var5, var6;
     uint8_t cmd[6];
     int32_t rval = 0;
 
@@ -216,6 +223,27 @@ int32_t bme280_read(float *temperature, float *pressure, float *humidity) {
               *pressure = 0;
             }
         }
+
+        var1 = (float)t_fine - 76800.0;
+        var2 = (((float)cal->h4) * 64.0 + (((float)cal->h5) / 16384.0) * var1);
+        var3 = humid_raw - var2;
+        var4 = ((float)cal->h2) / 65536.0;
+        var5 = (1.0 + (((float)cal->h3) / 67108864.0) * var1);
+        var6 = 1.0 + (((float)cal->h6) / 67108864.0) * var1 * var5;
+        var6 = var3 * var4 * (var5 * var6);
+
+        if(humidity != NULL) {
+            *humidity = var6 * (1.0 - ((float)cal->h1) * var6 / 524288.0);
+            if (*humidity > 100.0)
+            {
+                *humidity = 100.0;
+            }
+            else if (*humidity < 0.0)
+            {
+                *humidity = 0.0;
+            }
+        }
+
     } while(0);
 
     return rval;
