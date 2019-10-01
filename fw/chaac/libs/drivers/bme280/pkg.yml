@@ -1,0 +1,16 @@
+pkg.name: libs/drivers/bme280
+pkg.description: BME280 Humidity/Temperature/Humidity Sensor Driver
+pkg.author: "Alvaro Prieto <source@alvaroprieto.com>"
+pkg.homepage: "https://github.com/alvarop/"
+pkg.keywords:
+    - BME280
+    - Temperature
+    - Pressure
+    - Humidity
+    - sensor
+
+pkg.deps:
+    - "@apache-mynewt-core/kernel/os"
+
+pkg.cflags:
+    - -std=gnu99
