@@ -69,6 +69,9 @@ typedef struct {
 static bme280_cal_t cal;
 
 int32_t bme280_read_cal() {
+    struct hal_i2c_master_data i2c_data = {
+        .address = BME280_ADDR
+    };
     int32_t rval = 0;
     uint8_t rx_buff[7]; // 0xE1-0xE7
     uint8_t cmd[4] = {0,0,0,0};
@@ -87,7 +90,7 @@ int32_t bme280_read_cal() {
         // First part of the cal data (t1 through h1) can be read right
         // into the data structure
         i2c_data.len = offsetof(bme280_cal_t, h1) + 1;
-        i2c_data.buffer = (uint8_t *)&cal->t1;
+        i2c_data.buffer = (uint8_t *)&cal.t1;
         rval = hal_i2c_master_read(0, &i2c_data, 10, 1);
 
         if(rval != 0) {
@@ -109,21 +112,22 @@ int32_t bme280_read_cal() {
         // The second part of the cal data (h2 through h6) has a few fields
         // that don't map exactly, so we have to process them first
         i2c_data.len = sizeof(rx_buff);
-        i2c_data.buffer = &rx_buff;
+        i2c_data.buffer = rx_buff;
         rval = hal_i2c_master_read(0, &i2c_data, 10, 1);
 
         if(rval != 0) {
             break;
         }
 
-        cal->h2 = ((uint16_t)rx_buff[1] << 8) | (uint16_t)rx_buff[0];
-        cal->h3 = rx_buff[2];
-        cal->h4 = ((uint16_t)rx_buff[3] << 4) | ((uint16_t)rx_buff[4] & 0x0F);
-        cal->h5 = ((uint16_t)rx_buff[5] << 4) | ((uint16_t)rx_buff[4] >> 4);
-        cal->h6 = rx_buff[6];
+        cal.h2 = ((uint16_t)rx_buff[1] << 8) | (uint16_t)rx_buff[0];
+        cal.h3 = rx_buff[2];
+        cal.h4 = ((uint16_t)rx_buff[3] << 4) | ((uint16_t)rx_buff[4] & 0x0F);
+        cal.h5 = ((uint16_t)rx_buff[5] << 4) | ((uint16_t)rx_buff[4] >> 4);
+        cal.h6 = rx_buff[6];
 
     } while (0);
 
+    return rval;
 }
 
 int32_t bme280_init() {
@@ -174,9 +178,10 @@ int32_t bme280_read(float *temperature, float *pressure, float *humidity) {
     };
     uint32_t temp_raw;
     uint32_t press_raw;
+    uint32_t humid_raw;
     int32_t t_fine;
     float var1, var2, var3, var4, var5, var6;
-    uint8_t cmd[6];
+    uint8_t cmd[8];
     int32_t rval = 0;
 
     do {
@@ -186,15 +191,16 @@ int32_t bme280_read(float *temperature, float *pressure, float *humidity) {
         i2c_data.buffer = cmd;
         hal_i2c_master_write(0, &i2c_data, 10, 1);
 
-        i2c_data.len = 6;
+        i2c_data.len = 8;
         i2c_data.buffer = cmd;
         rval = hal_i2c_master_read(0, &i2c_data, 10, 1);
         if(rval != 0) {
             break;
         }
 
-        press_raw = (cmd[0] << 12) | (cmd[1] << 4) | (cmd[2] >> 4);
-        temp_raw = (cmd[3] << 12) | (cmd[4] << 4) | (cmd[5] >> 4);
+        press_raw = ((uint16_t)cmd[0] << 12) | ((uint16_t)cmd[1] << 4) | ((uint16_t)cmd[2] >> 4);
+        temp_raw = ((uint16_t)cmd[3] << 12) | ((uint16_t)cmd[4] << 4) | ((uint16_t)cmd[5] >> 4);
+        humid_raw = ((uint16_t)cmd[6] << 8) | cmd[7];
 
         var1 = (((float) temp_raw) / 16384.0 - ((float) cal.t1) / 1024.0) * ((float) cal.t2);
         var2 = ((((float) temp_raw) / 131072.0 - ((float) cal.t1) / 8192.0) * (((float) temp_raw) / 131072.0 - ((float) cal.t1) / 8192.0)) * ((float) cal.t3);
@@ -225,15 +231,15 @@ int32_t bme280_read(float *temperature, float *pressure, float *humidity) {
         }
 
         var1 = (float)t_fine - 76800.0;
-        var2 = (((float)cal->h4) * 64.0 + (((float)cal->h5) / 16384.0) * var1);
+        var2 = (((float)cal.h4) * 64.0 + (((float)cal.h5) / 16384.0) * var1);
         var3 = humid_raw - var2;
-        var4 = ((float)cal->h2) / 65536.0;
-        var5 = (1.0 + (((float)cal->h3) / 67108864.0) * var1);
-        var6 = 1.0 + (((float)cal->h6) / 67108864.0) * var1 * var5;
+        var4 = ((float)cal.h2) / 65536.0;
+        var5 = (1.0 + (((float)cal.h3) / 67108864.0) * var1);
+        var6 = 1.0 + (((float)cal.h6) / 67108864.0) * var1 * var5;
         var6 = var3 * var4 * (var5 * var6);
 
         if(humidity != NULL) {
-            *humidity = var6 * (1.0 - ((float)cal->h1) * var6 / 524288.0);
+            *humidity = var6 * (1.0 - ((float)cal.h1) * var6 / 524288.0);
             if (*humidity > 100.0)
             {
                 *humidity = 100.0;
