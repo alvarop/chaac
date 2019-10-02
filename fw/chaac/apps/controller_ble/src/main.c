@@ -8,8 +8,7 @@
 #include <os/os.h>
 #include <bsp/bsp.h>
 #include <hal/hal_gpio.h>
-#include <am2315/am2315.h>
-#include <bmp280/bmp280.h>
+#include <bme280/bme280.h>
 #include <simple_adc/simple_adc.h>
 #include <windrain/windrain.h>
 #include <packet/packet.h>
@@ -36,10 +35,9 @@ void weather_init() {
 
     int32_t rval;
 
-    am2315_init();
-    rval = bmp280_init();
+    rval = bme280_init();
     if(rval) {
-        console_printf("Error initializing BMP280 (%ld)\n", rval);
+        console_printf("Error initializing BME280 (%ld)\n", rval);
     }
 
     windrain_init();
@@ -91,37 +89,26 @@ void weather_sample_fn(struct os_event *ev) {
     }
 
     float temperature, humidity, pressure;
-    rval = am2315_read(&temperature, &humidity);
-    if (rval) {
-        console_printf("Error reading from AM2315 (%ld)\n", rval);
-        // Set unrealistic values during error
-        // Absolute zero temp and zero humidity
-        packet.temperature = -273;
-        packet.humidity = 0;
-    } else {
-        packet.temperature = (int16_t)(temperature * 100.0);
-        packet.humidity = (uint16_t)(humidity * 100.0);
-        console_printf("H:%ld.%02ld T:%ld.%02ld\n",
-            (int32_t)(packet.humidity/100),
-            (int32_t)((packet.humidity-(int32_t)(packet.humidity/100)*100)),
-            (int32_t)(packet.temperature/100),
-            (uint32_t)((packet.temperature-(uint32_t)(packet.temperature/100)*100)));
-    }
-
-    rval = bmp280_read(&temperature, &pressure);
+    rval = bme280_read(&temperature, &pressure, &humidity);
     // pressure /= 100.0; // Convert to hPa
     if (rval) {
         console_printf("Error reading from BMP280 (%ld)\n", rval);
         // Set unrealistic values during error
         packet.pressure = 0;
+        packet.temperature = -273;
+        packet.humidity = 0;
     } else {
         // Convert to hPa difference from 1000.00 hPa (to use int16_t)
         packet.pressure = (int16_t)(((pressure - 100000.0)));
-        console_printf("P: %ld.%02ld T: %ld.%02ld\n",
+        packet.temperature = (int16_t)(temperature * 100.0);
+        packet.humidity = (uint16_t)(humidity * 100.0);
+        console_printf("P: %ld.%02ld T: %ld.%02ld H:%ld.%02ld\n",
             (int32_t)(pressure/100),
             (int32_t)((pressure/100-(int32_t)(pressure/100))*100),
             (int32_t)(temperature),
-            (uint32_t)((temperature-(uint32_t)(temperature))*100));
+            (uint32_t)((temperature-(uint32_t)(temperature))*100),
+            (int32_t)(packet.humidity/100),
+            (int32_t)((packet.humidity-(int32_t)(packet.humidity/100)*100)));
     }
 
     // Store rain by multiples of 0.2794mm
