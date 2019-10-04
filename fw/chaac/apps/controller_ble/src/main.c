@@ -22,7 +22,7 @@ static uint8_t sample_num;
 
 static volatile uint16_t timestamp;
 
-#define BEACON_MAGIC 0xcaac
+#define BEACON_MAGIC 0xca75
 
 static weather_data_packet_small_t packet;
 
