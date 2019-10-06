@@ -9,12 +9,13 @@
 #define BME280_DIG_H2_ADDR      (0xE1)
 #define BME280_CHIP_ID_ADDR     (0x60)
 #define BME280_SOFT_RESET_ADDR  (0xE0)
-#define BME280_CTRL_HUM_ADDR    (0xF4)
+#define BME280_CTRL_HUM_ADDR    (0xF2)
 #define BME280_STATUS_ADDR      (0xF3)
 #define BME280_CTRL_MEAS_ADDR   (0xF4)
 #define BME280_CONFIG_ADDR      (0xF5)
 #define BME280_PRES_ADDR        (0xF7)
 #define BME280_TEMP_ADDR        (0xFA)
+#define BME280_HUMID_ADDR       (0xFD)
 
 #define BME280_OS_NONE          (0x00)
 #define BME280_OS_1X            (0x01)
@@ -57,7 +58,7 @@ typedef struct {
     int16_t p8;
     int16_t p9;
     uint8_t h1;
-    
+
     // 0xE1-0xE7
     int16_t h2;
     uint8_t h3;
@@ -138,6 +139,16 @@ int32_t bme280_init() {
     int32_t rval = 0;
 
     do {
+        cmd[0] = BME280_CTRL_HUM_ADDR;
+        cmd[1] = BME280_OS_1X; // 1x oversampling
+
+        i2c_data.len = 2;
+        i2c_data.buffer = cmd;
+        rval = hal_i2c_master_write(0, &i2c_data, 10, 1);
+        if(rval != 0) {
+            break;
+        }
+
         cmd[0] = BME280_CTRL_MEAS_ADDR;
         cmd[1] = (BME280_OS_1X << 2) |
                   (BME280_OS_1X << 5) |
