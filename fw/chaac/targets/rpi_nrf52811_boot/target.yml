@@ -1,0 +1,3 @@
+target.app: "@mcuboot/boot/mynewt"
+target.bsp: hw/bsp/rpi_nrf52811
+target.build_profile: optimized
