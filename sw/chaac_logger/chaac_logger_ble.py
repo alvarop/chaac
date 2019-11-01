@@ -41,7 +41,7 @@ def process_packet(packet):
     # Don't process duplicate packets!
     if (
         last_packet is not None
-        and last_packet["uid"] == last_packet["uid"]
+        and last_packet["uid"] == packet_dict["uid"]
         and last_packet["sample"] == packet_dict["sample"]
     ):
         return
