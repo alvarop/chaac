@@ -6,7 +6,7 @@ sudo rsync --chown=www-data:www-data -a `git rev-parse --show-toplevel`/sw/chaac
 
 cd `git rev-parse --show-toplevel`/sw/chaac_frontend
 
-sudo pip install -e /var/chaac
+sudo pip3 install -e /var/chaac
 
 echo "Updating nginx config setup"
 sudo rm -f /etc/nginx/sites-enabled/default
