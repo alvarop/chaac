@@ -6,7 +6,7 @@ sudo rsync --chown=www-data:www-data -a `git rev-parse --show-toplevel`/sw/chaac
 sudo pip3 install -e /var/chaac
 
 sudo rsync --chown=www-data:www-data -a `git rev-parse --show-toplevel`/sw/serial_packet /var/
-sudo pip3 install -e /var/chaac
+sudo pip3 install -e /var/serial_packet
 
 cd `git rev-parse --show-toplevel`/sw/chaac_logger
 
