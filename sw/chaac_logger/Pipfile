@@ -9,3 +9,4 @@ verify_ssl = true
 chaac = {editable = true,path = "./../chaac"}
 serial-library = {editable = true,path = "./../serial_packet"}
 pyserial = "*"
+numpy = "*"

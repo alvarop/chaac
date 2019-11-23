@@ -1,8 +1,9 @@
 import collections
 import sqlite3
 import time
+import numpy as np
 from statistics import mean
-from datetime import datetime
+from datetime import datetime, timedelta
 
 SAMPLE_PERIOD_S = 60
 WEEK_TIME_DELTA_S = SAMPLE_PERIOD_S * 7
@@ -23,6 +24,24 @@ data_columns = [
     "wind_dir",
     "solar_panel",
 ]
+
+# Fields we don't compute stats for
+no_stat_fields = ("id", "timestamp", "uid", "wind_dir")
+
+# Generate stats columns from data_columns
+stat_columns = []
+for field in data_columns:
+    if field in no_stat_fields:
+        stat_columns.append(field)
+        continue
+
+    stat_columns.append(field + "_max")
+    stat_columns.append(field + "_min")
+    stat_columns.append(field + "_mean")
+
+stat_columns.append("rain_total")
+stat_columns.append("day_len_h")
+stat_columns.append("data_period")
 
 
 class KeyValueStore(collections.MutableMapping):
@@ -108,6 +127,9 @@ class ChaacDB:
         self.cur = self.conn.cursor()
 
         self.WXRecord = collections.namedtuple("WXRecord", ["id"] + data_columns)
+        self.WXStatRecord = collections.namedtuple(
+            "WXStatRecord", ["id"] + stat_columns
+        )
 
         self.tables = {
             "day": "day_samples",
@@ -124,6 +146,9 @@ class ChaacDB:
 
         self.week_start = {}
         self.month_start = {}
+
+        # Daylight voltage threshold
+        self.daylight_threshold_v = 4.0
 
         for device in self.devices:
             if "{}_week_start".format(device) in self.config:
@@ -175,6 +200,13 @@ class ChaacDB:
             + "rain FLOAT)"
         )
 
+        # Table to store daily stats
+        self.conn.execute(
+            "CREATE TABLE IF NOT EXISTS "
+            + "stat_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
+            + "{} FLOAT)".format(" FLOAT, ".join(stat_columns[2:]))
+        )
+
         # Save the new tables
         self.__commit()
 
@@ -210,9 +242,13 @@ class ChaacDB:
     def __wx_row_factory(self, cursor, row):
         return self.WXRecord(*row)
 
+    def __wx_stat_row_factory(self, cursor, row):
+        return self.WXStatRecord(*row)
+
     def get_records(
         self, table, start_date=None, end_date=None, order=None, limit=None, uid=None
     ):
+
         if table not in self.tables:
             raise KeyError("Invalid table!")
 
@@ -408,7 +444,137 @@ class ChaacDB:
         self.__downsample_check(timestamp, getattr(record, "uid"))
 
         if getattr(record, "rain") > 0:
-            self.__insert_rain(timestamp, getattr(record, "rain"), getattr(record, "uid"))
+            self.__insert_rain(
+                timestamp, getattr(record, "rain"), getattr(record, "uid")
+            )
 
         if commit:
             self.__commit()
+
+        # Compute stats for yesterday (if needed)
+        start_time = datetime.fromtimestamp(timestamp).replace(
+            minute=0, second=0, hour=0
+        ) - timedelta(days=1)
+        end_time = datetime.fromtimestamp(timestamp).replace(minute=0, second=0, hour=0)
+        self.__compute_stats(
+            start_time.timestamp(), end_time.timestamp(), uid=getattr(record, "uid"), commit=commit
+        )
+
+    def get_stats(
+        self, start_date=None, end_date=None, order=None, limit=None, uid=None
+    ):
+
+        self.cur.row_factory = self.__wx_stat_row_factory
+
+        if uid == None:
+            raise ValueError("uid required for stats")
+
+        query = "SELECT * FROM stat_samples"
+
+        options = []
+        if start_date is not None:
+            options.append("timestamp >= {}".format(int(start_date)))
+
+        if end_date is not None:
+            options.append("timestamp < {}".format(int(end_date)))
+
+        if uid is not None:
+            options.append("uid == {}".format(uid))
+
+        if len(options) > 0:
+            query += " WHERE " + " AND ".join(options)
+
+        if order == "desc":
+            query += " ORDER BY timestamp DESC"
+
+        if limit is not None:
+            query += " LIMIT {}".format(int(limit))
+
+        self.cur.execute(query)
+
+        return self.cur.fetchall()
+
+    def __get_daylight_time(self, rows):
+        """ Use solar panel voltage to determine the day length """
+        start_time = 0
+        end_time = 1e99
+
+        for row in rows:
+            if start_time == 0 and row.solar_panel > self.daylight_threshold_v:
+                start_time = row.timestamp
+            elif start_time != 0 and row.solar_panel < self.daylight_threshold_v:
+                end_time = row.timestamp
+                break
+
+        if start_time == 0 or end_time == 1e99:
+            return None
+        else:
+            return int(end_time - start_time)
+
+    def __compute_stats(self, start_time, end_time, uid, commit=True):
+
+        stat = self.get_stats(start_time, end_time, uid=uid)
+
+        # No need to compute stats if they're already present
+        if len(stat) == 1:
+            return stat[0]
+
+        rows = self.get_records(
+            "day", start_date=start_time, end_date=end_time, uid=uid
+        )
+
+        if len(rows) == 0:
+            return None
+
+        # Use numpy for faster everything
+        row_array = np.array(rows)
+
+        # Compute max/min/mean for all values
+        day_max = self.WXRecord(*np.amax(row_array, axis=0))
+        day_min = self.WXRecord(*np.amin(row_array, axis=0))
+        day_mean = self.WXRecord(*np.around(np.mean(row_array, axis=0), decimals=3))
+
+        # Compute rain totals
+        rain_list = self.get_rain(start_time, end_time, uid=uid)
+        rain_total = 0
+        if len(rain_list) > 0:
+            for rain_sample in rain_list:
+                rain_total += rain_sample[3]
+
+        day_len = self.__get_daylight_time(rows)
+        if day_len is not None:
+            day_len = round(day_len/(60.0 * 60.0), 2)
+
+        # Create dict with all stats
+        day_stats = {
+            "id": None,
+            "timestamp": start_time,
+            "uid": uid,
+            "wind_dir": None,
+            "rain_total": rain_total,
+            "day_len_h": day_len,
+            "data_period": int(end_time - start_time),
+        }
+
+        for field in self.WXRecord._fields:
+            if field in no_stat_fields:
+                continue
+
+            day_stats[field + "_max"] = getattr(day_max, field)
+            day_stats[field + "_min"] = getattr(day_min, field)
+            day_stats[field + "_mean"] = getattr(day_mean, field)
+
+        line = []
+        for key in self.WXStatRecord._fields:
+            line.append(day_stats.get(key))
+
+        query = "INSERT INTO stat_samples VALUES({})".format(
+            ",".join(["?"] * len(self.WXStatRecord._fields))
+        )
+
+        self.cur.execute(query, line)
+
+        if commit:
+            self.__commit()
+
+        return self.WXStatRecord(*line)

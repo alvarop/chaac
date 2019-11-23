@@ -10,3 +10,4 @@ pyserial = "*"
 chaac = {editable = true,path = "./../chaac"}
 serial-library = {editable = true,path = "./../serial_packet"}
 pyyaml = "*"
+numpy = "*"

@@ -11,7 +11,7 @@ echo "pipenv setup"
 
 rm ./Pipfile
 export PIPENV_VENV_IN_PROJECT=true; pipenv install --three
-export PIPENV_VENV_IN_PROJECT=true; pipenv install flask gunicorn requests pyyaml
+export PIPENV_VENV_IN_PROJECT=true; pipenv install flask gunicorn requests pyyaml numpy
 
 echo "Copy config file to /etc/chaac (renamed current config to *.old)"
 sudo mkdir -p /etc/chaac
