@@ -2,6 +2,7 @@
 hosts:
   Merida: 10.1.1.11
   San Mateo: 10.1.1.10
+  San Mateo(new): 10.1.1.12
   # chaac-dev: 10.1.1.20
 
 # Chaac cache settings
