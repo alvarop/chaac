@@ -20,8 +20,11 @@ chaac = ChaacDB(args.db)
 
 for uid in chaac.devices:
 
-    first_sample = chaac.get_records("day", order="asc", limit=1, uid=uid)[0]
-    last_sample = chaac.get_records("day", order="desc", limit=1, uid=uid)[0]
+    try:
+        first_sample = chaac.get_records("day", order="asc", limit=1, uid=uid)[0]
+        last_sample = chaac.get_records("day", order="desc", limit=1, uid=uid)[0]
+    except IndexError:
+        continue
 
     start_day = datetime.fromtimestamp(first_sample.timestamp).replace(
         minute=0, second=0, hour=0
