@@ -2,8 +2,8 @@
 
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install python3-pip nginx supervisor git libatlas3-base -y
-sudo pip3 install pipenv
+sudo apt-get install python3-pip nginx supervisor git python3-numpy -y
+sudo pip3 install flask gunicorn
 
 # Make sure www-data can read db file created by pi user
 sudo usermod -a -G www-data pi

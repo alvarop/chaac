@@ -2,9 +2,11 @@
 
 echo "Updating files"
 sudo rsync --chown=www-data:www-data -a `git rev-parse --show-toplevel`/sw/chaac_frontend /var/flaskapp/
-sudo rsync --chown=www-data:www-data -a `git rev-parse --show-toplevel`/sw/chaac /var/flaskapp/
+sudo rsync --chown=www-data:www-data -a `git rev-parse --show-toplevel`/sw/chaac /var/
 
 cd `git rev-parse --show-toplevel`/sw/chaac_frontend
+
+sudo pipenv install -e /var/chaac
 
 echo "Updating nginx config setup"
 sudo rm -f /etc/nginx/sites-enabled/default
