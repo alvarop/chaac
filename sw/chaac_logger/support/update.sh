@@ -1,5 +1,10 @@
 #!/bin/bash
 
+
+echo "Updating files"
+sudo rsync --chown=www-data:www-data -a `git rev-parse --show-toplevel`/sw/chaac /var/
+sudo pip3 install -e /var/chaac
+
 cd `git rev-parse --show-toplevel`/sw/chaac_logger
 
 echo "Updating supervisor config setup"
