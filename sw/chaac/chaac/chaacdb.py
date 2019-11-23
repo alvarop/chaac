@@ -40,7 +40,6 @@ for field in data_columns:
     stat_columns.append(field + "_mean")
 
 stat_columns.append("rain_total")
-stat_columns.append("day_len_h")
 stat_columns.append("data_period")
 
 
@@ -494,23 +493,6 @@ class ChaacDB:
 
         return self.cur.fetchall()
 
-    def __get_daylight_time(self, rows):
-        """ Use solar panel voltage to determine the day length """
-        start_time = 0
-        end_time = 1e99
-
-        for row in rows:
-            if start_time == 0 and row.solar_panel > self.daylight_threshold_v:
-                start_time = row.timestamp
-            elif start_time != 0 and row.solar_panel < self.daylight_threshold_v:
-                end_time = row.timestamp
-                break
-
-        if start_time == 0 or end_time == 1e99:
-            return None
-        else:
-            return int(end_time - start_time)
-
     def __compute_stats(self, start_time, end_time, uid, commit=True):
 
         stat = self.get_stats(start_time, end_time, uid=uid)
@@ -541,10 +523,6 @@ class ChaacDB:
             for rain_sample in rain_list:
                 rain_total += rain_sample[3]
 
-        day_len = self.__get_daylight_time(rows)
-        if day_len is not None:
-            day_len = round(day_len/(60.0 * 60.0), 2)
-
         # Create dict with all stats
         day_stats = {
             "id": None,
@@ -552,7 +530,6 @@ class ChaacDB:
             "uid": uid,
             "wind_dir": None,
             "rain_total": rain_total,
-            "day_len_h": day_len,
             "data_period": int(end_time - start_time),
         }
 
