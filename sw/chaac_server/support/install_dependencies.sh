@@ -2,7 +2,7 @@
 
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install python3-pip nginx supervisor git -y
+sudo apt-get install python3-pip nginx supervisor git libatlas3-base -y
 sudo pip3 install pipenv
 
 echo "Please reboot or log out/in for changes to take effect"
