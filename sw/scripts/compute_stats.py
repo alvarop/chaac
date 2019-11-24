@@ -22,7 +22,7 @@ args = parser.parse_args()
 if args.clean is True:
     print("Removing old stat_samples")
     chaac = ChaacDB(args.db)
-    print(chaac.conn.execute("DROP TABLE stat_samples"))
+    chaac.conn.execute("DROP TABLE stat_samples;")
     chaac.close()
     sys.exit()
 

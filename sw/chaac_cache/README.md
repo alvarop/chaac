@@ -13,5 +13,5 @@ If you just changed a few files and don't want to go through the whole pipenv pr
 ## Local Development
 
 ### Gunicorn
-Run `pipenv run python chaac_cace.py --config config_file.yml`
+Run `pipenv run python chaac_cache.py --config config_file.yml`
 

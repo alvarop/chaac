@@ -25,7 +25,7 @@ def json_error(message):
     return jsonify(error)
 
 
-def cached_result(host, expiration_s=120):
+def cached_result(host):
     if host not in config["hosts"]:
         print("Invalid host " + host)
         return None
@@ -34,8 +34,8 @@ def cached_result(host, expiration_s=120):
     if os.path.exists(cache_filename):
         with open(cache_filename, "r") as cache_file:
             cache = yaml.safe_load(cache_file)
-            if (time.time() - cache["timestamp"]) < expiration_s:
-                return base64.b64decode(cache["json"]).decode("utf-8")
+            # if (time.time() - cache["timestamp"]) < expiration_s:
+            return base64.b64decode(cache["json"]).decode("utf-8")
 
     return None
 
@@ -49,42 +49,6 @@ def json_from_url(url):
         return Response(json_request.text, mimetype="application/json")
     except ConnectionError:
         return json_error("Error connecting to host")
-
-
-@app.route("/<host>/latest")
-def latest_json(host):
-    if host not in config["hosts"]:
-        return json_error("Invalid host")
-
-    cached_json = cached_result(host)
-    if cached_json:
-        return cached_json
-    else:
-        return json_from_url("http://" + config["hosts"][host] + "/latest")
-
-
-@app.route("/<host>/json/day")
-def json_day_str(host):
-    if host not in config["hosts"]:
-        return json_error("Invalid host")
-
-    return json_from_url("http://" + config["hosts"][host] + "/json/day")
-
-
-@app.route("/<host>/json/week")
-def json_week_str(host):
-    if host not in config["hosts"]:
-        return json_error("Invalid host")
-
-    return json_from_url("http://" + config["hosts"][host] + "/json/week")
-
-
-@app.route("/<host>/json/month")
-def json_month_str(host):
-    if host not in config["hosts"]:
-        return json_error("Invalid host")
-
-    return json_from_url("http://" + config["hosts"][host] + "/json/month")
 
 
 @app.route("/<host>")
@@ -101,6 +65,29 @@ def plots(host):
         return render_template("error.html", error_string="Error: Invalid Host.")
 
     return render_template("plots.html", host=host)
+
+@app.route("/<host>/stats")
+def stats(host):
+    if host not in config["hosts"]:
+        return render_template("error.html", error_string="Error: Invalid Host.")
+
+    return render_template("stats.html", host=host)
+
+# Forward every other request down to host
+@app.route("/<host>/<path:path>")
+def latest_json(host, path):
+    if host not in config["hosts"]:
+        return json_error("Invalid host")
+
+    if path == "latest":
+        cached_json = cached_result(host)
+    else:
+        cached_json = None   
+
+    if cached_json:
+        return cached_json
+    else:
+        return json_from_url("http://" + config["hosts"][host] + "/" + path)
 
 
 @app.route("/")
