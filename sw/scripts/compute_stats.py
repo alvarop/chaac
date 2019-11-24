@@ -14,7 +14,16 @@ from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser()
 parser.add_argument("db", help="Sqlite db")
+parser.add_argument(
+    "--overwrite", action="store_true", help="Remove old stats and re-compute"
+)
 args = parser.parse_args()
+
+if args.overwrite is True:
+    print("Removing old stat_samples")
+    chaac = ChaacDB(args.db)
+    chaac.conn.execute("DROP TABLE stat_samples")
+    chaac.close()
 
 chaac = ChaacDB(args.db)
 
@@ -43,7 +52,7 @@ for uid in chaac.devices:
     )
 
     current_day = start_day
-    while current_day < end_day:
+    while current_day < (end_day - timedelta(days=1)):
         next_day = current_day + timedelta(days=1)
 
         day_stats = chaac._ChaacDB__compute_stats(
@@ -56,4 +65,3 @@ for uid in chaac.devices:
         current_day = next_day
 
 chaac.close()
-
