@@ -26,7 +26,7 @@ data_columns = [
 ]
 
 # Fields we don't compute stats for
-no_stat_fields = ("id", "timestamp", "uid", "wind_dir")
+no_stat_fields = ("id", "timestamp", "uid", "wind_dir", "rain", "temperature_in")
 
 # Generate stats columns from data_columns
 stat_columns = []
@@ -35,13 +35,11 @@ for field in data_columns:
         stat_columns.append(field)
         continue
 
-    stat_columns.append(field + "_max")
-    stat_columns.append(field + "_min")
-    stat_columns.append(field + "_mean")
+    stat_columns.append(field + "__max")
+    stat_columns.append(field + "__min")
+    stat_columns.append(field + "__mean")
 
-stat_columns.append("rain_total")
 stat_columns.append("data_period")
-
 
 class KeyValueStore(collections.MutableMapping):
     """ From https://stackoverflow.com/questions/47237807/use-sqlite-as-a-keyvalue-store """
@@ -145,9 +143,6 @@ class ChaacDB:
 
         self.week_start = {}
         self.month_start = {}
-
-        # Daylight voltage threshold
-        self.daylight_threshold_v = 4.0
 
         for device in self.devices:
             if "{}_week_start".format(device) in self.config:
@@ -529,7 +524,7 @@ class ChaacDB:
             "timestamp": start_time,
             "uid": uid,
             "wind_dir": None,
-            "rain_total": rain_total,
+            "rain": rain_total,
             "data_period": int(end_time - start_time),
         }
 
@@ -537,9 +532,9 @@ class ChaacDB:
             if field in no_stat_fields:
                 continue
 
-            day_stats[field + "_max"] = getattr(day_max, field)
-            day_stats[field + "_min"] = getattr(day_min, field)
-            day_stats[field + "_mean"] = getattr(day_mean, field)
+            day_stats[field + "__max"] = getattr(day_max, field)
+            day_stats[field + "__min"] = getattr(day_min, field)
+            day_stats[field + "__mean"] = getattr(day_mean, field)
 
         line = []
         for key in self.WXStatRecord._fields:
