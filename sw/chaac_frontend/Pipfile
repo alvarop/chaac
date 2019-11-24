@@ -8,4 +8,5 @@ verify_ssl = true
 [packages]
 gunicorn = "*"
 flask = "*"
-"4b8055f" = {path = "./../chaac", editable = true}
+4b8055f = {path = "./../chaac",editable = true}
+numpy = "*"

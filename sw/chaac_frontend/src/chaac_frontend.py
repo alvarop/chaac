@@ -15,6 +15,7 @@ app.config.update(dict(DATABASE=os.getenv("DATABASE")))
 
 hostname = socket.gethostname()
 
+default_uid = None
 
 def get_db():
     """Opens a new database connection if there is none yet for the
@@ -24,6 +25,15 @@ def get_db():
         g.sqlite_db = ChaacDB(app.config["DATABASE"])
     return g.sqlite_db
 
+def get_latest_uid():
+    global default_uid
+
+    if default_uid is None:
+        db = get_db()
+        rows = db.get_records("day", order="desc", limit=1)
+        default_uid = rows[0].uid
+
+    return default_uid
 
 @app.teardown_appcontext
 def close_db(error):
@@ -37,7 +47,10 @@ def get_latest_sample():
 
     # Get last sample
     db = get_db()
-    rows = db.get_records("day", order="desc", limit=1)
+
+    uid = get_latest_uid()
+
+    rows = db.get_records("day", order="desc", limit=1, uid=uid)
 
     sample = {"hotsname": hostname}
     # Convert the units
@@ -56,7 +69,7 @@ def get_latest_sample():
     # Start at midnight today
     start_time = time.mktime(now.replace(hour=0, minute=0, second=0).timetuple())
 
-    rain_day = db.get_rain(start_time, end_time, rows[0].uid)
+    rain_day = db.get_rain(start_time, end_time, uid=uid)
 
     rain_total = 0
     for rain_hour in rain_day:
@@ -123,7 +136,9 @@ def get_json_str(start_date, end_date, table="day"):
 
     db = get_db()
 
-    rows = db.get_records(table, start_date=start_date, end_date=end_date)
+    uid = get_latest_uid()
+
+    rows = db.get_records(table, start_date=start_date, end_date=end_date, uid=uid)
 
     plot = {"hotsname": hostname}
 
@@ -161,7 +176,7 @@ def get_json_str(start_date, end_date, table="day"):
     # That way the bins are accurate to the day
 
     # Get rain data for the time period
-    rain_data = db.get_rain(int(start_date), int(end_date))
+    rain_data = db.get_rain(int(start_date), int(end_date), uid=uid)
     rain_total = 0
 
     # Bin data into the appropriate size for histograms
