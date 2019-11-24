@@ -1,4 +1,3 @@
-
 import os
 import time
 import socket
@@ -17,6 +16,7 @@ hostname = socket.gethostname()
 
 default_uid = None
 
+
 def get_db():
     """Opens a new database connection if there is none yet for the
     current application context.
@@ -24,6 +24,7 @@ def get_db():
     if not hasattr(g, "sqlite_db"):
         g.sqlite_db = ChaacDB(app.config["DATABASE"])
     return g.sqlite_db
+
 
 def get_latest_uid():
     global default_uid
@@ -34,6 +35,7 @@ def get_latest_uid():
         default_uid = rows[0].uid
 
     return default_uid
+
 
 @app.teardown_appcontext
 def close_db(error):
@@ -201,6 +203,78 @@ def get_json_str(start_date, end_date, table="day"):
     return jsonify(plot)
 
 
+def get_json_stat_str(start_date, end_date):
+    """ Get weather data for the specified weather period """
+
+    db = get_db()
+
+    uid = get_latest_uid()
+
+    rows = db.get_stats(start_date=start_date, end_date=end_date, uid=uid)
+
+    plot = {"hotsname": hostname}
+
+    plot["start_date"] = datetime.fromtimestamp(start_date).strftime("%Y-%m-%d")
+    plot["end_date"] = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d")
+
+    col_names = rows[0]._asdict().keys()
+
+    plot["stat_fields"] = []
+    for name in col_names:
+        split_name = name.rsplit("__")
+        if len(split_name) > 1:
+            if split_name[0] not in plot:
+                plot[split_name[0]] = {}
+                plot["stat_fields"].append(split_name[0])
+            plot[split_name[0]][split_name[1]] = []
+        else:
+            plot[name] = []
+
+    ignored_fields = ["uid", "id", "data_period", "temperature_in", "wind_dir"]
+
+    # Create lists with each data type and make timestamp pretty
+    for row in rows:
+        for name in col_names:
+            if name == "timestamp":
+                plot[name].append(
+                    datetime.fromtimestamp(getattr(row, name)).strftime("%Y-%m-%d")
+                )
+            elif name in ignored_fields:
+                continue
+            else:
+                split_name = name.rsplit("__")
+                if len(split_name) > 1:
+                    if getattr(row, name) is None:
+                        plot[split_name[0]][split_name[1]].append(0)
+                    else:
+                        plot[split_name[0]][split_name[1]].append(
+                            round(getattr(row, name), 3)
+                        )
+                else:
+                    if getattr(row, name) is None:
+                        plot[name].append(0)
+                    else:
+                        plot[name].append(round(getattr(row, name), 3))
+
+    return jsonify(plot)
+
+
+@app.route("/json/stats/year")
+def json_stats_year_str():
+    # time.time() is utc time, but now is a "naive"
+    # datetime object in current timezone
+    now = datetime.fromtimestamp(int(time.time()))
+
+    # Start this year before the next full hour
+    start_time = time.mktime(
+        (now.replace(minute=0, second=0, hour=0, day=1, month=1)).timetuple()
+    )
+
+    end_time = time.mktime(now.timetuple())
+
+    return get_json_stat_str(start_time, end_time)
+
+
 @app.route("/json/day")
 def json_day_str():
     # time.time() is utc time, but now is a "naive"
@@ -261,5 +335,10 @@ def json_month_str():
 
 
 @app.route("/plots")
-def test():
+def plots():
     return render_template("plots.html", hostname=hostname)
+
+
+@app.route("/stats")
+def stats():
+    return render_template("stats.html", hostname=hostname)

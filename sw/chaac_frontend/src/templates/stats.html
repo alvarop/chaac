@@ -1,0 +1,253 @@
+{% extends "layout.html" %}
+{% block head %}
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+      current_plot = '/json/stats/year';
+
+      function load_plots(url) {
+        current_plot = url;
+        fetch(url)
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(plot) {
+          draw_plots(plot);
+        });
+      };
+
+      function draw_plots(plot) {
+        plots = [
+          {
+            title:"Temperature",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "temperature",
+            y_label: "Temperature (°" + localStorage.temperature_units.toUpperCase() + ")",
+            div: "div-temperature",
+            type: "scatter"
+          },
+          {
+            title:"Pressure",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "pressure",
+            y_label: "Pressure (" + localStorage.pressure_units + ")",
+            div: "div-pressure",
+            type: "scatter"
+          },
+          {
+            title:"Humidity",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "humidity",
+            y_label: "Humidity (%RH)",
+            div: "div-humidity",
+            type: "scatter"
+          },
+          {
+            title:"Rain",
+            xdata: "rain_time",
+            x_label: "Time",
+            ydata: "rain",
+            y_label: "Rain (mm)",
+            div: "div-rain",
+            type: "bar"
+          },
+          {
+            title:"Wind Speed",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "wind_speed",
+            y_label: "Speed (kph)",
+            div: "div-wspeed",
+            type: "scatter"
+          },
+          // {
+          //   title:"Wind Direction",
+          //   xdata: "timestamp",
+          //   x_label: "Time",
+          //   ydata: "wind_dir",
+          //   y_label: "Direction",
+          //   div: "div-wdir",
+          //   type: "scatter"
+          // },
+          {
+            title:"Battery Level",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "battery",
+            y_label: "Voltage (V)",
+            div: "div-battery",
+            type: "scatter"
+          },
+          {
+            title:"Light Level",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "light",
+            y_label: "Light Level (0-1)",
+            div: "div-light",
+            type: "scatter"
+          },
+          {
+            title:"Solar Panel",
+            xdata: "timestamp",
+            x_label: "Time",
+            ydata: "solar_panel",
+            y_label: "Voltage (V)",
+            div: "div-solar",
+            type: "scatter"
+          },
+        ];
+
+        if (localStorage.pressure_units == "inHg") {
+          // Convert from hPa to inHg if necessary
+          for (const [name, values] of Object.entries(plot["pressure"])){
+            for(x = 0; x < plot["pressure"][name].length; x++) {
+              num = plot["pressure"][name][x] / 33.8638866;
+              plot["pressure"][name][x] = num.toFixed(3);
+            }   
+          }
+            
+        }
+
+        if (localStorage.temperature_units == "f") {
+          // Convert from c to f if necessary
+          for (const [name, values] of Object.entries(plot["temperature"])){
+            for(x = 0; x < plot["temperature"][name].length; x++) {
+              num = plot["temperature"][name][x] * (9.0/5.0) + 32;
+              plot["temperature"][name][x] = num.toFixed(3);
+            }   
+          }
+        }
+
+        // Draw each plot here
+        plots.forEach(function(item){
+          var layout = {
+            title: {
+              text:item["title"]
+            },
+            xaxis: {
+              title: {
+                text:item["x_label"]
+              }
+            },
+            yaxis: {
+              title: {
+                text:item["y_label"]
+              }
+            }
+          };
+
+          var plot_items = [];
+
+          if(plot["stat_fields"].includes(item["ydata"])) {
+            for (const [name, values] of Object.entries(plot[item["ydata"]])){
+              plot_items.push(
+              { x:plot["timestamp"],
+                y:values,
+                type:item["type"],
+                name:name}
+              );
+            }
+          }
+
+          if(item["ydata"] == "rain") {
+            plot_items.push(
+              { x:plot["timestamp"],
+                y:plot["rain"],
+                type:item["type"],
+                name:"rain"}
+              );
+          }
+          
+          // TODO - Also add html elements here for more flexibility
+          Plotly.purge(document.getElementById(item["div"]));
+          Plotly.plot(document.getElementById(item["div"]),
+              plot_items,
+              layout,
+              {responsive: true} );
+          });
+
+        document.getElementById("div-header").innerHTML = "Weather from <b>" + plot["start_date"] + "</b> to <b>" + plot["end_date"] +"</b>";
+      };
+
+      // Function to update data when settings change or page is loaded
+      function draw_chaac() {
+        load_plots(current_plot);
+      };
+
+      window.onload = function(){
+        draw_chaac();
+      };
+
+
+    </script>
+{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <div class="columns is-desktop">
+      <div class="column">
+        <h3 class="subtitle is-3 " id="div-header">Weather</h3>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-temperature" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-humidity" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-pressure" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-rain" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-wspeed" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-battery" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-solar" ></div>
+        </div>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div class="notification has-text-centered">
+          <div id="div-light" ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
