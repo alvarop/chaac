@@ -15,15 +15,16 @@ from datetime import datetime, timedelta
 parser = argparse.ArgumentParser()
 parser.add_argument("db", help="Sqlite db")
 parser.add_argument(
-    "--overwrite", action="store_true", help="Remove old stats and re-compute"
+    "--clean", action="store_true", help="Remove old stats"
 )
 args = parser.parse_args()
 
-if args.overwrite is True:
+if args.clean is True:
     print("Removing old stat_samples")
     chaac = ChaacDB(args.db)
-    chaac.conn.execute("DROP TABLE stat_samples")
+    print(chaac.conn.execute("DROP TABLE stat_samples"))
     chaac.close()
+    sys.exit()
 
 chaac = ChaacDB(args.db)
 
