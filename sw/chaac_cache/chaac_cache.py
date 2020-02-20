@@ -20,7 +20,7 @@ default_config = {
     "hosts": default_hosts,
     "cache_dir": "/tmp/chaac_cache",
     "refresh_rate": 50,
-    "request_timeout": 5,
+    "request_timeout": 10,
 }
 
 parser = argparse.ArgumentParser()

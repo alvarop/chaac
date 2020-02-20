@@ -41,6 +41,7 @@ for field in data_columns:
 
 stat_columns.append("data_period")
 
+
 class KeyValueStore(collections.MutableMapping):
     """ From https://stackoverflow.com/questions/47237807/use-sqlite-as-a-keyvalue-store """
 
@@ -214,18 +215,7 @@ class ChaacDB:
             self.devices[row[0]] = row[1]
 
     def __add_device(self, uid, name=None, gps='""'):
-        if name is None:
-            name = uid
-
-        query = """
-        REPLACE INTO devices (uid, name, gps) VALUES ({}, {}, {})
-        """.format(
-            uid, name, gps
-        )
-
-        self.cur.execute(query)
-
-        self.devices[uid] = name
+        self.rename_device(uid, name, True)
 
         # Update downsampling time
         self.config["{}_week_start".format(uid)] = 0
@@ -235,6 +225,24 @@ class ChaacDB:
 
     def __wx_row_factory(self, cursor, row):
         return self.WXRecord(*row)
+
+    def rename_device(self, uid, name=None, gps=None, new=False):
+        if not new and uid not in self.devices:
+            raise KeyError("Unknown device!")
+
+        if name is None:
+            name = uid
+
+        query = """
+        REPLACE INTO devices (uid, name, gps) VALUES (?, ?, ?)
+        """
+        args = (uid, name, gps)
+
+        # Sanitize user input
+        # See https://bobby-tables.com/python
+        self.cur.execute(query, args)
+
+        self.devices[uid] = name
 
     def __wx_stat_row_factory(self, cursor, row):
         return self.WXStatRecord(*row)
@@ -249,16 +257,20 @@ class ChaacDB:
         self.cur.row_factory = self.__wx_row_factory
 
         query = "SELECT * FROM {}".format(self.tables[table])
+        args = []
 
         options = []
         if start_date is not None:
-            options.append("timestamp >= {}".format(int(start_date)))
+            options.append("timestamp >= ?")
+            args.append(int(start_date))
 
         if end_date is not None:
-            options.append("timestamp < {}".format(int(end_date)))
+            options.append("timestamp < ?")
+            args.append(int(end_date))
 
         if uid is not None:
-            options.append("uid == {}".format(uid))
+            options.append("uid == ?")
+            args.append(uid)
 
         if len(options) > 0:
             query += " WHERE " + " AND ".join(options)
@@ -267,9 +279,10 @@ class ChaacDB:
             query += " ORDER BY timestamp DESC"
 
         if limit is not None:
-            query += " LIMIT {}".format(int(limit))
+            query += " LIMIT ?"
+            args.append(int(limit))
 
-        self.cur.execute(query)
+        self.cur.execute(query, args)
 
         return self.cur.fetchall()
 
@@ -288,17 +301,17 @@ class ChaacDB:
 
         query = """
             SELECT * FROM rain_samples
-            WHERE timestamp >= {}
-            AND timestamp < {}
-            """.format(
-            int(start_time), int(end_time)
-        )
+            WHERE timestamp >= ?
+            AND timestamp < ?
+            """
+        args = [int(start_time), int(end_time)]
 
         if uid is not None:
-            query += " AND uid == {}".format(uid)
+            query += " AND uid == ?"
+            args.append(uid)
 
         self.cur.row_factory = sqlite3.Row
-        self.cur.execute(query)
+        self.cur.execute(query, args)
 
         return self.cur.fetchall()
 
@@ -316,8 +329,9 @@ class ChaacDB:
             REPLACE INTO rain_samples
             (id, timestamp, uid, rain)
             VALUES
-            ({}, {}, {}, {})
-            """.format(
+            (?, ?, ?, ?)
+            """
+            args = (
                 past_rain_record[0][0],
                 past_rain_record[0][1],
                 past_rain_record[0][2],
@@ -326,12 +340,11 @@ class ChaacDB:
         else:
             query = """
             INSERT INTO rain_samples
-            VALUES (NULL, {}, {}, {})
-            """.format(
-                hour, uid, round(rain, 3)
-            )
+            VALUES (NULL, ?, ?, ?)
+            """
+            args = (hour, uid, round(rain, 3))
 
-        self.cur.execute(query)
+        self.cur.execute(query, args)
 
     def __commit(self):
         retries = 5
@@ -369,15 +382,14 @@ class ChaacDB:
 
         query = """
             SELECT * FROM day_samples
-            WHERE timestamp >= {}
-            AND timestamp < {}
-            AND uid == {}
-            """.format(
-            int(start_time), int(end_time), uid
-        )
+            WHERE timestamp >= ?
+            AND timestamp < ?
+            AND uid == ?
+            """
+        args = (int(start_time), int(end_time), uid)
 
         self.cur.row_factory = self.__wx_row_factory
-        self.cur.execute(query)
+        self.cur.execute(query, args)
         rows = self.cur.fetchall()
 
         if len(rows) == 0:
@@ -451,7 +463,10 @@ class ChaacDB:
         ) - timedelta(days=1)
         end_time = datetime.fromtimestamp(timestamp).replace(minute=0, second=0, hour=0)
         self.__compute_stats(
-            start_time.timestamp(), end_time.timestamp(), uid=getattr(record, "uid"), commit=commit
+            start_time.timestamp(),
+            end_time.timestamp(),
+            uid=getattr(record, "uid"),
+            commit=commit,
         )
 
     def get_stats(
@@ -464,16 +479,20 @@ class ChaacDB:
             raise ValueError("uid required for stats")
 
         query = "SELECT * FROM stat_samples"
-
+        args = []
         options = []
+
         if start_date is not None:
-            options.append("timestamp >= {}".format(int(start_date)))
+            options.append("timestamp >= ?")
+            args.append(int(start_date))
 
         if end_date is not None:
-            options.append("timestamp < {}".format(int(end_date)))
+            options.append("timestamp < ?")
+            args.append(int(end_date))
 
         if uid is not None:
-            options.append("uid == {}".format(uid))
+            options.append("uid == ?")
+            args.append(uid)
 
         if len(options) > 0:
             query += " WHERE " + " AND ".join(options)
@@ -482,9 +501,10 @@ class ChaacDB:
             query += " ORDER BY timestamp DESC"
 
         if limit is not None:
-            query += " LIMIT {}".format(int(limit))
+            query += " LIMIT ?"
+            args.append(int(limit))
 
-        self.cur.execute(query)
+        self.cur.execute(query, args)
 
         return self.cur.fetchall()
 
