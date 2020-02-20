@@ -215,7 +215,7 @@ class ChaacDB:
             self.devices[row[0]] = row[1]
 
     def __add_device(self, uid, name=None, gps='""'):
-        self.rename_device(uid, name, True)
+        self.rename_device(uid, name, gps, new=True)
 
         # Update downsampling time
         self.config["{}_week_start".format(uid)] = 0
