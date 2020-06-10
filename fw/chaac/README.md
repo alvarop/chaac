@@ -4,7 +4,7 @@ The latest Chaac hardware uses the STM32L432KC microcontroller and the [Apache M
 
 ## Building the Firmware
 **NOTE: This project currently uses mynewt's top-of-tree code, so the newt-tool will have to be compiled from source. Sorry :(**
-1. Install the newt tool. [Instructions here](https://mynewt.apache.org/os/get_started/get_started/).
+1. Install the newt tool. [Instructions here](https://mynewt.apache.org/latest/get_started/index.html).
 2. Install the [GNU Arm Embedded Toolchain](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads)
 3. Clone this repo `git clone https://github.com/alvarop/chaac.git`
 4. Cd into the fw directory (this one) `cd fw/chaac/`
