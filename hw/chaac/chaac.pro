@@ -1,4 +1,4 @@
-update=Mon 15 Jun 2020 10:10:29 AM PDT
+update=Tue 16 Jun 2020 07:59:39 AM PDT
 version=1
 last_client=kicad
 [general]
@@ -26,13 +26,13 @@ ERC_TestSimilarLabels=1
 version=1
 PageLayoutDescrFile=
 LastNetListRead=chaac.net
-CopperLayerCount=4
+CopperLayerCount=2
 BoardThickness=1.6
 AllowMicroVias=0
 AllowBlindVias=0
 RequireCourtyardDefinitions=0
 ProhibitOverlappingCourtyards=1
-MinTrackWidth=0.08889999999999999
+MinTrackWidth=0.1524
 MinViaDiameter=0.508
 MinViaDrill=0.254
 MinMicroViaDiameter=0.2
@@ -84,13 +84,13 @@ Name=F.Cu
 Type=0
 Enabled=1
 [pcbnew/Layer.In1.Cu]
-Name=GND
-Type=1
-Enabled=1
+Name=In1.Cu
+Type=0
+Enabled=0
 [pcbnew/Layer.In2.Cu]
-Name=PWR
-Type=1
-Enabled=1
+Name=In2.Cu
+Type=0
+Enabled=0
 [pcbnew/Layer.In3.Cu]
 Name=In3.Cu
 Type=0

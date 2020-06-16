@@ -5,7 +5,7 @@ $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
 Title "Chaac"
-Date "2020-06-15"
+Date "2020-06-16"
 Rev "4.0"
 Comp "@alvaroprieto"
 Comment1 ""
@@ -594,15 +594,15 @@ VBATT
 $Comp
 L Connector_Generic:Conn_01x02 J1
 U 1 1 5D0543CF
-P 1350 1100
-F 0 "J1" V 1316 912 50  0000 R CNN
-F 1 "Battery" H 1250 850 50  0000 R CNN
-F 2 "alvarop:‎282837-2‎" H 1350 1100 50  0001 C CNN
-F 3 "~" H 1350 1100 50  0001 C CNN
-F 4 "S2B-PH-SM4-TB(LF)(SN)" V 1350 1100 50  0001 C CNN "MPN"
-F 5 "455-1749-1-ND" V 1350 1100 50  0001 C CNN "DKPN"
-	1    1350 1100
-	-1   0    0    -1  
+P 1350 1200
+F 0 "J1" V 1316 1012 50  0000 R CNN
+F 1 "Battery" H 1250 950 50  0000 R CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 1350 1200 50  0001 C CNN
+F 3 "~" H 1350 1200 50  0001 C CNN
+F 4 "S2B-PH-SM4-TB(LF)(SN)" V 1350 1200 50  0001 C CNN "MPN"
+F 5 "455-1749-1-ND" V 1350 1200 50  0001 C CNN "DKPN"
+	1    1350 1200
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	1550 1200 1750 1200
@@ -979,8 +979,8 @@ $Comp
 L Device:C_Small C4
 U 1 1 5D925286
 P 7350 2000
-F 0 "C4" H 7258 1954 50  0000 R CNN
-F 1 "4.7uF" H 7258 2045 50  0000 R CNN
+F 0 "C4" H 7550 1950 50  0000 R CNN
+F 1 "4.7uF" H 7600 2100 50  0000 R CNN
 F 2 "Capacitor_SMD:C_0402_1005Metric" H 7350 2000 50  0001 C CNN
 F 3 "~" H 7350 2000 50  0001 C CNN
 F 4 "490-5915-1-ND" H 7350 2000 50  0001 C CNN "DKPN"
@@ -1405,18 +1405,18 @@ Wire Wire Line
 	7800 1200 7800 1250
 Connection ~ 7800 1250
 Wire Wire Line
-	7250 3700 6800 3700
-Text Label 6800 3700 0    50   ~ 0
+	7250 3300 6800 3300
+Text Label 6800 3400 0    50   ~ 0
 LED1
 Wire Wire Line
-	7250 3800 6800 3800
-Text Label 6800 3800 0    50   ~ 0
+	7250 3400 6800 3400
+Text Label 6800 3300 0    50   ~ 0
 LED2
 Wire Wire Line
 	7250 3500 6900 3500
-Text Label 6900 3500 0    50   ~ 0
+Text Label 6900 3700 0    50   ~ 0
 UART_RX
-Text Label 6900 3600 0    50   ~ 0
+Text Label 6900 3800 0    50   ~ 0
 UART_TX
 Wire Wire Line
 	7250 3600 6900 3600
@@ -1733,53 +1733,13 @@ U 1 1 5D915E92
 P 8400 3250
 F 0 "U2" H 9200 4250 60  0000 L CNN
 F 1 "NRF52811-QFAA" H 8950 4400 60  0000 L CNN
-F 2 "alvarop:NRF52811-QFN48" H 7250 3800 50  0001 C CNN
+F 2 "alvarop:NRF52811-QFN48-VIAS" H 7250 3800 50  0001 C CNN
 F 3 "" H 7250 3800 50  0001 C CNN
 F 4 "‎1490-1075-1-ND‎" H 8400 3250 50  0001 C CNN "DKPN"
 F 5 " ‎NRF52811-QFAA-R‎" H 8400 3250 50  0001 C CNN "MPN"
 	1    8400 3250
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	8150 4800 8150 4400
-Wire Wire Line
-	8050 4800 8050 4400
-Wire Wire Line
-	7950 4800 7950 4400
-Wire Wire Line
-	8450 4800 8450 4400
-Wire Wire Line
-	8350 4800 8350 4400
-Wire Wire Line
-	8250 4800 8250 4400
-Wire Wire Line
-	8550 4400 8550 4800
-Text Label 8550 4800 1    50   ~ 0
-E22_NSS
-Text Label 8450 4800 1    50   ~ 0
-SCK
-Text Label 8350 4800 1    50   ~ 0
-MOSI
-Text Label 8250 4800 1    50   ~ 0
-MISO
-Text Label 8150 4800 1    50   ~ 0
-E22_NRST
-Text Label 8050 4800 1    50   ~ 0
-E22_BUSY
-Text Label 7950 4800 1    50   ~ 0
-E22_DIO1
-Wire Wire Line
-	8650 4400 8650 4800
-Wire Wire Line
-	8750 4400 8750 4800
-Wire Wire Line
-	8850 4400 8850 4800
-Text Label 8650 4800 1    50   ~ 0
-E22_RXEN
-Text Label 8750 4800 1    50   ~ 0
-E22_TXEN
-Text Label 8850 4800 1    50   ~ 0
-E22_DIO2
 $Comp
 L Device:R_Small R8
 U 1 1 5F955517
@@ -1953,32 +1913,77 @@ Wire Wire Line
 	7250 2900 6600 2900
 Wire Wire Line
 	7250 2800 6600 2800
-Text Label 8650 1650 3    50   ~ 0
+Text Label 8450 1750 3    50   ~ 0
 WDIR
 Wire Wire Line
-	8650 2100 8650 1650
+	8650 2100 8650 1750
 Text Label 8950 1650 3    50   ~ 0
 SNS_3V3_EN
 Wire Wire Line
 	8950 2100 8950 1650
-Text Label 8850 1650 3    50   ~ 0
+Text Label 8350 1850 3    50   ~ 0
 RAIN
 Wire Wire Line
-	8850 2100 8850 1650
-Text Label 8750 1650 3    50   ~ 0
+	8550 2100 8550 1750
+Text Label 8550 1750 3    50   ~ 0
 WSPEED
 Wire Wire Line
-	8750 2100 8750 1650
-Text Label 8550 1650 3    50   ~ 0
+	8450 2100 8450 1750
+Text Label 8650 1750 3    50   ~ 0
 BATT
 Wire Wire Line
-	8550 2100 8550 1650
-Text Label 7000 3300 0    50   ~ 0
+	8350 2100 8350 1850
+Text Label 6900 3500 0    50   ~ 0
 SDA
 Wire Wire Line
-	7250 3300 7000 3300
-Text Label 7000 3400 0    50   ~ 0
+	7250 3700 6900 3700
+Text Label 6900 3600 0    50   ~ 0
 SCL
 Wire Wire Line
-	7250 3400 7000 3400
+	7250 3800 6900 3800
+Text Label 7950 4800 1    50   ~ 0
+E22_DIO1
+Text Label 8050 4800 1    50   ~ 0
+E22_BUSY
+Text Label 8150 4800 1    50   ~ 0
+E22_NRST
+Text Label 8250 4800 1    50   ~ 0
+MISO
+Text Label 8350 4800 1    50   ~ 0
+MOSI
+Text Label 8450 4800 1    50   ~ 0
+SCK
+Text Label 8550 4800 1    50   ~ 0
+E22_NSS
+Wire Wire Line
+	8550 4400 8550 4800
+Wire Wire Line
+	8250 4800 8250 4400
+Wire Wire Line
+	8350 4800 8350 4400
+Wire Wire Line
+	8450 4800 8450 4400
+Wire Wire Line
+	7950 4800 7950 4400
+Wire Wire Line
+	8050 4800 8050 4400
+Wire Wire Line
+	8150 4800 8150 4400
+Wire Wire Line
+	8850 4400 8850 4800
+Text Label 8850 4800 1    50   ~ 0
+E22_DIO2
+Text Label 8750 4800 1    50   ~ 0
+E22_TXEN
+Text Label 8650 4800 1    50   ~ 0
+E22_RXEN
+Wire Wire Line
+	8750 4400 8750 4800
+Wire Wire Line
+	8650 4400 8650 4800
+NoConn ~ 7250 3200
+NoConn ~ 7250 3100
+NoConn ~ 7250 3000
+NoConn ~ 8850 2100
+NoConn ~ 8750 2100
 $EndSCHEMATC
