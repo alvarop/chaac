@@ -41,7 +41,6 @@ syscfg.vals:
 
     ADC_0: 0
     I2C_0: 0
-    SPI_0: 1
     UART_0: 1
 
     # UART
@@ -53,3 +52,11 @@ syscfg.vals:
     BLE_XTAL_SETTLE_TIME: 1500
     TIMER_0: 0
     TIMER_5: 1
+
+    SPI_0_MASTER: 1
+    SPI_0_MASTER_PIN_SCK: 16
+    SPI_0_MASTER_PIN_MOSI: 15
+    SPI_0_MASTER_PIN_MISO: 14
+
+    SX126X_SPI_IDX: 0
+    SX126X_SPI_CS_PIN: 17
