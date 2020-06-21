@@ -1,0 +1,17 @@
+
+pkg.name: apps/lora_test
+pkg.type: app
+pkg.description: Test LoRa radio features 
+pkg.author: "Alvaro Prieto <source@alvaroprieto.com>"
+pkg.homepage: "https://alvarop.com"
+pkg.keywords:
+
+pkg.deps:
+    - "@apache-mynewt-core/kernel/os"
+    - "@apache-mynewt-core/hw/hal"
+    - "@apache-mynewt-core/sys/console/full"
+    - "@apache-mynewt-core/sys/log/stub"
+    - "@apache-mynewt-core/sys/stats/stub"
+    - hw/drivers/lora/sx126x
+
+
