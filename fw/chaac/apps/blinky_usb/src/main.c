@@ -9,7 +9,7 @@
 
 
 #define BLINK_TASK_PRI         (99)
-#define BLINK_STACK_SIZE       (64)
+#define BLINK_STACK_SIZE       (1024)
 struct os_task blink_task;
 os_stack_t blink_task_stack[BLINK_STACK_SIZE];
 
@@ -27,13 +27,13 @@ void blink_task_fn(void *arg) {
         }
         
         if (count & 2) {
-            hal_gpio_toggle(LED_BLINK_PIN);
+            hal_gpio_toggle(TX_LED_PIN);
         }
 
-        if (count & 1) {
-            hal_gpio_toggle(LED_BLINK_PIN);
+        if (count & 4) {
+            hal_gpio_toggle(RX_LED_PIN);
         }
-
+        console_printf("%d\n", count);
         count++;
     }
 
