@@ -30,12 +30,12 @@
 /*#define LORA_IQ_INVERSION_ON                        false*/
 /*#define LORA_FIX_LENGTH_PAYLOAD_LEN                 19*/
 #define LORA_PREAMBLE_LENGTH                        8       // Same for Tx and Rx
-#define LORA_SYMBOL_TIMEOUT                         5       // Symbols
+#define LORA_SYMBOL_TIMEOUT                         0       // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
 
 
-#define RX_TIMEOUT_VALUE                            4000
+#define RX_TIMEOUT_VALUE                            0
 #define BUFFER_SIZE                                 64 // Define the payload size her
 
 typedef enum                       
@@ -110,10 +110,10 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     RssiMoy = (((RssiMoy * RxCorrectCnt) + RssiValue) / (RxCorrectCnt + 1));
     SnrMoy = (((SnrMoy * RxCorrectCnt) + SnrValue) / (RxCorrectCnt + 1));
     State = RX;
-    payload[size - 1] = 0;
-    /*console_printf("RX! %s %d %d %d\n", payload, size, rssi, snr);*/
-    console_printf("RX! %d %d %d\n", size, rssi, snr);
-
+    payload[size] = 0;
+    console_printf("RX! %s %d %d %d\n", payload, size, rssi, snr);
+    //console_printf("RX! %d %d %d\n", size, rssi, snr);
+    Radio.Rx(RX_TIMEOUT_VALUE);
     hal_gpio_write(TX_LED_PIN, 0);
 }
 
