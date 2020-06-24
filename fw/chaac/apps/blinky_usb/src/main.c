@@ -16,23 +16,19 @@ os_stack_t blink_task_stack[BLINK_STACK_SIZE];
 void blink_task_fn(void *arg) {
     uint8_t count = 0;
 
-    hal_gpio_init_out(STATUS_LED_PIN, 0);
-    hal_gpio_init_out(TX_LED_PIN, 0);
-    hal_gpio_init_out(RX_LED_PIN, 0);
+    hal_gpio_init_out(LED1_PIN, 0);
+    hal_gpio_init_out(LED2_PIN, 0);
  
     while(1) {
         os_time_delay(OS_TICKS_PER_SEC/4);
         if (count & 1) {
-            hal_gpio_toggle(STATUS_LED_PIN);
+            hal_gpio_toggle(LED1_PIN);
         }
         
         if (count & 2) {
-            hal_gpio_toggle(TX_LED_PIN);
+            hal_gpio_toggle(LED2_PIN);
         }
 
-        if (count & 4) {
-            hal_gpio_toggle(RX_LED_PIN);
-        }
         console_printf("%d\n", count);
         count++;
     }
