@@ -1,0 +1,3 @@
+target.app: apps/blinky_usb
+target.bsp: hw/bsp/chaac_v4p0
+target.build_profile: debug
