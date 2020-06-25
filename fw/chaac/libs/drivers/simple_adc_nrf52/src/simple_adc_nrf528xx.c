@@ -5,24 +5,10 @@
 #include <simple_adc/simple_adc.h>
 #include <nrfx_saadc.h>
 #include <bsp/bsp.h>
+#include <adc_nrf52/adc_nrf52.h>
 
 static struct adc_dev *adc;
-nrfx_saadc_config_t adc_config = NRFX_SAADC_DEFAULT_CONFIG;
-
-int32_t adc_init_ch(uint8_t ch, nrf_saadc_input_t saadc_in) {
-    if (adc == NULL) {
-        return -1;
-    } else {
-
-        // Channel config pin is ch + 1
-        nrf_saadc_channel_config_t cc = \
-            NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(saadc_in);
-        cc.gain = NRF_SAADC_GAIN1_6;
-        cc.reference = NRF_SAADC_REFERENCE_INTERNAL;
-
-        return adc_chan_config(adc, ch, &cc);
-    }
-}
+struct adc_dev_cfg adc_config = {.resolution = (adc_resolution_t)ADC_RESOLUTION_12BIT , .oversample=(adc_oversample_t)ADC_OVERSAMPLE_16X, .calibrate=false};
 
 int32_t simple_adc_init(void) {
     int32_t rval = 0;
@@ -30,10 +16,27 @@ int32_t simple_adc_init(void) {
     adc = (struct adc_dev *) os_dev_open("adc0", 0, &adc_config);
     assert(adc != NULL);
 
-    adc_init_ch(BATT_ADC_CH, BATT_SAADC);
-    adc_init_ch(WX_DIR_ADC_CH, WX_DIR_SAADC);
-    adc_init_ch(VSOLAR_ADC_CH, VSOLAR_SAADC);
-
+    adc_chan_config(adc, BATT_ADC_CH,  (void *)&(struct adc_chan_cfg){
+        .gain = ADC_GAIN1_6,
+        .reference = ADC_REFERENCE_INTERNAL,
+        .acq_time = ADC_ACQTIME_20US,
+        .pin = BATT_SAADC,
+        .differential = false});
+     
+    adc_chan_config(adc, WX_DIR_ADC_CH,  (void *)&(struct adc_chan_cfg){
+        .gain = ADC_GAIN1_6,
+        .reference = ADC_REFERENCE_INTERNAL,
+        .acq_time = ADC_ACQTIME_20US,
+        .pin = WX_DIR_SAADC,
+        .differential = false});
+    
+    adc_chan_config(adc, VSOLAR_ADC_CH,  (void *)&(struct adc_chan_cfg){
+        .gain = ADC_GAIN1_6,
+        .reference = ADC_REFERENCE_INTERNAL,
+        .acq_time = ADC_ACQTIME_20US,
+        .pin = VSOLAR_SAADC,
+        .differential = false});
+ 
     return rval;
 }
 
@@ -60,3 +63,4 @@ int32_t simple_adc_read_ch(uint8_t ch, int32_t *val_mv) {
 }
 
 #endif /* __SIMPLE_ADC__ */
+
