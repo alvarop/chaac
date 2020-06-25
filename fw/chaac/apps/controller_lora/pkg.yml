@@ -1,0 +1,20 @@
+
+pkg.name: apps/controller_lora
+pkg.type: app
+pkg.description: Weather station controller (using LoRa radio)
+pkg.author: "Alvaro Prieto <source@alvaroprieto.com>"
+pkg.homepage: "https://alvarop.com"
+pkg.keywords:
+
+pkg.deps:
+    - "@apache-mynewt-core/kernel/os"
+    - "@apache-mynewt-core/hw/hal"
+    - "@apache-mynewt-core/sys/console/full"
+    - "@apache-mynewt-core/sys/log/stub"
+    - "@apache-mynewt-core/sys/stats/stub"
+    - "libs/drivers/bmp280"
+    - "libs/drivers/windrain"
+    - "libs/serial/packet"
+    - "libs/drivers/simple_adc_nrf52"
+    - "libs/drivers/sht3x"
+
