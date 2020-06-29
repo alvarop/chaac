@@ -18,8 +18,8 @@ class ChaacPacket:
 
         return self.named_tuple._make(items)
 
-    def decode(self, packet):
-        return self.named_tuple._make(struct.unpack_from(self.struct_str, packet, 0))
+    def decode(self, packet, offset=0):
+        return self.named_tuple._make(struct.unpack_from(self.struct_str, packet, offset))
 
     def encode(self, args):
         return struct.pack(self.struct_str, *args)
@@ -32,3 +32,6 @@ class ChaacPacket:
             if isinstance(val, float):
                 data_dict[key] = round(val, 3)
         return self.named_tuple(**data_dict)
+
+    def size(self):
+        return struct.calcsize(self.struct_str)
