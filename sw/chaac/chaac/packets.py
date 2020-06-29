@@ -10,6 +10,7 @@ PACKET_TYPE_CLEAR_RAIN = 4
 
 PacketHeader = ChaacPacket("PacketHeader", [("uid", "I"), ("packet_type", "B")])
 
+# LEGACY chaac v1.0 WeatherPacket
 WeatherPacket = ChaacPacket(
     "WeatherPacket",
     [
@@ -63,6 +64,23 @@ BLEWeatherPacket = ChaacPacket(
         ("battery", "H"),
         ("solar_panel", "H"),
         ("rssi", "b")
+    ],
+)
+
+WeatherPacketV1P0 = ChaacPacket(
+    "WeatherPacketV1P0",
+    [
+        ("sample", "L"),
+        ("wind_dir", "B"),
+        ("rain", "B"),
+        ("rsvd", "H"),
+        ("wind_speed", "H"),
+        ("temperature", "h"),
+        ("humidity", "H"),
+        ("pressure", "H"),
+        ("battery", "H"),
+        ("solar_panel", "H"),
+        # TODO - RSSI/SNR?
     ],
 )
 
