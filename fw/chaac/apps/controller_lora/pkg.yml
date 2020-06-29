@@ -17,4 +17,4 @@ pkg.deps:
     - "libs/serial/packet"
     - "libs/drivers/simple_adc_nrf52"
     - "libs/drivers/sht3x"
-
+    - "hw/drivers/lora/sx126x"

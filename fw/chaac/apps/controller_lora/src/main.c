@@ -16,13 +16,94 @@
 #include <sht3x/sht3x.h>
 
 #include "chaac_packet.h"
+#include "radio/radio.h"
+#include "sx126x/sx126x.h"
+
+#define RF_FREQUENCY 915000000
+
+#define TX_OUTPUT_POWER 14
+
+#define LORA_BANDWIDTH                              0         // [0: 125 kHz,
+                                                              //  1: 250 kHz,
+                                                              //  2: 500 kHz,
+                                                              //  3: Reserved]
+#define LORA_SPREADING_FACTOR                       7         // [SF7..SF12]
+#define LORA_CODINGRATE                             1         // [1: 4/5,
+                                                              //  2: 4/6,
+                                                              //  3: 4/7,
+                                                              //  4: 4/8]
+#define LORA_PREAMBLE_LENGTH                        8       // Same for Tx and Rx
+#define LORA_SYMBOL_TIMEOUT                         0       // Symbols
+#define LORA_FIX_LENGTH_PAYLOAD_ON                  false
+#define LORA_IQ_INVERSION_ON                        false
+
+
+#define RX_TIMEOUT_VALUE                            0
+#define BUFFER_SIZE                                 64 // Define the payload size her
+
 
 struct os_callout sample_callout;
 static uint8_t sample_num;
 
 static volatile uint16_t timestamp;
 
-static weather_data_packet_small_t packet;
+static weather_packet_v1p0_t packet;
+
+static RadioEvents_t RadioEvents;
+
+void OnTxDone( void )
+{
+    Radio.Standby( );
+    hal_gpio_write(E22_TXEN, 0);
+    console_printf("TX Done\n");
+}
+
+void OnTxTimeout( void )
+{
+    Radio.Standby( );  
+    console_printf("TX Timeout\n");
+    hal_gpio_write(E22_TXEN, 0);
+}
+
+
+int radio_init(void) {
+    console_printf("Radio Init\n");
+    hal_gpio_init_out(E22_TXEN, 0);
+    hal_gpio_init_out(E22_RXEN, 0);
+
+    RadioEvents.TxDone = OnTxDone;
+    //RadioEvents.RxDone = OnRxDone;
+    RadioEvents.TxTimeout = OnTxTimeout;
+    //RadioEvents.RxTimeout = OnRxTimeout;
+    //RadioEvents.RxError = OnRxError;
+    // RadioEvents.CadDone = OnCadDone;
+    
+    Radio.Init( &RadioEvents );
+
+    // Need TCXO to be on
+    SX126xSetDio3AsTcxoCtrl( TCXO_CTRL_2_4V, 5000 );
+
+    CalibrationParams_t calibParam;
+    // Calibrate all blocks
+    calibParam.Value = 0x7F;
+    SX126xCalibrate( calibParam );
+
+    Radio.SetChannel( RF_FREQUENCY );
+
+    Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
+                                   LORA_SPREADING_FACTOR, LORA_CODINGRATE,
+                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+
+    /*Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
+                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
+                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   0, true, 0, 0, LORA_IQ_INVERSION_ON, true );*/
+
+    Radio.Sleep();
+
+    return 0;
+}
 
 void weather_init() {
     hal_gpio_init_out(LED1_PIN, 1);
@@ -138,6 +219,11 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)(packet.rain*2794/10000),
             (int32_t)((packet.rain*2794-(int32_t)((packet.rain*2794)/10000))*10000));
 
+    // Transmit packet over LoRa radio
+    console_printf("Radiotx\n");
+    hal_gpio_write(E22_TXEN, 1);
+    Radio.Send((uint8_t *)&packet, sizeof(packet));
+
     sample_num++;
 
     // Turn off ADC for some small power savings
@@ -156,6 +242,7 @@ int main(int argc, char **argv) {
     console_printf("UID: %08lX\n", DEVICE_UID);
     console_printf("Sample period: %ds\n", MYNEWT_VAL(CHAAC_SAMPLE_RATE_S));
 
+    radio_init();
     weather_init();
 
     os_callout_init(&sample_callout, os_eventq_dflt_get(), weather_sample_fn, NULL);
