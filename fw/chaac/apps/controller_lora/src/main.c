@@ -245,6 +245,9 @@ int main(int argc, char **argv) {
     radio_init();
     weather_init();
 
+    packet.header.type = PACKET_TYPE_WEATHER_V1P0;
+    packet.header.uid = DEVICE_UID;
+
     os_callout_init(&sample_callout, os_eventq_dflt_get(), weather_sample_fn, NULL);
     os_callout_reset(&sample_callout, OS_TICKS_PER_SEC * MYNEWT_VAL(CHAAC_SAMPLE_RATE_S));
 
