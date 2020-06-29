@@ -63,13 +63,15 @@ BLEWeatherPacket = ChaacPacket(
         ("pressure", "H"),
         ("battery", "H"),
         ("solar_panel", "H"),
-        ("rssi", "b")
+        ("rssi", "b"),
     ],
 )
 
 WeatherPacketV1P0 = ChaacPacket(
     "WeatherPacketV1P0",
     [
+        ("uid", "I"),
+        ("packet_type", "B"),
         ("sample", "L"),
         ("wind_dir", "B"),
         ("rain", "B"),
@@ -80,7 +82,14 @@ WeatherPacketV1P0 = ChaacPacket(
         ("pressure", "H"),
         ("battery", "H"),
         ("solar_panel", "H"),
-        # TODO - RSSI/SNR?
     ],
 )
 
+LoraRxInfo = ChaacPacket(
+    "LoraRxInfo",
+    [
+        ("rssi", "h"),
+        ("snr", "B"),
+        ("rsvd", "B")
+    ],
+)
