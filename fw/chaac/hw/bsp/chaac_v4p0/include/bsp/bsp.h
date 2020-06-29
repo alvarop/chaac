@@ -60,11 +60,6 @@ extern uint8_t _ram_start;
 #define WX_DIR_ADC_CH   6
 #define WX_DIR_SAADC    NRF_SAADC_INPUT_AIN6
 
-// TODO - remove vsolar
-#define VSOLAR_PIN      4
-#define VSOLAR_ADC_CH   2
-#define VSOLAR_SAADC    NRF_SAADC_INPUT_AIN2
-
 #define WX_DIR_EN_PIN   25
 #define WX_DIR_EN_ON    (0)
 #define WX_DIR_EN_OFF   (1)

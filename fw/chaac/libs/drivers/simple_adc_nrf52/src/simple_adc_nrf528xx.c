@@ -8,7 +8,11 @@
 #include <adc_nrf52/adc_nrf52.h>
 
 static struct adc_dev *adc;
-struct adc_dev_cfg adc_config = {.resolution = (adc_resolution_t)ADC_RESOLUTION_12BIT , .oversample=(adc_oversample_t)ADC_OVERSAMPLE_16X, .calibrate=false};
+struct adc_dev_cfg adc_config = {
+    .resolution = (adc_resolution_t)ADC_RESOLUTION_12BIT,
+    .oversample=(adc_oversample_t)ADC_OVERSAMPLE_16X,
+    .calibrate=false
+};
 
 int32_t simple_adc_init(void) {
     int32_t rval = 0;
@@ -29,14 +33,16 @@ int32_t simple_adc_init(void) {
         .acq_time = ADC_ACQTIME_20US,
         .pin = WX_DIR_SAADC,
         .differential = false});
-    
+
+#ifdef VSOLAR_ADC_CH
     adc_chan_config(adc, VSOLAR_ADC_CH,  (void *)&(struct adc_chan_cfg){
         .gain = ADC_GAIN1_6,
         .reference = ADC_REFERENCE_INTERNAL,
         .acq_time = ADC_ACQTIME_20US,
         .pin = VSOLAR_SAADC,
         .differential = false});
- 
+#endif
+
     return rval;
 }
 
