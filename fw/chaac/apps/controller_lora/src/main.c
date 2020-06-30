@@ -21,7 +21,7 @@
 
 #define RF_FREQUENCY 915000000
 
-#define TX_OUTPUT_POWER 14
+#define TX_OUTPUT_POWER 0
 
 #define LORA_BANDWIDTH                              0         // [0: 125 kHz,
                                                               //  1: 250 kHz,
@@ -36,7 +36,6 @@
 #define LORA_SYMBOL_TIMEOUT                         0       // Symbols
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
-
 
 #define RX_TIMEOUT_VALUE                            0
 #define BUFFER_SIZE                                 64 // Define the payload size her
@@ -53,14 +52,14 @@ static RadioEvents_t RadioEvents;
 
 void OnTxDone( void )
 {
-    Radio.Standby( );
+    Radio.Sleep( );
     hal_gpio_write(E22_TXEN, 0);
     console_printf("TX Done\n");
 }
 
 void OnTxTimeout( void )
 {
-    Radio.Standby( );  
+    Radio.Sleep( );  
     console_printf("TX Timeout\n");
     hal_gpio_write(E22_TXEN, 0);
 }
