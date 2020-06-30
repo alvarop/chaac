@@ -315,6 +315,9 @@ void RadioRxBoosted( uint32_t timeout );
  */
 void RadioSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime );
 
+/* OS event callback function to process IRQ */
+void RadioIrqEvFn(struct os_event *ev);
+
 double
 ceil(double d)
 {                                             
@@ -495,6 +498,9 @@ SX126x_t SX126x;
 struct hal_timer TxTimeoutTimer;
 struct hal_timer RxTimeoutTimer;
 
+/* Radio Irq event */
+static struct os_event RadioIrqEv;
+
 /*!
  * Returns the known FSK bandwidth registers value
  *
@@ -542,6 +548,8 @@ void RadioInit( RadioEvents_t *events )
     /*TimerInit( &RxTimeoutTimer, RadioOnRxTimeoutIrq );*/
 
     IrqFired = false;
+
+    RadioIrqEv.ev_cb = RadioIrqEvFn;
 }
 
 RadioState_t RadioGetStatus( void )
@@ -1111,14 +1119,15 @@ void RadioOnRxTimeoutIrq( void  * unused)
 void RadioOnDioIrq( void *unused )
 {
     IrqFired = true;
+    if(RadioIrqEv.ev_cb != NULL) {
+        os_eventq_put(os_eventq_dflt_get(), &RadioIrqEv);
+    }
 }
 
 void RadioIrqProcess( void )
 {
     if( IrqFired == true )
     {
-        // TODO(alvaro): Change change from irqfired to scheduling RadioIrqProcess
-	// in event queue
         /*BoardDisableIrq( );*/
         IrqFired = false;
         /*BoardEnableIrq( );*/
@@ -1215,3 +1224,8 @@ void RadioIrqProcess( void )
         }
     }
 }
+
+void RadioIrqEvFn(struct os_event *ev) {
+    RadioIrqProcess();
+}
+
