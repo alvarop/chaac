@@ -93,6 +93,11 @@ void OnRxError( void )
 int init_radio(void) {
     /*console_printf("Initializing radio\n");*/
 
+    hal_gpio_init_out(E22_TXEN, 0);
+    hal_gpio_init_out(E22_RXEN, 1);
+    hal_gpio_init_out(TX_LED_PIN, 0);
+    hal_gpio_init_out(RX_LED_PIN, 0);
+
     RadioEvents.TxDone = OnTxDone;
     RadioEvents.RxDone = OnRxDone;
     RadioEvents.TxTimeout = OnTxTimeout;
@@ -130,13 +135,6 @@ int init_radio(void) {
        return 0;
 }
 
-
-#define RADIO_TASK_PRI         (90)
-#define RADIO_STACK_SIZE       (1024)
-struct os_task radio_task;
-os_stack_t radio_task_stack[RADIO_STACK_SIZE];
-
-
 #define BLINK_TASK_PRI         (99)
 #define BLINK_STACK_SIZE       (64)
 struct os_task blink_task;
@@ -149,29 +147,8 @@ void blink_task_fn(void *arg) {
     hal_gpio_init_out(STATUS_LED_PIN, 0);
 
     while(1) {
-        os_time_delay(OS_TICKS_PER_SEC/4);
+        os_time_delay(OS_TICKS_PER_SEC);
         hal_gpio_toggle(STATUS_LED_PIN);
-    }
-
-}
-
-void radio_task_fn(void *arg) {
-
-    hal_gpio_init_out(E22_TXEN, 0);
-    hal_gpio_init_out(E22_RXEN, 1);
-    hal_gpio_init_out(TX_LED_PIN, 0);
-    hal_gpio_init_out(RX_LED_PIN, 0);
- 
-    init_radio();
-
-    // Start receiving
-    Radio.Rx(RX_TIMEOUT_VALUE);
-    while (1) {
-        os_time_delay(1);
-
-        /*hal_gpio_toggle(g_led_pin);*/
-
-        Radio.IrqProcess( );
     }
 
 }
@@ -197,16 +174,9 @@ main(int argc, char **argv)
         blink_task_stack,
         BLINK_STACK_SIZE);
 
-    os_task_init(
-        &radio_task,
-        "radio_task",
-        radio_task_fn,
-        NULL,
-        RADIO_TASK_PRI,
-        OS_WAIT_FOREVER,
-        radio_task_stack,
-        RADIO_STACK_SIZE);
+    init_radio();
 
+    Radio.Rx(RX_TIMEOUT_VALUE);
 
     while(1) {
         os_eventq_run(os_eventq_dflt_get());
