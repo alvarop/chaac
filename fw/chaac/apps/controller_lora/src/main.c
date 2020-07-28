@@ -54,6 +54,7 @@ void OnTxDone( void )
 {
     Radio.Sleep( );
     hal_gpio_write(E22_TXEN, 0);
+    hal_gpio_write(LED1_PIN, 0);
     console_printf("TX Done\n");
 }
 
@@ -62,6 +63,7 @@ void OnTxTimeout( void )
     Radio.Sleep( );  
     console_printf("TX Timeout\n");
     hal_gpio_write(E22_TXEN, 0);
+    hal_gpio_write(LED1_PIN, 0);
 }
 
 
@@ -94,22 +96,17 @@ int radio_init(void) {
                                    LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
                                    true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
 
-    /*Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
-                                   LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-                                   LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   0, true, 0, 0, LORA_IQ_INVERSION_ON, true );*/
-
     Radio.Sleep();
 
     return 0;
 }
 
 void weather_init() {
-    hal_gpio_init_out(LED1_PIN, 1);
+    hal_gpio_init_out(LED1_PIN, 0);
 
     hal_gpio_init_out(WX_DIR_EN_PIN, WX_DIR_EN_OFF);
 
-    int32_t rval;
+    int32_t rval = 0;
 
     rval = bmp280_init();
     if(rval) {
@@ -139,7 +136,6 @@ void weather_sample_fn(struct os_event *ev) {
     // schedule next event asap
     os_callout_reset(&sample_callout, OS_TICKS_PER_SEC * MYNEWT_VAL(CHAAC_SAMPLE_RATE_S));
 
-    hal_gpio_write(LED1_PIN, 1);
     simple_adc_init();
 
     packet.sample = sample_num;
@@ -167,7 +163,7 @@ void weather_sample_fn(struct os_event *ev) {
         if (rval) {
             // Set unrealistic values during error
             console_printf("Error reading from SHT3x (%ld)\n", rval);
-            packet.temperature = -273;
+            packet.temperature = -27300;
             packet.humidity = 0;
         } else {
             packet.temperature = (int16_t)(temperature);
@@ -183,16 +179,21 @@ void weather_sample_fn(struct os_event *ev) {
 
     {
         float temperature, pressure;
-        rval = bmp280_read(&temperature, &pressure);
+        rval = bmp280_start_forced_measurement();
+        if (rval) {
+            console_printf("Error starting forced measurement for BMP280 (%ld)\n", rval);
+        } else {
+            rval = bmp280_read(&temperature, &pressure);
+        }
+
         // pressure /= 100.0; // Convert to hPa
         if (rval) {
             console_printf("Error reading from BMP280 (%ld)\n", rval);
             // Set unrealistic values during error
-            packet.pressure = 0;
+            packet.pressure = INT16_MIN;
         } else {
             // Convert to hPa difference from 1000.00 hPa (to use int16_t)
             packet.pressure = (int16_t)(((pressure - 100000.0)));
-            packet.temperature = (int16_t)(temperature * 100.0);
             console_printf("P: %ld.%02ld T: %ld.%02ld\n",
                 (int32_t)(pressure/100),
                 (int32_t)((pressure/100-(int32_t)(pressure/100))*100),
@@ -221,13 +222,13 @@ void weather_sample_fn(struct os_event *ev) {
     // Transmit packet over LoRa radio
     console_printf("Radiotx\n");
     hal_gpio_write(E22_TXEN, 1);
+    hal_gpio_write(LED1_PIN, 1);
     Radio.Send((uint8_t *)&packet, sizeof(packet));
 
     sample_num++;
 
     // Turn off ADC for some small power savings
     simple_adc_uninit();
-    hal_gpio_write(LED1_PIN, 0);
 
     windrain_clear_rain();
 }

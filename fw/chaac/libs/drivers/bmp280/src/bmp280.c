@@ -67,7 +67,7 @@ int32_t bmp280_init() {
         cmd[0] = BMP280_CTRL_MEAS_ADDR;
         cmd[1] = (BMP280_OS_1X << 2) |
                   (BMP280_OS_1X << 5) |
-                  BMP280_NORMAL_MODE; // 1x oversampling, normal mode
+                  BMP280_SLEEP_MODE; // 1x oversampling
 
         i2c_data.len = 2;
         i2c_data.buffer = cmd;
@@ -102,6 +102,52 @@ int32_t bmp280_init() {
         }
 
     } while(0);
+
+    return rval;
+}
+
+int32_t bmp280_start_forced_measurement() {
+    struct hal_i2c_master_data i2c_data = {
+        .address = BMP280_ADDR
+    };
+    uint8_t cmd[4];
+    int32_t rval = 0;
+
+    do {
+        cmd[0] = BMP280_CTRL_MEAS_ADDR;
+        cmd[1] = (BMP280_OS_1X << 2) |
+                  (BMP280_OS_1X << 5) |
+                  BMP280_FORCED_MODE;
+
+        i2c_data.len = 2;
+        i2c_data.buffer = cmd;
+        rval = hal_i2c_master_write(0, &i2c_data, 10, 1);
+        if(rval != 0) {
+            break;
+        }
+    } while(0);
+
+    // Made up number, only there so it won't hang on failure
+    int16_t timeout = 8;
+    while (!rval && (cmd[0] & 0x08) && (timeout > 0)) {
+        cmd[0] = BMP280_STATUS_ADDR;
+        i2c_data.len = 1;
+        i2c_data.buffer = cmd;
+        hal_i2c_master_write(0, &i2c_data, 10, 1);
+
+        i2c_data.len = 1;
+        i2c_data.buffer = cmd;
+        rval = hal_i2c_master_read(0, &i2c_data, 10, 1);
+        if(rval != 0) {
+            break;
+        }
+
+        timeout--;
+    }
+
+    if (timeout == 0) {
+        rval = -1;
+    }
 
     return rval;
 }
