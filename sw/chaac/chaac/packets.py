@@ -89,7 +89,23 @@ LoraRxInfo = ChaacPacket(
     "LoraRxInfo",
     [
         ("rssi", "h"),
-        ("snr", "B"),
+        ("snr", "b"),
         ("rsvd", "B")
     ],
 )
+
+RangeTestPacketV1P0 = ChaacPacket(
+    "RangeTestPacketV1P0",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+        ("sample", "L"),
+        ("tx_pwr", "b"),
+    ],
+)
+
+PacketTypes = {
+    0x10: WeatherPacketV1P0,
+    0xF0: RangeTestPacketV1P0,
+}
+
