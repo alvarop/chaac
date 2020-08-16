@@ -340,6 +340,12 @@ struct Radio_s
      */
     uint32_t  ( *GetWakeupTime )( void );
     /*!
+     * \brief Disables receive irq, puts chip in standby 
+     *
+     */
+    void  ( *RxDisable )( void );
+
+    /*!
      * \brief Process radio irq
      */
     void ( *IrqProcess )( void );

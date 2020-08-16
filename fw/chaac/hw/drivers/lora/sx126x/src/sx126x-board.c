@@ -22,12 +22,6 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "sx126x/sx126x.h"
 #include "sx126x-board.h"
 
-/*!
- * Antenna switch GPIO pins objects
- */
-//Gpio_t AntPow;
-//Gpio_t DeviceSel;
-
 void SX126xIoInit( void )
 {
     struct hal_spi_settings spi_settings;
@@ -59,14 +53,6 @@ void SX126xIoInit( void )
 
     rc = hal_gpio_init_in(SX126X_DIO1, HAL_GPIO_PULL_NONE);
     assert(rc == 0);
-
-    /*rc = hal_gpio_init_in(DEVICE_SEL, HAL_GPIO_PULL_NONE);*/
-    /*assert(rc == 0);*/
-
-    /*GpioInit( &SX126x.Spi.Nss, RADIO_NSS, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );*/
-    /*GpioInit( &SX126x.BUSY, RADIO_BUSY, PIN_INPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
-    /*GpioInit( &SX126x.DIO1, RADIO_DIO_1, PIN_INPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
-    /*GpioInit( &DeviceSel, DEVICE_SEL, PIN_INPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
 }
 
 void SX126xIoIrqInit( DioIrqHandler dioIrq )
@@ -78,15 +64,11 @@ void SX126xIoIrqInit( DioIrqHandler dioIrq )
         hal_gpio_irq_enable(SX126X_DIO1);
     }
 
-    /*GpioSetInterrupt( &SX126x.DIO1, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, dioIrq );*/
 }
 
 void SX126xIoDeInit( void )
 {
     hal_gpio_irq_enable(SX126X_DIO1);
-    /*GpioInit( &SX126x.Spi.Nss, RADIO_NSS, PIN_ANALOGIC, PIN_PUSH_PULL, PIN_PULL_UP, 1 );
-    GpioInit( &SX126x.BUSY, RADIO_BUSY, PIN_ANALOGIC, PIN_PUSH_PULL, PIN_NO_PULL, 0 );
-    GpioInit( &SX126x.DIO1, RADIO_DIO_1, PIN_ANALOGIC, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
 }
 
 void SX126xReset( void )
@@ -105,12 +87,6 @@ void SX126xReset( void )
 
     // Wait 10 ms
     os_cputime_delay_usecs(10000);
-
-/*    DelayMs( 10 );*/
-    /*GpioInit( &SX126x.Reset, RADIO_RESET, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
-    /*DelayMs( 20 );*/
-    /*GpioInit( &SX126x.Reset, RADIO_RESET, PIN_ANALOGIC, PIN_PUSH_PULL, PIN_NO_PULL, 0 ); // internal pull-up*/
-    /*DelayMs( 10 );*/
 }
 
 void SX126xWaitOnBusy( void )
@@ -126,12 +102,6 @@ void SX126xWakeup( void )
     hal_spi_tx_val(RADIO_SPI_IDX, RADIO_GET_STATUS);
     hal_spi_tx_val(RADIO_SPI_IDX, 0x00);
     hal_gpio_write(RADIO_NSS, 1);
-/*    GpioWrite( &SX126x.Spi.Nss, 0 );*/
-
-    /*SpiInOut( &SX126x.Spi, RADIO_GET_STATUS );*/
-    /*SpiInOut( &SX126x.Spi, 0x00 );*/
-
-    /*GpioWrite( &SX126x.Spi.Nss, 1 );*/
 
     // Wait for chip to be ready.
     SX126xWaitOnBusy( );
@@ -153,17 +123,6 @@ void SX126xWriteCommand( RadioCommands_t command, uint8_t *buffer, uint16_t size
     }
 
     hal_gpio_write(RADIO_NSS, 1);
-
-    /*GpioWrite( &SX126x.Spi.Nss, 0 );*/
-
-    /*SpiInOut( &SX126x.Spi, ( uint8_t )command );*/
-
-    /*for( uint16_t i = 0; i < size; i++ )*/
-    /*{*/
-        /*SpiInOut( &SX126x.Spi, buffer[i] );*/
-    /*}*/
-
-    /*GpioWrite( &SX126x.Spi.Nss, 1 );*/
 
     if( command != RADIO_SET_SLEEP )
     {
@@ -187,18 +146,6 @@ void SX126xReadCommand( RadioCommands_t command, uint8_t *buffer, uint16_t size 
 
     hal_gpio_write(RADIO_NSS, 1);
 
-
-    /*GpioWrite( &SX126x.Spi.Nss, 0 );*/
-
-    /*SpiInOut( &SX126x.Spi, ( uint8_t )command );*/
-    /*SpiInOut( &SX126x.Spi, 0x00 );*/
-    /*for( uint16_t i = 0; i < size; i++ )*/
-    /*{*/
-        /*buffer[i] = SpiInOut( &SX126x.Spi, 0 );*/
-    /*}*/
-
-    /*GpioWrite( &SX126x.Spi.Nss, 1 );*/
-
     SX126xWaitOnBusy( );
 }
 
@@ -218,20 +165,6 @@ void SX126xWriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
     }
 
     hal_gpio_write(RADIO_NSS, 1);
-
-
-    /*GpioWrite( &SX126x.Spi.Nss, 0 );*/
-
-    /*SpiInOut( &SX126x.Spi, RADIO_WRITE_REGISTER );*/
-    /*SpiInOut( &SX126x.Spi, ( address & 0xFF00 ) >> 8 );*/
-    /*SpiInOut( &SX126x.Spi, address & 0x00FF );*/
-
-    /*for( uint16_t i = 0; i < size; i++ )*/
-    /*{*/
-        /*SpiInOut( &SX126x.Spi, buffer[i] );*/
-    /*}*/
-
-    /*GpioWrite( &SX126x.Spi.Nss, 1 );*/
 
     SX126xWaitOnBusy( );
 }
@@ -259,18 +192,6 @@ void SX126xReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
 
     hal_gpio_write(RADIO_NSS, 1);
 
-    /*GpioWrite( &SX126x.Spi.Nss, 0 );*/
-
-    /*SpiInOut( &SX126x.Spi, RADIO_READ_REGISTER );*/
-    /*SpiInOut( &SX126x.Spi, ( address & 0xFF00 ) >> 8 );*/
-    /*SpiInOut( &SX126x.Spi, address & 0x00FF );*/
-    /*SpiInOut( &SX126x.Spi, 0 );*/
-    /*for( uint16_t i = 0; i < size; i++ )*/
-    /*{*/
-        /*buffer[i] = SpiInOut( &SX126x.Spi, 0 );*/
-    /*}*/
-    /*GpioWrite( &SX126x.Spi.Nss, 1 );*/
-
     SX126xWaitOnBusy( );
 }
 
@@ -297,16 +218,6 @@ void SX126xWriteBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
 
     hal_gpio_write(RADIO_NSS, 1);
 
-    /*GpioWrite( &SX126x.Spi.Nss, 0 );*/
-
-    /*SpiInOut( &SX126x.Spi, RADIO_WRITE_BUFFER );*/
-    /*SpiInOut( &SX126x.Spi, offset );*/
-    /*for( uint16_t i = 0; i < size; i++ )*/
-    /*{*/
-        /*SpiInOut( &SX126x.Spi, buffer[i] );*/
-    /*}*/
-    /*GpioWrite( &SX126x.Spi.Nss, 1 );*/
-
     SX126xWaitOnBusy( );
 }
 
@@ -327,18 +238,6 @@ void SX126xReadBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
 
     hal_gpio_write(RADIO_NSS, 1);
 
-
-    /*GpioWrite( &SX126x.Spi.Nss, 0 );*/
-
-    /*SpiInOut( &SX126x.Spi, RADIO_READ_BUFFER );*/
-    /*SpiInOut( &SX126x.Spi, offset );*/
-    /*SpiInOut( &SX126x.Spi, 0 );*/
-    /*for( uint16_t i = 0; i < size; i++ )*/
-    /*{*/
-        /*buffer[i] = SpiInOut( &SX126x.Spi, 0 );*/
-    /*}*/
-    /*GpioWrite( &SX126x.Spi.Nss, 1 );*/
-
     SX126xWaitOnBusy( );
 }
 
@@ -349,31 +248,44 @@ void SX126xSetRfTxPower( int8_t power )
 
 uint8_t SX126xGetPaSelect( uint32_t channel )
 {
-    /*if( GpioRead( &DeviceSel ) == 1 )*/
-    /*{*/
-        /*return SX1261;*/
-    /*}*/
-    /*else*/
-    /*{*/
-        /*return SX1262;*/
-    /*}*/
-    // TODO(alvaro): get this at compile time?
+#if MYNEWT_VAL_CHOICE(SX126X_DEVICE_TYPE, SX1261)
+    return SX1261;
+#elif MYNEWT_VAL_CHOICE(SX126X_DEVICE_TYPE, SX1262)
     return SX1262;
+#else
+#error Must select device type!
+#endif
 }
 
 void SX126xAntSwOn( void )
 {
-    // TODO(alvaro): is this necessary?
-    /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 1);*/
-    /*assert(rc == 0);*/
-    /*GpioInit( &AntPow, ANT_SWITCH_POWER, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );*/
+    if(MODE_TX == SX126xGetOperatingMode()) {
+#if MYNEWT_VAL(SX126X_HAS_ANT_SW)
+        hal_gpio_write(SX126X_RXTX, 1);
+#elif MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
+        hal_gpio_write(SX126X_RXTX, 0);
+        hal_gpio_write(SX126X_N_RXTX, 1);
+#endif
+    } else { // MODE_RX, MODE_RX_DC, MODE_CAD
+#if MYNEWT_VAL(SX126X_HAS_ANT_SW)
+        hal_gpio_write(SX126X_RXTX, 0);
+#elif MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
+        hal_gpio_write(SX126X_RXTX, 1);
+        hal_gpio_write(SX126X_N_RXTX, 0);
+#endif
+
+    }
+
 }
 
 void SX126xAntSwOff( void )
 {
-    /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 0);*/
-    /*assert(rc == 0);*/
-    /*GpioInit( &AntPow, ANT_SWITCH_POWER, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
+#if MYNEWT_VAL(SX126X_HAS_ANT_SW)
+    hal_gpio_write(SX126X_RXTX, 0);
+#elif MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
+    hal_gpio_write(SX126X_RXTX, 0);
+    hal_gpio_write(SX126X_N_RXTX, 0);
+#endif
 }
 
 bool SX126xCheckRfFrequency( uint32_t frequency )
@@ -381,3 +293,4 @@ bool SX126xCheckRfFrequency( uint32_t frequency )
     // Implement check. Currently all frequencies are supported
     return true;
 }
+

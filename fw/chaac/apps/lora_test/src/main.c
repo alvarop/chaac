@@ -93,8 +93,6 @@ void OnRxError( void )
 int init_radio(void) {
     /*console_printf("Initializing radio\n");*/
 
-    hal_gpio_init_out(E22_TXEN, 0);
-    hal_gpio_init_out(E22_RXEN, 1);
     hal_gpio_init_out(TX_LED_PIN, 0);
     hal_gpio_init_out(RX_LED_PIN, 0);
 
@@ -157,9 +155,6 @@ int
 main(int argc, char **argv)
 {
     sysinit();
-
-    hal_gpio_init_out(E22_TXEN, 0);
-    hal_gpio_init_out(E22_RXEN, 1);
 
     raw_uart_init(NULL);
     packet_init_tx_fn(packet_tx_fn);
