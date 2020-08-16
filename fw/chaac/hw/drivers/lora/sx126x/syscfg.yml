@@ -26,10 +26,61 @@ syscfg.defs:
         description: 'SPI chip select pin number'
         value:  -1
 
+    SX126X_DEVICE_TYPE:
+        description: 'Determine if this is an SX1261 or SX1262'
+        value:
+        choices:
+            - SX1261
+            - SX1262
+
     SX126X_SPI_BAUDRATE:
         description:
         value: 500
 
+    SX126X_HAS_ANT_SW:
+        description: 'Set to 1 if board has an antenna switch'
+        restrictions:
+            - "!SX126X_HAS_COMP_ANT_SW"  
+        value: 0
+ 
+    SX126X_HAS_COMP_ANT_SW:
+        description: 'Set to 1 if board has complementary antenna switch'
+        restrictions:
+            - "!SX126X_HAS_ANT_SW"
+        value: 0
+
+    SX126X_RESET_PIN:
+        description: 'SX126X reset pin number'
+        value:  -1
+
+    SX126X_BUSY_PIN:
+        description: 'BUSY pin number'
+        value:  -1
+
+    SX126X_DIO0_PIN:
+        description: 'DIO0 gpio pin number'
+        value:  -1
+
+    SX126X_DIO1_PIN:
+        description: 'DIO1 gpio pin number'
+        value:  -1
+ 
+    SX126X_DIO2_PIN:
+        description: 'DIO2 gpio pin number'
+        value:  -1
+ 
+    SX126X_DIO3_PIN:
+        description: 'DIO3 gpio pin number'
+        value:  -1
+    
+    SX126X_RXTX_PIN:
+        description: 'RxTx switch control pin number'
+        value:  -1
+
+    SX126X_N_RXTX_PIN:
+        description: 'Complement RxTx switch control pin number'
+        value:  -1   
+    
     SX126X_LF_USE_PA_BOOST:
         description: 'LF transmit path connected to PA_BOOST or RFO (0 = RFO 1 = PABOOST)'
         value: 0
@@ -38,7 +89,4 @@ syscfg.defs:
         description: 'HF transmit path connected to PA_BOOST or RFO (0 = RFO 1 = PABOOST)'
         value: 0
 
-    SX126X_HAS_ANT_SW:
-        description: 'Set to 1 if board has an antenna switch'
-        value: 0
-
+   

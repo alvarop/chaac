@@ -48,16 +48,10 @@ extern uint8_t _ram_start;
 #define TX_LED_PIN      25
 #define RX_LED_PIN      26
 
+#define LED1_PIN TX_LED_PIN
+#define LED2_PIN RX_LED_PIN 
+
 #define LED_BLINK_PIN   STATUS_LED_PIN
-
-#define SX126X_NRESET 13
-#define SX126X_DIO1 11
-#define SX126X_DIO2 20
-/*#define SX126X_DIO3*/
-#define SX126X_BUSY 12
-
-#define E22_RXEN 18
-#define E22_TXEN 19
 
 
 /* UART */

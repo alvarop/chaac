@@ -19,7 +19,34 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "hal/hal_gpio.h"
 
 #define RADIO_SPI_IDX               MYNEWT_VAL(SX126X_SPI_IDX)
-#define RADIO_NSS                   MYNEWT_VAL(SX126X_SPI_CS_PIN)
+
+#if MYNEWT_VAL(SX126X_SPI_CS_PIN) == -1
+#error "Must set SX126X_SPI_CS_PIN pin (spi chip select)"
+#else
+#define RADIO_NSS               MYNEWT_VAL(SX126X_SPI_CS_PIN)
+#endif
+    
+#define SX126X_DIO0             MYNEWT_VAL(SX126X_DIO0_PIN)
+#define SX126X_DIO1             MYNEWT_VAL(SX126X_DIO1_PIN)
+#define SX126X_DIO2             MYNEWT_VAL(SX126X_DIO2_PIN)
+#define SX126X_DIO3             MYNEWT_VAL(SX126X_DIO3_PIN)
+
+#define SX126X_BUSY             MYNEWT_VAL(SX126X_BUSY_PIN)
+    
+#if MYNEWT_VAL(SX126X_RESET_PIN) == -1
+#error "Must set SX126X_RESET_PIN pin"
+#else
+#define SX126X_NRESET           MYNEWT_VAL(SX126X_RESET_PIN)
+#endif
+    
+#if MYNEWT_VAL(SX126X_HAS_ANT_SW)
+#define SX126X_RXTX             MYNEWT_VAL(SX126X_RXTX_PIN)
+#endif
+    
+#if MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
+#define SX126X_RXTX             MYNEWT_VAL(SX126X_RXTX_PIN)
+#define SX126X_N_RXTX           MYNEWT_VAL(SX126X_N_RXTX_PIN)
+#endif
 
 /*!
  * \brief Initializes the radio I/Os pins interface
