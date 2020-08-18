@@ -44,16 +44,14 @@ static uint32_t sample_num;
 void OnTxDone( void )
 {
     Radio.Sleep( );
-    hal_gpio_write(MYNEWT_VAL(SX126X_N_RXTX_PIN), 0);
     hal_gpio_write(LED1_PIN, 0);
-    console_printf("TX Done\n");
+//    console_printf("TX Done\n");
 }
 
 void OnTxTimeout( void )
 {
     Radio.Sleep( );  
-    console_printf("TX Timeout\n");
-    hal_gpio_write(MYNEWT_VAL(SX126X_N_RXTX_PIN), 0);
+//    console_printf("TX Timeout\n");
     hal_gpio_write(LED1_PIN, 0);
 }
 
@@ -68,7 +66,7 @@ void radio_tx_config(uint8_t pwr) {
 int radio_init(void) {
 
     
-    console_printf("Radio Init\n");
+//    console_printf("Radio Init\n");
     hal_gpio_init_out(MYNEWT_VAL(SX126X_N_RXTX_PIN), 0);
     hal_gpio_init_out(MYNEWT_VAL(SX126X_RXTX_PIN), 0);
 
@@ -135,7 +133,6 @@ void blink_task_fn(void *arg) {
         packet.sample = sample_num++;
         packet.tx_pwr = tx_pwr;
 
-        hal_gpio_write(MYNEWT_VAL(SX126X_N_RXTX_PIN), 1);
         hal_gpio_write(LED1_PIN, 1);
         Radio.Send((uint8_t *)&packet, sizeof(packet));
 

@@ -367,6 +367,12 @@ void SX126xAntSwOn( void )
     /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 1);*/
     /*assert(rc == 0);*/
     /*GpioInit( &AntPow, ANT_SWITCH_POWER, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );*/
+#if MYNEWT_VAL(SX126X_HAS_ANT_SW)
+            hal_gpio_write(SX126X_RXTX, 1);
+#elif MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
+            hal_gpio_write(SX126X_RXTX, 0);
+            hal_gpio_write(SX126X_N_RXTX, 1);
+#endif
 }
 
 void SX126xAntSwOff( void )
@@ -374,6 +380,13 @@ void SX126xAntSwOff( void )
     /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 0);*/
     /*assert(rc == 0);*/
     /*GpioInit( &AntPow, ANT_SWITCH_POWER, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
+#if MYNEWT_VAL(SX126X_HAS_ANT_SW)
+    hal_gpio_write(SX126X_RXTX, 0);
+#elif MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
+    hal_gpio_write(SX126X_RXTX, 0);
+    hal_gpio_write(SX126X_N_RXTX, 0);
+#endif
+
 }
 
 bool SX126xCheckRfFrequency( uint32_t frequency )
