@@ -296,6 +296,14 @@ void RadioSetPublicNetwork( bool enable );
 uint32_t RadioGetWakeupTime( void );
 
 /*!
+* \brief Disables receive irq, puts chip in standby 
+*
+*/
+void  RadioRxDisable( void );
+
+
+
+/*!
  * \brief Process radio irq
  */
 void RadioIrqProcess( void );
@@ -372,6 +380,7 @@ const struct Radio_s Radio =
     RadioSetMaxPayloadLength,
     RadioSetPublicNetwork,
     RadioGetWakeupTime,
+    RadioRxDisable,
     RadioIrqProcess,
     // Available on SX126x only
     RadioRxBoosted,
@@ -1099,6 +1108,16 @@ uint32_t RadioGetWakeupTime( void )
 {
     return( RADIO_TCXO_SETUP_TIME + RADIO_WAKEUP_TIME );
 }
+
+void RadioRxDisable(void) {
+    /*SX126xSetDioIrqParams( IRQ_RADIO_NONE,
+                          IRQ_RADIO_NONE,
+                           IRQ_RADIO_NONE,
+                           IRQ_RADIO_NONE );
+
+    RadioStandby();*/
+}
+
 
 void RadioOnTxTimeoutIrq( void *unused )
 {

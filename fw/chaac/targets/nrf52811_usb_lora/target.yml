@@ -1,3 +1,3 @@
-target.app: apps/lora_power
+target.app: apps/lora_app_shell
 target.bsp: hw/bsp/nordic_pca10040
 target.build_profile: debug

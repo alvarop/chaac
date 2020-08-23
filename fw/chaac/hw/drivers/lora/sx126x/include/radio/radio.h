@@ -339,6 +339,13 @@ struct Radio_s
      * \retval time Radio plus board wakeup time in ms.
      */
     uint32_t  ( *GetWakeupTime )( void );
+
+    /*!
+     * \brief Disables receive irq, puts chip in standby 
+     *
+     */
+    void  ( *RxDisable )( void );
+
     /*!
      * \brief Process radio irq
      */

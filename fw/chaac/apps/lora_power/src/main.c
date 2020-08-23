@@ -108,8 +108,8 @@ int radio_init(void) {
 }
 
   
-#define BLINK_TASK_PRI         (99)
-#define BLINK_STACK_SIZE       (64)
+#define BLINK_TASK_PRI         (10)
+#define BLINK_STACK_SIZE       (512)
 struct os_task blink_task;
 os_stack_t blink_task_stack[BLINK_STACK_SIZE];
 

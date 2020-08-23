@@ -121,6 +121,14 @@ hal_bsp_init(void)
     nrf52_periph_create();
 }
 
+#if MYNEWT_VAL(LORA_NODE)
+void lora_bsp_enable_mac_timer(void)
+{
+    /* Turn on the LoRa MAC timer. This function is automatically
+     * called by the LoRa stack when exiting low power mode.*/
+    hal_timer_init(MYNEWT_VAL(LORA_MAC_TIMER_NUM), NULL);
+}
+#endif
 
 void POWER_CLOCK_IRQHandler(){while(1);}
 void RADIO_IRQHandler(){while(1);}

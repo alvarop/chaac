@@ -36,6 +36,12 @@ void SX126xIoInit( void )
 #if MYNEWT_VAL(SX126X_HAS_ANT_SW)
     rc = hal_gpio_init_out(SX126X_RXTX, 0);
     assert(rc == 0);
+#elif MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
+    rc = hal_gpio_init_out(SX126X_RXTX, 1);
+    assert(rc == 0);
+
+    rc = hal_gpio_init_out(SX126X_N_RXTX, 0);
+    assert(rc == 0);
 #endif
 
     rc = hal_gpio_init_out(RADIO_NSS, 1);
@@ -59,7 +65,7 @@ void SX126xIoInit( void )
 
     rc = hal_gpio_init_in(SX126X_DIO1, HAL_GPIO_PULL_NONE);
     assert(rc == 0);
-
+    
     /*rc = hal_gpio_init_in(DEVICE_SEL, HAL_GPIO_PULL_NONE);*/
     /*assert(rc == 0);*/
 
@@ -363,6 +369,7 @@ uint8_t SX126xGetPaSelect( uint32_t channel )
 
 void SX126xAntSwOn( void )
 {
+    return;
     // TODO(alvaro): is this necessary?
     /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 1);*/
     /*assert(rc == 0);*/
@@ -377,14 +384,15 @@ void SX126xAntSwOn( void )
 
 void SX126xAntSwOff( void )
 {
+    return; 
     /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 0);*/
     /*assert(rc == 0);*/
     /*GpioInit( &AntPow, ANT_SWITCH_POWER, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
 #if MYNEWT_VAL(SX126X_HAS_ANT_SW)
     hal_gpio_write(SX126X_RXTX, 0);
 #elif MYNEWT_VAL(SX126X_HAS_COMP_ANT_SW)
-    hal_gpio_write(SX126X_RXTX, 0);
     hal_gpio_write(SX126X_N_RXTX, 0);
+    hal_gpio_write(SX126X_RXTX, 1);
 #endif
 
 }
