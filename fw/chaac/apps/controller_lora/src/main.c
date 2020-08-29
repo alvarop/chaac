@@ -53,7 +53,6 @@ static RadioEvents_t RadioEvents;
 void OnTxDone( void )
 {
     Radio.Sleep( );
-    hal_gpio_write(E22_TXEN, 0);
     hal_gpio_write(LED1_PIN, 0);
     console_printf("TX Done\n");
 }
@@ -62,15 +61,12 @@ void OnTxTimeout( void )
 {
     Radio.Sleep( );  
     console_printf("TX Timeout\n");
-    hal_gpio_write(E22_TXEN, 0);
     hal_gpio_write(LED1_PIN, 0);
 }
 
 
 int radio_init(void) {
     console_printf("Radio Init\n");
-    hal_gpio_init_out(E22_TXEN, 0);
-    hal_gpio_init_out(E22_RXEN, 0);
 
     RadioEvents.TxDone = OnTxDone;
     //RadioEvents.RxDone = OnRxDone;
@@ -148,6 +144,20 @@ void weather_sample_fn(struct os_event *ev) {
             (int32_t)((packet.battery-(int32_t)(packet.battery/1000)*1000)));
     }
 
+#ifdef VSOLAR_ADC_CH
+    rval = simple_adc_read_ch(VSOLAR_ADC_CH, &result);
+    if(rval) {
+        console_printf("simple_adc_read_ch error %ld\n", rval);
+    } else {
+        packet.solar_panel = (float)result * 2;
+        console_printf("S: %ld.%ld\n",
+            (int32_t)(packet.solar_panel/1000),
+            (int32_t)((packet.solar_panel-(int32_t)(packet.solar_panel/1000)*1000)));
+    }
+#else
+    packet.solar_panel = 0.0;
+#endif
+
     {
         int16_t temperature, humidity;
         
@@ -213,7 +223,6 @@ void weather_sample_fn(struct os_event *ev) {
 
     // Transmit packet over LoRa radio
     console_printf("Radiotx\n");
-    hal_gpio_write(E22_TXEN, 1);
     hal_gpio_write(LED1_PIN, 1);
     Radio.Send((uint8_t *)&packet, sizeof(packet));
 

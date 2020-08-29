@@ -64,14 +64,6 @@ extern uint8_t _ram_start;
 #define WX_DIR_EN_ON    (0)
 #define WX_DIR_EN_OFF   (1)
 
-// LORA radio
-#define SX126X_DIO1     11
-#define SX126X_BUSY     12
-#define SX126X_NRESET   13
-#define SX126X_DIO2     20
-#define E22_RXEN        18
-#define E22_TXEN        19
-
 #define LED_BLINK_PIN   LED1_PIN
 
 /* UART */
