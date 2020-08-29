@@ -1,0 +1,3 @@
+target.app: apps/controller_lora
+target.bsp: hw/bsp/chaac_v5p0
+target.build_profile: debug
