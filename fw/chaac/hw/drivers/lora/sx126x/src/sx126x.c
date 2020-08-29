@@ -115,7 +115,7 @@ void SX126xCheckDeviceReady( void )
     {
         SX126xWakeup( );
         // Switch is turned off when device is in sleep mode and turned on is all other modes
-        SX126xAntSwOn( );
+        //SX126xAntSwOn( );
     }
     SX126xWaitOnBusy( );
 }
@@ -253,6 +253,7 @@ void SX126xSetTx( uint32_t timeout )
     uint8_t buf[3];
 
     OperatingMode = MODE_TX;
+    SX126xAntSwOn( );
 
     buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
     buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
@@ -265,6 +266,7 @@ void SX126xSetRx( uint32_t timeout )
     uint8_t buf[3];
 
     OperatingMode = MODE_RX;
+    SX126xAntSwOff( );
 
     buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
     buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );

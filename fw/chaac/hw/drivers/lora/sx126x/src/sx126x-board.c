@@ -369,8 +369,6 @@ uint8_t SX126xGetPaSelect( uint32_t channel )
 
 void SX126xAntSwOn( void )
 {
-    return;
-    // TODO(alvaro): is this necessary?
     /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 1);*/
     /*assert(rc == 0);*/
     /*GpioInit( &AntPow, ANT_SWITCH_POWER, PIN_OUTPUT, PIN_PUSH_PULL, PIN_PULL_UP, 1 );*/
@@ -384,7 +382,6 @@ void SX126xAntSwOn( void )
 
 void SX126xAntSwOff( void )
 {
-    return; 
     /*int rc = hal_gpio_init_out(ANT_SWITCH_POWER, 0);*/
     /*assert(rc == 0);*/
     /*GpioInit( &AntPow, ANT_SWITCH_POWER, PIN_OUTPUT, PIN_PUSH_PULL, PIN_NO_PULL, 0 );*/
