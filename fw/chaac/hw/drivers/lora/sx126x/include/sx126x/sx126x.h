@@ -30,6 +30,10 @@
 #define SX1261                                      1
 #define SX1262                                      2
 
+#if MYNEWT_VAL(SX126X_USE_TCXO)
+#define USE_TCXO
+#endif
+
 #ifdef USE_TCXO
     /*!
      * Radio complete Wake-up Time with TCXO stabilisation time

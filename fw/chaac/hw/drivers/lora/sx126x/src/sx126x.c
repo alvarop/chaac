@@ -92,10 +92,11 @@ void SX126xInit( DioIrqHandler dioIrq )
     SX126xWakeup( );
     SX126xSetStandby( STDBY_RC );
 
-#ifdef USE_TCXO
-    CalibrationParams_t calibParam;
+#ifdef USE_TCXO    // Need TCXO to be on
+    SX126xSetDio3AsTcxoCtrl( TCXO_CTRL_2_4V, 5000 );
 
-    SX126xSetDio3AsTcxoCtrl( TCXO_CTRL_1_7V, RADIO_TCXO_SETUP_TIME << 6 ); // convert from ms to SX126x time base
+    CalibrationParams_t calibParam;
+    // Calibrate all blocks
     calibParam.Value = 0x7F;
     SX126xCalibrate( calibParam );
 #endif

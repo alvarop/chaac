@@ -81,14 +81,6 @@ int radio_init(void) {
     
     Radio.Init( &RadioEvents );
 
-    // Need TCXO to be on
-    SX126xSetDio3AsTcxoCtrl( TCXO_CTRL_2_4V, 5000 );
-
-    CalibrationParams_t calibParam;
-    // Calibrate all blocks
-    calibParam.Value = 0x7F;
-    SX126xCalibrate( calibParam );
-
     Radio.SetChannel( RF_FREQUENCY );
 
     Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,

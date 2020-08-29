@@ -89,4 +89,7 @@ syscfg.defs:
         description: 'HF transmit path connected to PA_BOOST or RFO (0 = RFO 1 = PABOOST)'
         value: 0
 
+    SX126X_USE_TCXO:
+        description: 'Use internal TCXO (DIO3)'
+        value: 0
    
