@@ -23,6 +23,10 @@ syscfg.defs:
         description: 'Uses NRF528xx family'
         value: 1
 
+    CHAAC_USE_DPS368:
+        description: 'Uses DPS368 pressure sensor'
+        value: 1
+
     BSP_NRF52811:
         description: 'Set to indicate that BSP has NRF52811'
         value: 1

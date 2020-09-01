@@ -22,6 +22,10 @@ syscfg.defs:
     CHAAC_MCU_NRF528xx:
         description: 'Uses NRF528xx family'
         value: 1
+    
+    CHAAC_USE_BMP280:
+        description: 'Uses BMP280 pressure sensor'
+        value: 1
 
     BSP_NRF52811:
         description: 'Set to indicate that BSP has NRF52811'

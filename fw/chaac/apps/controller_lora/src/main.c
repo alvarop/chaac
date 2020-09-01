@@ -8,7 +8,6 @@
 #include <os/os.h>
 #include <bsp/bsp.h>
 #include <hal/hal_gpio.h>
-#include <bmp280/bmp280.h>
 #include <simple_adc/simple_adc.h>
 #include <windrain/windrain.h>
 #include <packet/packet.h>
@@ -18,6 +17,10 @@
 #include "chaac_packet.h"
 #include "radio/radio.h"
 #include "sx126x/sx126x.h"
+
+#if MYNEWT_VAL(CHAAC_USE_BMP280)
+#include <bmp280/bmp280.h>
+#endif
 
 #define RF_FREQUENCY 915000000
 
@@ -96,10 +99,12 @@ void weather_init() {
 
     int32_t rval = 0;
 
+#if MYNEWT_VAL(CHAAC_USE_BMP280)
     rval = bmp280_init();
     if(rval) {
         console_printf("Error initializing BMP280 (%ld)\n", rval);
     }
+#endif
 
     rval = sht3x_init(SHT3x_ADDR);
     if (rval != 0) {
@@ -179,6 +184,7 @@ void weather_sample_fn(struct os_event *ev) {
         }
     }
 
+#if MYNEWT_VAL(CHAAC_USE_BMP280)
     {
         float temperature, pressure;
         rval = bmp280_start_forced_measurement();
@@ -203,6 +209,7 @@ void weather_sample_fn(struct os_event *ev) {
                 (uint32_t)((temperature-(uint32_t)(temperature))*100));
         }
     }
+#endif
 
     // Store rain by multiples of 0.2794mm
     packet.rain = windrain_get_rain()/2794;
