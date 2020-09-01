@@ -132,23 +132,6 @@ X ~ 2 0 -100 30 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# Switch_SW_Push
-#
-DEF Switch_SW_Push SW 0 40 N N 1 F N
-F0 "SW" 50 100 50 H V L CNN
-F1 "Switch_SW_Push" 0 -60 50 H V C CNN
-F2 "" 0 200 50 H I C CNN
-F3 "" 0 200 50 H I C CNN
-DRAW
-C -80 0 20 0 1 0 N
-C 80 0 20 0 1 0 N
-P 2 0 1 0 0 50 0 120 N
-P 2 0 1 0 100 50 -100 50 N
-X 1 1 -200 0 100 R 50 50 0 1 P
-X 2 2 200 0 100 L 50 50 0 1 P
-ENDDRAW
-ENDDEF
-#
 # alvarop_E22-X00M22S
 #
 DEF alvarop_E22-X00M22S U 0 40 Y Y 1 F N
@@ -285,11 +268,11 @@ X P0.07 9 -1150 -250 200 R 50 50 1 1 B
 ENDDRAW
 ENDDEF
 #
-# alvarop_TC2030-CTX
+# nrf5281x_usb_lora-rescue_TC2030-CTX-alvarop
 #
-DEF alvarop_TC2030-CTX J 0 40 Y Y 1 F N
+DEF nrf5281x_usb_lora-rescue_TC2030-CTX-alvarop J 0 40 Y Y 1 F N
 F0 "J" 0 250 60 H V C CNN
-F1 "alvarop_TC2030-CTX" 0 -200 60 H V C CNN
+F1 "nrf5281x_usb_lora-rescue_TC2030-CTX-alvarop" 0 -200 60 H V C CNN
 F2 "" 0 -200 60 H I C CNN
 F3 "" 0 -200 60 H I C CNN
 DRAW
