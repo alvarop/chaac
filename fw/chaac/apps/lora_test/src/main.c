@@ -106,19 +106,6 @@ int init_radio(void) {
     /*console_printf("Radio.Init\n");*/
     Radio.Init( &RadioEvents );
 
-    // Need TCXO to be on
-    SX126xSetDio3AsTcxoCtrl( TCXO_CTRL_2_4V, 5000 );
-    /*console_printf("Enabled TCXO @ 2.4V\n");*/
-
-    CalibrationParams_t calibParam;
-    // Calibrate all blocks
-    calibParam.Value = 0x7F;
-    /*console_printf("Calibrating all blocks\n");*/
-    SX126xCalibrate( calibParam );
-
-    /*console_printf("Radio.SetChannel\n");*/
-    Radio.SetChannel( RF_FREQUENCY );
-    
     /*console_printf("Radio.SetTxConfig\n");\*/
     Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
                                    LORA_SPREADING_FACTOR, LORA_CODINGRATE,
