@@ -2,4 +2,4 @@ syscfg.vals:
   CONSOLE_UART_DEV: '"uart0"'
   # XBEE_UART_DEV: '"uart0"'
 
-  CHAAC_SAMPLE_RATE_S: 5
+  CHAAC_SAMPLE_RATE_S: 60 

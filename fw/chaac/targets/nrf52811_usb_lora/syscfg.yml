@@ -1,4 +1,4 @@
-syscfg.vals:
-    LORA_NODE_REGION: 9
-    LORA_MAC_TIMER_NUM: 1
-    TIMER_1: 1
+#syscfg.vals:
+    #LORA_NODE_REGION: 9
+    #LORA_MAC_TIMER_NUM: 1
+    #TIMER_1: 1
