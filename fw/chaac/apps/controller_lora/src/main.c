@@ -22,6 +22,11 @@
 #include <bmp280/bmp280.h>
 #endif
 
+#if MYNEWT_VAL(CHAAC_USE_DPS368)
+#include <dps368/dps368.h>
+#endif
+
+
 #define RF_FREQUENCY 915000000
 
 #define TX_OUTPUT_POWER 0
@@ -103,6 +108,13 @@ void weather_init() {
     rval = bmp280_init();
     if(rval) {
         console_printf("Error initializing BMP280 (%ld)\n", rval);
+    }
+#endif
+
+#if MYNEWT_VAL(CHAAC_USE_DPS368)
+    rval = dps368_init();
+    if(rval) {
+        console_printf("Error initializing DPS368 (%ld)\n", rval);
     }
 #endif
 
@@ -210,6 +222,37 @@ void weather_sample_fn(struct os_event *ev) {
         }
     }
 #endif
+#if MYNEWT_VAL(CHAAC_USE_DPS368)
+    {
+        float temperature, pressure;
+        int16_t rval;
+
+        rval = dps368_measure_temp_once(&temperature);
+        if (rval != 0) {
+            console_printf("Error reading DPS368 Temperature (%d)\n", rval);
+        }
+        rval = dps368_measure_pressure_once(&pressure);
+        if (rval != 0) {
+            console_printf("Error reading DPS368 Pressure (%d)\n", rval);
+        }
+
+        if (rval) {
+            console_printf("Error reading from DPS368 (%d)\n", rval);
+            // Set unrealistic values during error
+            packet.pressure = INT16_MIN;
+        } else {
+            packet.pressure = (int16_t)(((pressure - 100000.0)));
+            console_printf("P: %ld.%02ld T: %ld.%02ld\n",
+                (int32_t)(pressure/100),
+                (int32_t)((pressure/100-(int32_t)(pressure/100))*100),
+                (int32_t)(temperature),
+                (uint32_t)((temperature-(uint32_t)(temperature))*100));
+       }
+
+#
+    }
+#endif
+
 
     // Store rain by multiples of 0.2794mm
     packet.rain = windrain_get_rain()/2794;

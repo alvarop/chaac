@@ -9,7 +9,7 @@ pkg.keywords:
 pkg.deps:
     - "@apache-mynewt-core/kernel/os"
     - "@apache-mynewt-core/hw/hal"
-    - "@apache-mynewt-core/sys/console/stub"
+    - "@apache-mynewt-core/sys/console/full"
     - "@apache-mynewt-core/sys/log/stub"
     - "@apache-mynewt-core/sys/stats/stub"
     - "libs/drivers/windrain"
@@ -22,7 +22,7 @@ pkg.deps.CHAAC_USE_BMP280:
     - "libs/drivers/bmp280"
 
 pkg.deps.CHAAC_USE_DPS368:
-    - "@apache-mynewt-core/hw/drivers/sensors/dps368"
+    - "libs/drivers/dps368"
 
 
 
