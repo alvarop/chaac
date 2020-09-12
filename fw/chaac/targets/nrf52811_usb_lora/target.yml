@@ -1,4 +1,5 @@
 #target.app: apps/lora_app_shell
 target.app: apps/lora_test
-target.bsp: hw/bsp/nordic_pca10040
+#target.bsp: hw/bsp/nordic_pca10040
+target.bsp: hw/bsp/nrf52811_usb_lora
 target.build_profile: debug
