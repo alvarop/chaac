@@ -17,6 +17,7 @@ static int64_t last_speed_time_s;
 
 static uint32_t rain_ticks;
 
+#if CHAAC_HW_VERS < 0x0500
 // Lookup table to get wind direction from voltage
 // Auto-generated with winddircalc.py (modified to add enums)
 // VDD3.30= R_PU=4700 R_S=2000
@@ -38,7 +39,28 @@ static const wind_dir_lut_t wind_dir_lut[] = {
     {3131,  3150,    WIND_NW},
     {3384,  2700,    WIND_W},
     {0,     0,       WIND_N}};
-
+#else
+// Auto-generated with winddircalc.py
+// VDD=3.00 R_PU=10000 R_S=1000
+static const wind_dir_lut_t wind_dir_lut[] = {
+    { 455, 1125, WIND_ESE},
+    { 488,  675, WIND_ENE},
+    { 541,  900, WIND_E},
+    { 655, 1575, WIND_SSE},
+    { 802, 1350, WIND_SE},
+    { 932, 2025, WIND_SSW},
+    {1140, 1800, WIND_S},
+    {1365,  225, WIND_NNE},
+    {1622,  450, WIND_NE},
+    {1848, 2475, WIND_WSW},
+    {1988, 2250, WIND_SW},
+    {2203, 3375, WIND_NNW},
+    {2377,    0, WIND_N},
+    {2520, 2925, WIND_WNW},
+    {2688, 3150, WIND_NW},
+    {2958, 2700, WIND_W},
+    {   0,    0, WIND_N}};
+#endif
 
 static void wind_speed_irq(void *arg) {
     // TODO - add debounce

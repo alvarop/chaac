@@ -85,8 +85,8 @@ typedef struct {
 )
 
 print("// Auto-generated with winddircalc.py")
-print("// VDD{:1.2f}= R_PU={} R_S={}".format(VDD, R_PU, R_S))
-print("static const wind_dir_t wind_dir_lut[] = {")
+print("// VDD={:1.2f} R_PU={} R_S={}".format(VDD, R_PU, R_S))
+print("static const wind_dir_lut_t wind_dir_lut[] = {")
 for direction in sd:
     print("    {{{:4d}, {:4d}, {}}},".format(int(direction[3] * 1000), int(direction[0] * 10), direction[4]))
 print("    {   0,    0, WIND_N}};")
