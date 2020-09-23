@@ -30,11 +30,14 @@ stream.flushInput()
 
 last_packet = None
 
+
 def connect_msg():
     print("Connected to Broker")
 
+
 def publish_msg():
     print("Message Published")
+
 
 client = mqtt.Client(client_id="chaac_publisher")
 
@@ -51,18 +54,17 @@ def process_packet(packet):
     global last_packet
 
     header_dict = packets.PacketHeader.decode(packet)._asdict()
-    packet_dict = packets.WeatherPacketV1P0.decode(packet)._asdict()
+    packet_type = header_dict["packet_type"]
 
-    rxinfo = packets.LoraRxInfo.decode(packet, packets.WeatherPacketV1P0.size())
-    print(rxinfo)
-
-    # Don't process duplicate packets!
-    if (
-        last_packet is not None
-        and last_packet["uid"] == packet_dict["uid"]
-        and last_packet["sample"] == packet_dict["sample"]
-    ):
+    if packet_type in packets.PacketTypes:
+        packet_type = packets.PacketTypes[packet_type]
+        packet_dict = packet_type.decode(packet)._asdict()
+    else:
+        print("Unknown packet type ({})".format(header_dict["packet_type"]))
         return
+
+    rxinfo = packets.LoraRxInfo.decode(packet, packet_type.size())
+    print(rxinfo)
 
     last_packet = packet_dict
 
@@ -113,7 +115,7 @@ def process_packet(packet):
             "chaac/{}/{}".format(data["uid"], packet[0]), json.dumps(packet[1])
         )
 
-    data = packets.WeatherPacketV1P0.from_dict(data)
+    data = packet_type.from_dict(data)
     print(data)
 
 
@@ -129,3 +131,4 @@ while True:
             pass
 
 client.loop_stop()
+

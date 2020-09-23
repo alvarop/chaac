@@ -85,6 +85,18 @@ WeatherPacketV1P0 = ChaacPacket(
     ],
 )
 
+ButtonPacketV1P0 = ChaacPacket(
+    "ButtonPacketV1P0",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+        ("ch1", "B"),
+        ("ch2", "B"),
+        ("battery", "H"),
+    ],
+)
+
+
 LoraRxInfo = ChaacPacket(
     "LoraRxInfo",
     [
@@ -105,7 +117,8 @@ RangeTestPacketV1P0 = ChaacPacket(
 )
 
 PacketTypes = {
-    0x10: WeatherPacketV1P0,
+    10: WeatherPacketV1P0,
+    30: ButtonPacketV1P0,
     0xF0: RangeTestPacketV1P0,
 }
 
