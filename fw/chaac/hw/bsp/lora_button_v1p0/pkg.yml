@@ -1,0 +1,26 @@
+pkg.name: hw/bsp/lora_button_v1p0
+pkg.type: bsp
+pkg.description: LoRa button v1.0
+pkg.author:
+pkg.homepage:
+pkg.keywords:
+    - nrf52
+    - nrf52dk
+
+pkg.cflags:
+    - '-DNRF52811_XXAA'
+
+pkg.cflags.HARDFLOAT:
+    - -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
+pkg.deps:
+    - "@apache-mynewt-core/hw/mcu/nordic/nrf52xxx"
+    - "@apache-mynewt-core/libc/baselibc"
+    - "@apache-mynewt-core/sys/flash_map"
+
+pkg.deps.UART_0:
+    - "@apache-mynewt-core/hw/drivers/uart/uart_hal"
+
+pkg.deps.ADC_0:
+    - "@apache-mynewt-core/hw/drivers/adc/adc_nrf52"
+
