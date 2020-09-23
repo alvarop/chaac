@@ -26,13 +26,15 @@ int32_t simple_adc_init(void) {
         .acq_time = ADC_ACQTIME_20US,
         .pin = BATT_SAADC,
         .differential = false});
-     
+
+#ifdef WX_DIR_ADC_CH
     adc_chan_config(adc, WX_DIR_ADC_CH,  (void *)&(struct adc_chan_cfg){
         .gain = ADC_GAIN1_6,
         .reference = ADC_REFERENCE_INTERNAL,
         .acq_time = ADC_ACQTIME_20US,
         .pin = WX_DIR_SAADC,
         .differential = false});
+#endif
 
 #ifdef VSOLAR_ADC_CH
     adc_chan_config(adc, VSOLAR_ADC_CH,  (void *)&(struct adc_chan_cfg){
