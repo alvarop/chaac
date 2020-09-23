@@ -39,6 +39,7 @@ extern "C" {
 extern uint8_t _ram_start;
 #define RAM_SIZE        0x10000
 
+#define HW_VERSION 0x00
 
 // XOR uid 32-bit words to have a single 32-bit uid
 #define DEVICE_UID      (NRF_FICR->DEVICEID[0] ^ NRF_FICR->DEVICEID[1])

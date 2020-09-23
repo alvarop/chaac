@@ -41,9 +41,16 @@ uint8_t txbuff[BUFFER_SIZE];
 static RadioEvents_t RadioEvents;
 
 void packet_tx_fn(int16_t len, void* data) {
+
+#if HW_VERSION == 0
     hal_gpio_init_out(RX_LED_PIN, 1);
+#endif
+    
     raw_uart_tx(len, data);
+
+#if HW_VERSION == 0
     hal_gpio_init_out(RX_LED_PIN, 0);
+#endif
 }
 
 void OnTxDone( void )
@@ -93,8 +100,10 @@ void OnRxError( void )
 int init_radio(void) {
     /*console_printf("Initializing radio\n");*/
 
+#if HW_VERSION == 0
     hal_gpio_init_out(TX_LED_PIN, 0);
     hal_gpio_init_out(RX_LED_PIN, 0);
+#endif
 
     RadioEvents.TxDone = OnTxDone;
     RadioEvents.RxDone = OnRxDone;
