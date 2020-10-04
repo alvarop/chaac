@@ -31,18 +31,13 @@ stream.flushInput()
 last_packet = None
 
 
-def connect_msg():
+def connect_msg(client, userdata, flags, rc):
     print("Connected to Broker")
-
-
-def publish_msg():
-    print("Message Published")
 
 
 client = mqtt.Client(client_id="chaac_publisher")
 
 client.on_connect = connect_msg
-client.on_publish = publish_msg
 
 # TODO - load from config or use certs
 client.username_pw_set("mqtt_user", "tmp_pass")
