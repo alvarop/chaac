@@ -21,7 +21,7 @@ typedef struct {
     uint16_t    wind_speed;
     int16_t     temperature;
     uint16_t    humidity;
-    uint16_t    pressure;
+    int16_t     pressure;
     uint16_t    battery;
     uint16_t    solar_panel;
 } __attribute__((packed)) weather_packet_v1p0_t;

@@ -79,7 +79,7 @@ WeatherPacketV1P0 = ChaacPacket(
         ("wind_speed", "H"),
         ("temperature", "h"),
         ("humidity", "H"),
-        ("pressure", "H"),
+        ("pressure", "h"),
         ("battery", "H"),
         ("solar_panel", "H"),
     ],
