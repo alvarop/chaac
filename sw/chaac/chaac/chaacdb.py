@@ -304,8 +304,6 @@ class ChaacDB:
             return False
 
         latest = rows[0]
-        # print("latest", latest)
-        # print("line", line)
 
         # If it's been more than 15 min since the last sample, consider non sketch
         # This is because samples could have changed a bunch in that time
@@ -314,32 +312,38 @@ class ChaacDB:
 
         # Possibly corrupt uid (REMOVE for multi device support!)
         if getattr(line, "uid") != latest.uid:
+            print("Sketchy! Different uid", getattr(line, "uid"), latest.uid)
             return True
 
         # 1mm of rain in a minute is a lot, not very realistic
         if getattr(line, "rain") > 1.0:
+            print("Sketchy! Too much rain", getattr(line, "rain"))
             return True
 
         # Pressure change too large
         if abs(getattr(line, "pressure") - getattr(latest, "pressure")) > 1.0:
+            print("Sketchy! Too large pressure change", getattr(line, "pressure"), getattr(latest, "pressure"))
             return True
 
         # Temperature change too large
-        if abs(getattr(line, "temperature") - getattr(latest, "temperature")) > 10:
+        if abs(getattr(line, "temperature") - getattr(latest, "temperature")) > 20:
+            print("Sketchy! Too large temperature change", getattr(line, "temperature"), getattr(latest, "temperature"))
             return True
 
         # Humidity change too large
-        if abs(getattr(line, "humidity") - getattr(latest, "humidity")) > 10:
+        if abs(getattr(line, "humidity") - getattr(latest, "humidity")) > 25:
+            print("Sketchy! Too large humidity change", getattr(line, "humidity"), getattr(latest, "humidity"))
             return True
 
         # Battery change too large
         if abs(getattr(line, "battery") - getattr(latest, "battery")) > 1.0:
+            print("Sketchy! Too large battery voltage change", getattr(line, "battery"), getattr(latest, "battery"))
             return True
 
         # Solar panel over realistic voltage
         if getattr(line, "solar_panel") > 7:
+            print("Sketchy! Too large solar panel voltage", getattr(line, "solar_panel"))
             return True
-
 
         return False
 
@@ -503,7 +507,7 @@ class ChaacDB:
                     line.append(0)
 
         if self.__is_sketchy_sample(record, timestamp):
-            print("Sketchy sample!", record)
+            print(record)
             self.__insert_line(line, table="sketchy")
         else:
             self.__insert_line(line)
