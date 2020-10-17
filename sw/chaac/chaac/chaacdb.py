@@ -133,6 +133,7 @@ class ChaacDB:
             "day": "day_samples",
             "week": "week_samples",
             "month": "month_samples",
+            "sketchy": "sketchy_samples",
         }
 
         self.__init_tables()
@@ -165,6 +166,13 @@ class ChaacDB:
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS "
             + "day_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
+            + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
+        )
+
+        # Table to store sketchy samples
+        self.conn.execute(
+            "CREATE TABLE IF NOT EXISTS "
+            + "sketchy_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
             + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
         )
 
@@ -285,6 +293,55 @@ class ChaacDB:
         self.cur.execute(query, args)
 
         return self.cur.fetchall()
+
+    def __is_sketchy_sample(self, line):
+
+        # Get latest sample
+        rows = self.get_records("day", order="desc", limit=1)
+        
+        # First entry!
+        if len(rows) == 0:
+            return False
+
+        latest = rows[0]
+        # print("latest", latest)
+        # print("line", line)
+
+        # If it's been more than 15 min since the last sample, consider non sketch
+        # This is because samples could have changed a bunch in that time
+        if abs(getattr(line, "timestamp") - latest.timestamp) > 60*15:
+            return False
+
+        # Possibly corrupt uid (REMOVE for multi device support!)
+        if getattr(line, "uid") != latest.uid:
+            return True
+
+        # 1mm of rain in a minute is a lot, not very realistic
+        if getattr(line, "rain") > 1.0:
+            return True
+
+        # Pressure change too large
+        if abs(getattr(line, "pressure") - getattr(latest, "pressure")) > 1.0:
+            return True
+
+        # Temperature change too large
+        if abs(getattr(line, "temperature") - getattr(latest, "temperature")) > 10:
+            return True
+
+        # Humidity change too large
+        if abs(getattr(line, "humidity") - getattr(latest, "humidity")) > 10:
+            return True
+
+        # Battery change too large
+        if abs(getattr(line, "battery") - getattr(latest, "battery")) > 1.0:
+            return True
+
+        # Solar panel over realistic voltage
+        if getattr(line, "solar_panel") > 7:
+            return True
+
+
+        return False
 
     def __insert_line(self, line, table="day"):
         query = "INSERT INTO {} VALUES(NULL,{})".format(
@@ -445,14 +502,17 @@ class ChaacDB:
                 except AttributeError:
                     line.append(0)
 
-        self.__insert_line(line)
+        if self.__is_sketchy_sample(record):
+            print("Sketchy sample!", record)
+            self.__insert_line(line, table="sketchy")
+        else:
+            self.__insert_line(line)
+            self.__downsample_check(timestamp, getattr(record, "uid"))
 
-        self.__downsample_check(timestamp, getattr(record, "uid"))
-
-        if getattr(record, "rain") > 0:
-            self.__insert_rain(
-                timestamp, getattr(record, "rain"), getattr(record, "uid")
-            )
+            if getattr(record, "rain") > 0:
+                self.__insert_rain(
+                    timestamp, getattr(record, "rain"), getattr(record, "uid")
+                )
 
         if commit:
             self.__commit()
