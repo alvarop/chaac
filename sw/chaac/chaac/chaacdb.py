@@ -294,7 +294,7 @@ class ChaacDB:
 
         return self.cur.fetchall()
 
-    def __is_sketchy_sample(self, line):
+    def __is_sketchy_sample(self, line, timestamp):
 
         # Get latest sample
         rows = self.get_records("day", order="desc", limit=1)
@@ -309,7 +309,7 @@ class ChaacDB:
 
         # If it's been more than 15 min since the last sample, consider non sketch
         # This is because samples could have changed a bunch in that time
-        if abs(getattr(line, "timestamp") - latest.timestamp) > 60*15:
+        if abs(timestamp - latest.timestamp) > 60*15:
             return False
 
         # Possibly corrupt uid (REMOVE for multi device support!)
@@ -502,7 +502,7 @@ class ChaacDB:
                 except AttributeError:
                     line.append(0)
 
-        if self.__is_sketchy_sample(record):
+        if self.__is_sketchy_sample(record, timestamp):
             print("Sketchy sample!", record)
             self.__insert_line(line, table="sketchy")
         else:
