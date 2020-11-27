@@ -1,0 +1,15 @@
+#
+# Conda environment for new chaac fw
+#
+channels:
+    - alvaroprieto
+    - conda-forge
+    - defaults
+
+dependencies:
+    - arm-none-eabi-gcc=9_2020_q2_update
+    - cmake-xpack=3.18.3_1
+    - openocd-xpack=0.10.0_15
+    - make=4.2.1
+    - python=3.8.6
+    - pip
