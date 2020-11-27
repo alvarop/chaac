@@ -1,0 +1,2 @@
+monitor swdp_scan
+attach 1
