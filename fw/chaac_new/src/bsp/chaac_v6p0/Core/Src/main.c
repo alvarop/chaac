@@ -52,7 +52,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void app_main(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -93,6 +93,7 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+  app_main();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -100,15 +101,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_Delay(200);
-    LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    HAL_Delay(50);
-    LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    HAL_Delay(200);
-    LL_GPIO_SetOutputPin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin);
-    HAL_Delay(50);
-    LL_GPIO_ResetOutputPin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin);
-
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
