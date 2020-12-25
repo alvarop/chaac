@@ -7,7 +7,6 @@ static void prvMainTask( void *pvParameters ) {
     (void)pvParameters;
     
     for(;;) {
-        vTaskDelay(250);
         LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
         vTaskDelay(250);
         LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
@@ -16,6 +15,7 @@ static void prvMainTask( void *pvParameters ) {
         vTaskDelay(250);
         LL_GPIO_ResetOutputPin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin);
 
+        vTaskDelay(10250);
     }
 }
 

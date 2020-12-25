@@ -13,7 +13,7 @@ your application. */
 
 #define configUSE_PREEMPTION                    1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
-#define configUSE_TICKLESS_IDLE                 1
+#define configUSE_TICKLESS_IDLE                 2
 #define configCPU_CLOCK_HZ                      ( SystemCoreClock )
 //#define configSYSTICK_CLOCK_HZ                  1000000
 #define configTICK_RATE_HZ                      1000
@@ -123,13 +123,6 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 standard names. */
 #define vPortSVCHandler    SVC_Handler
 #define xPortPendSVHandler PendSV_Handler
-
-/* IMPORTANT: This define is commented when used with STM32Cube firmware, when the timebase source is SysTick,
-              to prevent overwriting SysTick_Handler defined within STM32Cube HAL */
-
-#define xPortSysTickHandler SysTick_Handler
-
-
 
 #endif /* FREERTOS_CONFIG_H */
 
