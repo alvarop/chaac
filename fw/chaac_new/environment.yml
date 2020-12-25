@@ -19,3 +19,6 @@ dependencies:
     - cppcheck=2.1
     - lizard
     - gcovr
+variables:
+  CMAKE_GENERATOR: Ninja
+
