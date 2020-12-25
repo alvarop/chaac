@@ -1,4 +1,4 @@
-#add_subdirectory(lib)
+add_subdirectory(lib/FreeRTOS)
 add_subdirectory(bsp/chaac_v6p0)
 add_subdirectory(app/test)
 
