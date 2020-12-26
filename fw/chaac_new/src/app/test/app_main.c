@@ -5,6 +5,7 @@
 #include "printf.h"
 #include "io_i2c.h"
 #include "debug.h"
+#include "sht3x.h"
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -17,7 +18,14 @@ static void prvMainTask( void *pvParameters ) {
     vDebugInit();
     printf("Chaac FW\n");
 #endif
-    
+   
+    uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);
+    if(ulRval == 0) {
+        printf("SHT3x Initialized Successfully!\n");
+    } else {
+        printf("Error initializing SHT3x (%ld)\n", ulRval);
+    }
+
     for(;;) {
         LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
         vTaskDelay(25);
@@ -26,11 +34,19 @@ static void prvMainTask( void *pvParameters ) {
         LL_GPIO_SetOutputPin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin);
         vTaskDelay(25);
         LL_GPIO_ResetOutputPin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin);
-        printf("I2C Scan\n");
-        for(uint8_t ucAddr = 1; ucAddr < 128; ucAddr++) {
-            if(bIOI2CProbe(&hi2c1, ucAddr << 1)) {
-                printf("%02X Found!\n", ucAddr);
-            }
+        /*printf("I2C Scan\n");*/
+        /*for(uint8_t ucAddr = 1; ucAddr < 128; ucAddr++) {*/
+            /*if(bIOI2CProbe(&hi2c1, ucAddr << 1)) {*/
+                /*printf("%02X Found!\n", ucAddr);*/
+            /*}*/
+        /*}*/
+
+        int16_t sTemperature, sHumidity;
+        ulRval = ulSht3xRead(&hi2c1, SHT3x_ADDR, &sTemperature, &sHumidity);
+        if(ulRval == 0) {
+            printf("T: %0.2fC H: %0.2f %RH\n", (float)sTemperature/100.0, (float)sHumidity/100.0);
+        } else {
+            printf("Error reading from SHT3x (%ld)\n", ulRval);
         }
         vTaskDelay(4925);
     }

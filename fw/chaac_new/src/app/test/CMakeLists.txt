@@ -8,10 +8,12 @@ set(APP_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 
 set(LIB_FILES
 	${SRC_DIR}/lib/i2c/stm32l4_i2c.c
+	${SRC_DIR}/lib/sensor/sht3x/sht3x.c
 	)
 
 set(LIB_INCLUDES
 	${SRC_DIR}/lib/i2c
+	${SRC_DIR}/lib/sensor/sht3x
 	)
 
 set(APP_FILES
