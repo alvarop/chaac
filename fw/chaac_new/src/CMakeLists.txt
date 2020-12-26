@@ -1,4 +1,5 @@
-add_subdirectory(lib/FreeRTOS)
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory(bsp/chaac_v6p0)
 add_subdirectory(app/test)
 
