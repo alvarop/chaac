@@ -6,6 +6,7 @@
 #include "io_i2c.h"
 #include "debug.h"
 #include "sht3x.h"
+#include "dps368.h"
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -24,6 +25,13 @@ static void prvMainTask( void *pvParameters ) {
         printf("SHT3x Initialized Successfully!\n");
     } else {
         printf("Error initializing SHT3x (%ld)\n", ulRval);
+    }
+
+    ulRval = dps368_init(&hi2c1);
+    if(ulRval == 0) {
+        printf("DPS368 Initialized Successfully!\n");
+    } else {
+        printf("Error initializing DPS368 (%ld)\n", ulRval);
     }
 
     for(;;) {
@@ -48,6 +56,24 @@ static void prvMainTask( void *pvParameters ) {
         } else {
             printf("Error reading from SHT3x (%ld)\n", ulRval);
         }
+
+        float fTemperature, fPressure;
+ 
+        ulRval = dps368_measure_temp_once(&fTemperature);
+        if (ulRval != 0) {
+            printf("Error reading DPS368 Temperature (%d)\n", ulRval);
+        }
+        ulRval = dps368_measure_pressure_once(&fPressure);
+        if (ulRval != 0) {
+            printf("Error reading DPS368 Pressure (%d)\n", ulRval);
+        }
+ 
+        if (ulRval == 0) {
+            printf("T: %0.2f C T: %0.2f hPa\n", fTemperature, fPressure/100.0);
+        }
+
+
+
         vTaskDelay(4925);
     }
 }
