@@ -11,6 +11,7 @@ set(LIB_FILES
 	${SRC_DIR}/lib/i2c/stm32l4_i2c.c
 	${SRC_DIR}/lib/sensor/sht3x/sht3x.c
 	${SRC_DIR}/lib/sensor/dps368/dps368.c
+	${SRC_DIR}/lib/sensor/windrain/windrain.c
 	)
 
 set(LIB_INCLUDES
@@ -18,6 +19,7 @@ set(LIB_INCLUDES
 	${SRC_DIR}/lib/i2c
 	${SRC_DIR}/lib/sensor/sht3x
 	${SRC_DIR}/lib/sensor/dps368
+	${SRC_DIR}/lib/sensor/windrain
 	)
 
 set(APP_FILES

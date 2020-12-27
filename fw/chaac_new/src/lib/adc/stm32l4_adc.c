@@ -38,6 +38,18 @@ AdcStatus_t xIOAdcRead(void *pvHandle, int32_t *plValue) {
     return 0;
 }
 
+AdcStatus_t xIOAdcReadMv(void *pvHandle, int32_t *plValueMv) {
+    configASSERT(pvHandle != NULL);
+    configASSERT(plValueMv != NULL);
+
+    AdcStatus_t xRval = xIOAdcRead(pvHandle, plValueMv);
+    if (xRval == ADC_OK) {
+        *plValueMv = (*plValueMv * 3000)/(1 << 12);
+    }
+
+    return xRval;
+}
+
 AdcStatus_t xIOAdcConfig(void *pvHandle, void *pvConfig) {
     (void)pvHandle;
     (void)pvConfig;

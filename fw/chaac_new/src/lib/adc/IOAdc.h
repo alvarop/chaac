@@ -13,6 +13,6 @@ BaseType_t xIOAdcInit(void *pvHandle);
 BaseType_t xIOAdcDeInit(void *pvHandle);
 
 AdcStatus_t xIOAdcRead(void *pvHandle, int32_t *plValue); 
+AdcStatus_t xIOAdcReadMv(void *pvHandle, int32_t *plValueMv); 
 AdcStatus_t xIOAdcConfig(void *pvHandle, void *pvConfig);
 AdcStatus_t xIOAdcChannelConfig(void *pvHandle, void *pvChannelConfig);
-

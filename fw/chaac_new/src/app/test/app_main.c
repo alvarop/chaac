@@ -8,7 +8,7 @@
 #include "debug.h"
 #include "sht3x.h"
 #include "dps368.h"
-
+#include "windrain.h"
 #include "adc.h"
 #include "i2c.h"
 #include "spi.h"
@@ -42,9 +42,8 @@ static float prvAdcGetSample(uint32_t ulChannel) {
     xConfig.Channel = ulChannel;
     xIOAdcChannelConfig(&hadc1, &xConfig);
 
-    xIOAdcRead(&hadc1, &lResult);
-
-    return ((float)lResult * 3.0)/(1 << 12);
+    xIOAdcReadMv(&hadc1, &lResult);
+    return ((float)lResult / 1000.0);
 }
 
 static void prvMainTask( void *pvParameters ) {
@@ -59,6 +58,7 @@ static void prvMainTask( void *pvParameters ) {
 
     xIOI2cInit(&hi2c1);
     xIOAdcInit(&hadc1);
+    vWindRainInit();
 
     uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);
     if(ulRval == 0) {
@@ -105,14 +105,14 @@ static void prvMainTask( void *pvParameters ) {
             printf("T: %0.2f C T: %0.2f hPa\n", fTemperature, fPressure/100.0);
         }
 
-        printf("WDIR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_5));
         printf("VSOLAR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_6) * 2.0);
         printf("BATT: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_7) * 2.0);
+    
+        printf("Wind: %0.2f kph @ %0.1f\n", (float)ulWindRainGetSpeed()/1000.0, (float)sWindRainGetDirDegrees()/10.0);
+        printf("Rain: %0.3f mm\n", (float)ulWindRainGetRain()/10000.0);
+        vWindRainClearRain();
 
-        printf("RainTicks: %ld\n", ulRainTicks);
-        printf("WindSpeedTicks: %ld\n", ulWindSpeedTicks);
-
-        vTaskDelay(4925);
+        vTaskDelay(9925);
     }
 }
 
