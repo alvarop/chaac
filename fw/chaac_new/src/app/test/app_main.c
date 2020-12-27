@@ -38,17 +38,7 @@ static void prvMainTask( void *pvParameters ) {
         LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
         vTaskDelay(25);
         LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
-        vTaskDelay(25);
-        LL_GPIO_SetOutputPin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin);
-        vTaskDelay(25);
-        LL_GPIO_ResetOutputPin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin);
-        /*printf("I2C Scan\n");*/
-        /*for(uint8_t ucAddr = 1; ucAddr < 128; ucAddr++) {*/
-            /*if(bIOI2CProbe(&hi2c1, ucAddr << 1)) {*/
-                /*printf("%02X Found!\n", ucAddr);*/
-            /*}*/
-        /*}*/
-
+      
         int16_t sTemperature, sHumidity;
         ulRval = ulSht3xRead(&hi2c1, SHT3x_ADDR, &sTemperature, &sHumidity);
         if(ulRval == 0) {
