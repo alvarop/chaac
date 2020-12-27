@@ -7,12 +7,14 @@ set(APP_NAME test PARENT_SCOPE)
 set(APP_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 
 set(LIB_FILES
+	${SRC_DIR}/lib/adc/stm32l4_adc.c
 	${SRC_DIR}/lib/i2c/stm32l4_i2c.c
 	${SRC_DIR}/lib/sensor/sht3x/sht3x.c
 	${SRC_DIR}/lib/sensor/dps368/dps368.c
 	)
 
 set(LIB_INCLUDES
+	${SRC_DIR}/lib/adc
 	${SRC_DIR}/lib/i2c
 	${SRC_DIR}/lib/sensor/sht3x
 	${SRC_DIR}/lib/sensor/dps368

@@ -4,10 +4,16 @@
 #include "main.h"
 #include "printf.h"
 #include "io_i2c.h"
+#include "IOAdc.h"
 #include "debug.h"
 #include "sht3x.h"
 #include "dps368.h"
+
 #include "adc.h"
+#include "i2c.h"
+#include "spi.h"
+#include "gpio.h"
+
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -23,14 +29,9 @@ static float prvAdcGetSample(uint32_t ulChannel) {
     xConfig.Offset = 0;
 
     xConfig.Channel = ulChannel;
-    if (HAL_ADC_ConfigChannel(&hadc1, &xConfig) != HAL_OK) {
-        printf("Error configuring ADC channel\n");
-    }
-    
-    HAL_ADC_Start(&hadc1);
-    HAL_ADC_PollForConversion(&hadc1, 10);
-    lResult = HAL_ADC_GetValue(&hadc1);
-    HAL_ADC_Stop(&hadc1);
+    xIOAdcChannelConfig(&hadc1, &xConfig);
+
+    xIOAdcRead(&hadc1, &lResult);
 
     return ((float)lResult * 3.0)/(1 << 12);
 }
@@ -44,7 +45,10 @@ static void prvMainTask( void *pvParameters ) {
     vDebugInit();
     printf("Chaac FW\n");
 #endif
-   
+
+    xIOI2CInit(&hi2c1);
+    xIOAdcInit(&hadc1);
+
     uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);
     if(ulRval == 0) {
         printf("SHT3x Initialized Successfully!\n");
@@ -58,9 +62,6 @@ static void prvMainTask( void *pvParameters ) {
     } else {
         printf("Error initializing DPS368 (%ld)\n", ulRval);
     }
-
-    // Calibrate ADC
-    HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
     // Enable sensor power rail 
     LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
@@ -101,7 +102,14 @@ static void prvMainTask( void *pvParameters ) {
     }
 }
 
-__attribute__((noreturn)) void app_main() {
+int main(void) {
+    HAL_Init();
+
+    SystemClock_Config();
+
+    MX_GPIO_Init();
+    MX_SPI1_Init();
+
     BaseType_t xRval = xTaskCreate(
             prvMainTask,
             "main",

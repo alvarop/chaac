@@ -1,9 +1,19 @@
 #include "io_i2c.h"
 #include "stm32l4xx_hal.h"
 #include "printf.h"
+#include "i2c.h"
 
 BaseType_t xIOI2CInit(void *pvHandle) {
     (void)pvHandle;
+    
+    HAL_I2C_MspInit((I2C_HandleTypeDef *)pvHandle);
+    MX_I2C1_Init();
+    return 0;
+}
+
+
+BaseType_t xIOI2CDeInit(void *pvHandle) {
+    HAL_I2C_MspDeInit((I2C_HandleTypeDef *)pvHandle);
     return 0;
 }
 
