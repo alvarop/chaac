@@ -17,6 +17,17 @@
 
 extern I2C_HandleTypeDef hi2c1;
 
+static uint32_t ulRainTicks = 0;
+static uint32_t ulWindSpeedTicks = 0;
+
+void vWRRainIrq() {
+    ulRainTicks++;
+}
+
+void vWRWindSpeedIrq() {
+    ulWindSpeedTicks++;
+}
+
 static float prvAdcGetSample(uint32_t ulChannel) {
     int32_t lResult = 0;
 
@@ -97,6 +108,9 @@ static void prvMainTask( void *pvParameters ) {
         printf("WDIR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_5));
         printf("VSOLAR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_6) * 2.0);
         printf("BATT: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_7) * 2.0);
+
+        printf("RainTicks: %ld\n", ulRainTicks);
+        printf("WindSpeedTicks: %ld\n", ulWindSpeedTicks);
 
         vTaskDelay(4925);
     }
