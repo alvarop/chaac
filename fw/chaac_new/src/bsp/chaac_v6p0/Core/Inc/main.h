@@ -67,6 +67,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define WDIR_Pin LL_GPIO_PIN_0
+#define WDIR_GPIO_Port GPIOA
+#define VSOLAR_Pin LL_GPIO_PIN_1
+#define VSOLAR_GPIO_Port GPIOA
+#define BATT_Pin LL_GPIO_PIN_2
+#define BATT_GPIO_Port GPIOA
 #define RADIO_DIO2_Pin LL_GPIO_PIN_3
 #define RADIO_DIO2_GPIO_Port GPIOA
 #define RADIO_CS_Pin LL_GPIO_PIN_4
