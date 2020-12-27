@@ -7,8 +7,33 @@
 #include "debug.h"
 #include "sht3x.h"
 #include "dps368.h"
+#include "adc.h"
 
 extern I2C_HandleTypeDef hi2c1;
+
+static float prvAdcGetSample(uint32_t ulChannel) {
+    int32_t lResult = 0;
+
+    ADC_ChannelConfTypeDef xConfig = {0};
+
+    xConfig.Rank = ADC_REGULAR_RANK_1;
+    xConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+    xConfig.SingleDiff = ADC_SINGLE_ENDED;
+    xConfig.OffsetNumber = ADC_OFFSET_NONE;
+    xConfig.Offset = 0;
+
+    xConfig.Channel = ulChannel;
+    if (HAL_ADC_ConfigChannel(&hadc1, &xConfig) != HAL_OK) {
+        printf("Error configuring ADC channel\n");
+    }
+    
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, 10);
+    lResult = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
+    return ((float)lResult * 3.0)/(1 << 12);
+}
 
 static void prvMainTask( void *pvParameters ) {
     (void)pvParameters;
@@ -33,6 +58,12 @@ static void prvMainTask( void *pvParameters ) {
     } else {
         printf("Error initializing DPS368 (%ld)\n", ulRval);
     }
+
+    // Calibrate ADC
+    HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+
+    // Enable sensor power rail 
+    LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
 
     for(;;) {
         LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
@@ -62,7 +93,9 @@ static void prvMainTask( void *pvParameters ) {
             printf("T: %0.2f C T: %0.2f hPa\n", fTemperature, fPressure/100.0);
         }
 
-
+        printf("WDIR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_5));
+        printf("VSOLAR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_6) * 2.0);
+        printf("BATT: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_7) * 2.0);
 
         vTaskDelay(4925);
     }
