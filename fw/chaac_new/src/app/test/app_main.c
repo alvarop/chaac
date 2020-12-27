@@ -3,7 +3,7 @@
 #include "task.h"
 #include "main.h"
 #include "printf.h"
-#include "io_i2c.h"
+#include "IOI2c.h"
 #include "IOAdc.h"
 #include "debug.h"
 #include "sht3x.h"
@@ -46,7 +46,7 @@ static void prvMainTask( void *pvParameters ) {
     printf("Chaac FW\n");
 #endif
 
-    xIOI2CInit(&hi2c1);
+    xIOI2cInit(&hi2c1);
     xIOAdcInit(&hadc1);
 
     uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);

@@ -3,7 +3,7 @@
 #include "task.h"
 #include "dps368.h"
 #include "dps368_priv.h"
-#include "io_i2c.h"
+#include "IOI2c.h"
 
 static int16_t readByte(uint8_t regAddress);
 static int16_t writeByte(uint8_t regAddress, uint8_t data, uint8_t check); 
@@ -416,7 +416,7 @@ static int16_t readByte(uint8_t regAddress) {
     uint8_t rBuff[1];
     uint8_t wBuff[] = {regAddress};
     
-    rval = xI2CTxRx(pvI2CHandle, DPS368_ADDR, wBuff, sizeof(wBuff), rBuff, sizeof(rBuff), 10);
+    rval = xIOI2cTxRx(pvI2CHandle, DPS368_ADDR, wBuff, sizeof(wBuff), rBuff, sizeof(rBuff), 10);
 
     if (rval != 0) {
         return DPS__FAIL_UNKNOWN;
@@ -429,7 +429,7 @@ static int16_t writeByte(uint8_t regAddress, uint8_t data, uint8_t check) {
     int32_t rval = 0;
     uint8_t wBuff[] = {regAddress, data};
 
-    rval = xI2CTxRx(pvI2CHandle, DPS368_ADDR, wBuff, sizeof(wBuff), NULL, 0, 10);
+    rval = xIOI2cTxRx(pvI2CHandle, DPS368_ADDR, wBuff, sizeof(wBuff), NULL, 0, 10);
 
     if (rval != 0) {
         return DPS__FAIL_UNKNOWN;
@@ -453,7 +453,7 @@ static int16_t readBlock(RegBlock_t regBlock, uint8_t *buffer) {
         return 0;
     }
 
-    rval = xI2CTxRx(pvI2CHandle, DPS368_ADDR, wBuff, sizeof(wBuff), buffer, regBlock.length, 10);
+    rval = xIOI2cTxRx(pvI2CHandle, DPS368_ADDR, wBuff, sizeof(wBuff), buffer, regBlock.length, 10);
 
     if (rval != 0) {
         return 0;

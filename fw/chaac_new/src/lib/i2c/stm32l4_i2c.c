@@ -1,9 +1,9 @@
-#include "io_i2c.h"
+#include "IOI2c.h"
 #include "stm32l4xx_hal.h"
 #include "printf.h"
 #include "i2c.h"
 
-BaseType_t xIOI2CInit(void *pvHandle) {
+BaseType_t xIOI2cInit(void *pvHandle) {
     (void)pvHandle;
     
     HAL_I2C_MspInit((I2C_HandleTypeDef *)pvHandle);
@@ -12,12 +12,12 @@ BaseType_t xIOI2CInit(void *pvHandle) {
 }
 
 
-BaseType_t xIOI2CDeInit(void *pvHandle) {
+BaseType_t xIOI2cDeInit(void *pvHandle) {
     HAL_I2C_MspDeInit((I2C_HandleTypeDef *)pvHandle);
     return 0;
 }
 
-bool bIOI2CProbe(void *pvHandle, uint8_t ucAddr) {
+bool bIOI2cProbe(void *pvHandle, uint8_t ucAddr) {
     configASSERT(pvHandle != NULL);
     I2C_HandleTypeDef *pxHandle = (I2C_HandleTypeDef *)pvHandle;
     HAL_StatusTypeDef xStatus = HAL_I2C_IsDeviceReady(pxHandle, ucAddr, 1, 10);
@@ -27,7 +27,7 @@ bool bIOI2CProbe(void *pvHandle, uint8_t ucAddr) {
 
 // TODO - add mutex for multi-task use
 // Rewrite using lower level functions to add repeated start and more descriptive errors
-I2CStatus_t xI2CTxRx(void *pvHandle, uint8_t ucAddr, void *vTxBuff, size_t xTxLen, void *vRxBuff, size_t xRxLen, uint32_t ulTimeout) {
+I2CStatus_t xIOI2cTxRx(void *pvHandle, uint8_t ucAddr, void *vTxBuff, size_t xTxLen, void *vRxBuff, size_t xRxLen, uint32_t ulTimeout) {
     configASSERT(pvHandle != NULL);
     I2C_HandleTypeDef *pxHandle = (I2C_HandleTypeDef *)pvHandle;
     I2CStatus_t xRval = I2C_OK;

@@ -1,7 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "sht3x.h"
-#include "io_i2c.h"
+#include "IOI2c.h"
 #include "printf.h"
 
 #define RD_TH_HIGH_HOLD_H 0x2c
@@ -65,7 +65,7 @@ int32_t ulSht3xStatus(void *pvI2CHandle, uint8_t ucAddr, uint16_t *usStatus){
     uint8_t pucRBuff[2];
     uint8_t pucWBuff[2] = {RD_STATUS_H, RD_STATUS_L};
 
-    ulRval = xI2CTxRx(pvI2CHandle, ucAddr, pucWBuff, sizeof(pucWBuff), pucRBuff, sizeof(pucRBuff), 10);
+    ulRval = xIOI2cTxRx(pvI2CHandle, ucAddr, pucWBuff, sizeof(pucWBuff), pucRBuff, sizeof(pucRBuff), 10);
 
     if((ulRval == I2C_OK) && (usStatus != NULL)) {
         *usStatus = (pucRBuff[0] << 8) | pucRBuff[1];
@@ -79,7 +79,7 @@ int32_t ulSht3xReset(void *pvI2CHandle, uint8_t ucAddr){
     int32_t ulRval = 0;
     uint8_t pcWBuff[2] = {RESET_H, RESET_L};
 
-    ulRval = xI2CTxRx(pvI2CHandle, ucAddr, pcWBuff, sizeof(pcWBuff), NULL, 0, 10);
+    ulRval = xIOI2cTxRx(pvI2CHandle, ucAddr, pcWBuff, sizeof(pcWBuff), NULL, 0, 10);
 
     return ulRval;
 }
@@ -96,7 +96,7 @@ int32_t ulSht3xHeater(void *pvI2CHandle, uint8_t ucAddr, bool bEnable){
         pcWBuff[1] = HEATER_DISABLE_L;
     }
 
-    ulRval = xI2CTxRx(pvI2CHandle, ucAddr, pcWBuff, sizeof(pcWBuff), NULL, 0, 10);
+    ulRval = xIOI2cTxRx(pvI2CHandle, ucAddr, pcWBuff, sizeof(pcWBuff), NULL, 0, 10);
 
     return ulRval;
 }
@@ -109,7 +109,7 @@ int32_t ulSht3xRead(void *pvI2CHandle, uint8_t ucAddr, int16_t *sTemperature, in
 
     do {
         // Send read command
-        ulRval = xI2CTxRx(pvI2CHandle, ucAddr, pucWBuff, sizeof(pucWBuff), NULL, 0, 10);
+        ulRval = xIOI2cTxRx(pvI2CHandle, ucAddr, pucWBuff, sizeof(pucWBuff), NULL, 0, 10);
         if(ulRval != 0) {
             break;
         }
@@ -117,7 +117,7 @@ int32_t ulSht3xRead(void *pvI2CHandle, uint8_t ucAddr, int16_t *sTemperature, in
         // Wait 20ms for sample
         vTaskDelay(pdMS_TO_TICKS(20));
 
-        ulRval = xI2CTxRx(pvI2CHandle, ucAddr, NULL, 0, pucRBuff, sizeof(pucRBuff), 10);
+        ulRval = xIOI2cTxRx(pvI2CHandle, ucAddr, NULL, 0, pucRBuff, sizeof(pucRBuff), 10);
 
         if(ulRval != 0) {
             break;
