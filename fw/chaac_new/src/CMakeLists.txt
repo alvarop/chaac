@@ -1,7 +1,21 @@
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory(bsp/chaac_v6p0)
-add_subdirectory(app/test)
+if (NOT DEFINED BSP)
+	message(SEND_ERROR "BSP is not defined")
+	return()
+endif()
+
+if (NOT DEFINED APP)
+	message(SEND_ERROR "APP is not defined")
+	return()
+endif()
+
+set(DEBUGGER "bmp" CACHE STRING "Options: bmp, stlink")
+# set(BSP chaac_v6p0)
+# set(APP test)
+
+add_subdirectory(bsp/${BSP})
+add_subdirectory(app/${APP})
 
 set(EXECUTABLE ${PROJECT_NAME}-${APP_NAME}.elf)
 
@@ -18,7 +32,7 @@ add_compile_options(
 
 	$<$<CONFIG:Debug>:-Og>
 	$<$<CONFIG:Release>:-O2>
-	
+
 	# TODO
 	#	-ffile-prefix-map=${CMAKE_SOURCE_DIR}=.
 
@@ -71,18 +85,32 @@ add_custom_command(
 	BYPRODUCTS ${EXECUTABLE}.lst
 )
 
+if(${DEBUGGER} STREQUAL "bmp")
+	add_custom_target(flash
+		COMMAND bash ${CMAKE_SOURCE_DIR}/tools/flash_bmp.sh ${EXECUTABLE}
+		DEPENDS ${EXECUTABLE}
+	)
 
-add_custom_target(flash
-	COMMAND bash ${CMAKE_SOURCE_DIR}/tools/flash_bmp.sh ${EXECUTABLE}
-	DEPENDS ${EXECUTABLE}
-)
+	add_custom_target(debug
+		COMMAND bash ${CMAKE_SOURCE_DIR}/tools/debug_bmp.sh ${EXECUTABLE}
+	)
+elseif(${DEBUGGER} STREQUAL "stlink")
+	add_custom_target(flash
+		COMMAND bash ${CMAKE_SOURCE_DIR}/tools/flash_stlink.sh ${EXECUTABLE}
+		DEPENDS ${EXECUTABLE}
+	)
+
+	add_custom_target(debug
+		COMMAND bash ${CMAKE_SOURCE_DIR}/tools/debug_stlink.sh ${EXECUTABLE}
+	)
+else()
+	message("No debugger selected!!!")
+endif()
+
 
 add_custom_target(dfu_flash
 	COMMAND bash dfu-util -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000:leave -D ${PROJECT_NAME}.bin
 	DEPENDS ${EXECUTABLE}
 )
 
-add_custom_target(debug
-	COMMAND bash ${CMAKE_SOURCE_DIR}/tools/debug.sh ${EXECUTABLE}
-)
 

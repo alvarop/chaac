@@ -14,7 +14,6 @@
 #include "spi.h"
 #include "gpio.h"
 
-
 extern I2C_HandleTypeDef hi2c1;
 
 static uint32_t ulRainTicks = 0;
@@ -48,7 +47,7 @@ static float prvAdcGetSample(uint32_t ulChannel) {
 
 static void prvMainTask( void *pvParameters ) {
     (void)pvParameters;
-    
+
     LL_GPIO_ResetOutputPin(RADIO_NRST_GPIO_Port, RADIO_NRST_Pin);
 
 #ifdef BUILD_DEBUG
@@ -74,14 +73,14 @@ static void prvMainTask( void *pvParameters ) {
         printf("Error initializing DPS368 (%ld)\n", ulRval);
     }
 
-    // Enable sensor power rail 
+    // Enable sensor power rail
     LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
 
     for(;;) {
         LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
         vTaskDelay(25);
         LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
-      
+
         int16_t sTemperature, sHumidity;
         ulRval = ulSht3xRead(&hi2c1, SHT3x_ADDR, &sTemperature, &sHumidity);
         if(ulRval == 0) {
@@ -91,7 +90,7 @@ static void prvMainTask( void *pvParameters ) {
         }
 
         float fTemperature, fPressure;
- 
+
         ulRval = dps368_measure_temp_once(&fTemperature);
         if (ulRval != 0) {
             printf("Error reading DPS368 Temperature (%d)\n", ulRval);
@@ -100,14 +99,14 @@ static void prvMainTask( void *pvParameters ) {
         if (ulRval != 0) {
             printf("Error reading DPS368 Pressure (%d)\n", ulRval);
         }
- 
+
         if (ulRval == 0) {
             printf("T: %0.2f C T: %0.2f hPa\n", fTemperature, fPressure/100.0);
         }
 
         printf("VSOLAR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_6) * 2.0);
         printf("BATT: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_7) * 2.0);
-    
+
         printf("Wind: %0.2f kph @ %0.1f\n", (float)ulWindRainGetSpeed()/1000.0, (float)sWindRainGetDirDegrees()/10.0);
         printf("Rain: %0.3f mm\n", (float)ulWindRainGetRain()/10000.0);
         vWindRainClearRain();
