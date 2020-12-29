@@ -16,9 +16,9 @@ static void prvMainTask( void *pvParameters ) {
 #endif
 
     for(;;) {
-        LL_GPIO_ResetOutputPin(LD2_GPIO_Port, LD2_Pin);
-        vTaskDelay(25);
         LL_GPIO_SetOutputPin(LD2_GPIO_Port, LD2_Pin);
+        vTaskDelay(25);
+        LL_GPIO_ResetOutputPin(LD2_GPIO_Port, LD2_Pin);
 
         vTaskDelay(925);
     }

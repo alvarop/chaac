@@ -11,7 +11,7 @@ set(FREERTOS_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/timers.c
 	${CMAKE_CURRENT_SOURCE_DIR}/portable/MemMang/heap_4.c
 	${CMAKE_CURRENT_SOURCE_DIR}/portable/GCC/ARM_CM4F/port.c
-	${CMAKE_CURRENT_SOURCE_DIR}/lptimTick.c
+	# ${CMAKE_CURRENT_SOURCE_DIR}/lptimTick.c
 	${CMAKE_CURRENT_SOURCE_DIR}/static_defines.c
 	PARENT_SCOPE)
 

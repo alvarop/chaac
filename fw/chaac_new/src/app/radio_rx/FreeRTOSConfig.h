@@ -13,7 +13,7 @@ your application. */
 
 #define configUSE_PREEMPTION                    1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
-#define configUSE_TICKLESS_IDLE                 2
+#define configUSE_TICKLESS_IDLE                 1
 #define configCPU_CLOCK_HZ                      ( SystemCoreClock )
 //#define configSYSTICK_CLOCK_HZ                  1000000
 #define configTICK_RATE_HZ                      1000
@@ -40,7 +40,7 @@ your application. */
 /* Memory allocation related definitions. */
 #define configSUPPORT_STATIC_ALLOCATION         1
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
-#define configTOTAL_HEAP_SIZE                   1024*10
+#define configTOTAL_HEAP_SIZE                   1024*16
 #define configAPPLICATION_ALLOCATED_HEAP        0
 
 /* Hook function related definitions. */
@@ -66,7 +66,7 @@ your application. */
 #define configTIMER_TASK_STACK_DEPTH            configMINIMAL_STACK_SIZE
 
 /* Define to trap errors during development. */
-#define configASSERT(x) if(x){while(1){};};
+#define configASSERT(x) if(!(x)){while(1){};};
 
 /* Optional functions - most linkers will remove unused functions anyway. */
 #define INCLUDE_vTaskPrioritySet                1
@@ -123,6 +123,8 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 standard names. */
 #define vPortSVCHandler    SVC_Handler
 #define xPortPendSVHandler PendSV_Handler
+
+#define xPortSysTickHandler SysTick_Handler
 
 #endif /* FREERTOS_CONFIG_H */
 
