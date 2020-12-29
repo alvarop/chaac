@@ -31,15 +31,14 @@ extern "C" {
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_rcc.h"
+#include "stm32l4xx_ll_system.h"
+#include "stm32l4xx_ll_gpio.h"
+#include "stm32l4xx_ll_exti.h"
 #include "stm32l4xx_ll_bus.h"
 #include "stm32l4xx_ll_cortex.h"
-#include "stm32l4xx_ll_system.h"
 #include "stm32l4xx_ll_utils.h"
 #include "stm32l4xx_ll_pwr.h"
-#include "stm32l4xx_ll_gpio.h"
 #include "stm32l4xx_ll_dma.h"
-
-#include "stm32l4xx_ll_exti.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -69,29 +68,30 @@ void SystemClock_Config(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define B1_Pin GPIO_PIN_13
+#define B1_Pin LL_GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
-#define USART_TX_Pin GPIO_PIN_2
+#define USART_TX_Pin LL_GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
-#define USART_RX_Pin GPIO_PIN_3
+#define USART_RX_Pin LL_GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
-#define RADIO_NRST_Pin GPIO_PIN_10
+#define RADIO_NRST_Pin LL_GPIO_PIN_10
 #define RADIO_NRST_GPIO_Port GPIOB
-#define RADIO_TXEN_Pin GPIO_PIN_8
+#define RADIO_TXEN_Pin LL_GPIO_PIN_8
 #define RADIO_TXEN_GPIO_Port GPIOA
-#define RADIO_RXEN_Pin GPIO_PIN_9
+#define RADIO_RXEN_Pin LL_GPIO_PIN_9
 #define RADIO_RXEN_GPIO_Port GPIOA
-#define TMS_Pin GPIO_PIN_13
+#define TMS_Pin LL_GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
-#define TCK_Pin GPIO_PIN_14
+#define TCK_Pin LL_GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define RADIO_DIO2_Pin GPIO_PIN_3
+#define RADIO_DIO2_Pin LL_GPIO_PIN_3
 #define RADIO_DIO2_GPIO_Port GPIOB
-#define RADIO_NRSTB4_Pin GPIO_PIN_4
-#define RADIO_NRSTB4_GPIO_Port GPIOB
-#define RADIO_DIO1_Pin GPIO_PIN_5
+#define RADIO_BUSY_Pin LL_GPIO_PIN_4
+#define RADIO_BUSY_GPIO_Port GPIOB
+#define RADIO_DIO1_Pin LL_GPIO_PIN_5
 #define RADIO_DIO1_GPIO_Port GPIOB
-#define RADIO_CS_Pin GPIO_PIN_6
+#define RADIO_DIO1_EXTI_IRQn EXTI9_5_IRQn
+#define RADIO_CS_Pin LL_GPIO_PIN_6
 #define RADIO_CS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 

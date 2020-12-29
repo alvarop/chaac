@@ -35,7 +35,7 @@ set(BSP_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usart.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_utils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32l476xx.s
-    # ${CMAKE_CURRENT_SOURCE_DIR}/sx1262-board.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sx1262-board.c
     PARENT_SCOPE)
 
 

@@ -19,6 +19,8 @@ static RadioOperatingModes_t OperatingMode;
 
 extern SPI_HandleTypeDef hspi1;
 
+DioIrqHandler *SX126xdioIrq = NULL;
+
 void SX126xIoInit( void )
 {
     // GPIO initialized on bsp main
@@ -34,6 +36,7 @@ void SX126xIoInit( void )
 void SX126xIoIrqInit( DioIrqHandler dioIrq )
 {
     (void)dioIrq;
+    SX126xdioIrq = dioIrq;
     /*GpioSetInterrupt( &SX126x.DIO1, IRQ_RISING_EDGE, IRQ_HIGH_PRIORITY, dioIrq );*/
 }
 
@@ -105,7 +108,7 @@ void SX126xWakeup( void )
     uint8_t pucTxBuff[] = {RADIO_GET_STATUS, 0x00};
 
     // Why is this needed?
-    taskENTER_CRITICAL( );
+    CRITICAL_SECTION_BEGIN();
 
     LL_GPIO_ResetOutputPin(RADIO_CS_GPIO_Port, RADIO_CS_Pin);
 
@@ -122,7 +125,7 @@ void SX126xWakeup( void )
     // Update operating mode context variable
     SX126xSetOperatingMode( MODE_STDBY_RC );
 
-    taskEXIT_CRITICAL( );
+    CRITICAL_SECTION_END();
 }
 
 void SX126xWriteCommand( RadioCommands_t command, uint8_t *buffer, uint16_t size )
@@ -308,3 +311,15 @@ bool SX126xCheckRfFrequency( uint32_t frequency )
     // Implement check. Currently all frequencies are supported
     return true;
 }
+
+void BoardCriticalSectionBegin( uint32_t *mask )
+{
+    *mask = __get_PRIMASK( );
+    __disable_irq( );
+}
+
+void BoardCriticalSectionEnd( uint32_t *mask )
+{
+    __set_PRIMASK( *mask );
+}
+
