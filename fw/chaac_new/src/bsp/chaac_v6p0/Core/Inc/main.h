@@ -83,6 +83,7 @@ void SystemClock_Config(void);
 #define RADIO_BUSY_GPIO_Port GPIOB
 #define RADIO_DIO1_Pin LL_GPIO_PIN_8
 #define RADIO_DIO1_GPIO_Port GPIOA
+#define RADIO_DIO1_EXTI_IRQn EXTI9_5_IRQn
 #define WSPEED_Pin LL_GPIO_PIN_10
 #define WSPEED_GPIO_Port GPIOA
 #define WSPEED_EXTI_IRQn EXTI15_10_IRQn

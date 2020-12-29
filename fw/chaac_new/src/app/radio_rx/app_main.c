@@ -53,19 +53,19 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     const uint16_t total_size = size;// + sizeof(chaac_lora_rxinfo_t);
     if(total_size <= BUFFER_SIZE) {
         memcpy(txbuff, payload, size);
-        (void)rssi;
-        (void)snr;
+        // (void)rssi;
+        // (void)snr;
 
         // chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[size];
         // footer->rssi = rssi;
         // footer->snr = snr;
 
         // packet_tx(size + sizeof(chaac_lora_rxinfo_t), txbuff);
-        /*for(uint16_t byte = 0; byte < size; byte++) {
+        for(uint16_t byte = 0; byte < size; byte++) {
             printf("%02X ", payload[byte]);
         }
         printf("RSSI:%d SNR:%d\n", rssi, snr);
-        */
+
         Radio.Rx(RX_TIMEOUT_VALUE);
     }
     // printf("rx\n");
