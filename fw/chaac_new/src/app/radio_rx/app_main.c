@@ -5,6 +5,7 @@
 #include "printf.h"
 #include "debug.h"
 #include "gpio.h"
+#include "spi.h"
 #include "usart.h"
 
 static void prvMainTask( void *pvParameters ) {
@@ -16,11 +17,11 @@ static void prvMainTask( void *pvParameters ) {
 #endif
 
     for(;;) {
-        LL_GPIO_SetOutputPin(LD2_GPIO_Port, LD2_Pin);
+        // LL_GPIO_SetOutputPin(LD2_GPIO_Port, LD2_Pin);
         vTaskDelay(25);
-        LL_GPIO_ResetOutputPin(LD2_GPIO_Port, LD2_Pin);
-
+        // LL_GPIO_ResetOutputPin(LD2_GPIO_Port, LD2_Pin);
         vTaskDelay(925);
+        printf("Test...\n");
     }
 }
 
@@ -30,7 +31,7 @@ int main(void) {
     SystemClock_Config();
 
     MX_GPIO_Init();
-    // MX_SPI1_Init();
+    MX_SPI1_Init();
     MX_USART2_UART_Init();
 
     BaseType_t xRval = xTaskCreate(

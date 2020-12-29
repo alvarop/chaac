@@ -75,14 +75,24 @@ void SystemClock_Config(void);
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
-#define LD2_Pin GPIO_PIN_5
-#define LD2_GPIO_Port GPIOA
+#define RADIO_NRST_Pin GPIO_PIN_10
+#define RADIO_NRST_GPIO_Port GPIOB
+#define RADIO_TXEN_Pin GPIO_PIN_8
+#define RADIO_TXEN_GPIO_Port GPIOA
+#define RADIO_RXEN_Pin GPIO_PIN_9
+#define RADIO_RXEN_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define SWO_Pin GPIO_PIN_3
-#define SWO_GPIO_Port GPIOB
+#define RADIO_DIO2_Pin GPIO_PIN_3
+#define RADIO_DIO2_GPIO_Port GPIOB
+#define RADIO_NRSTB4_Pin GPIO_PIN_4
+#define RADIO_NRSTB4_GPIO_Port GPIOB
+#define RADIO_DIO1_Pin GPIO_PIN_5
+#define RADIO_DIO1_GPIO_Port GPIOB
+#define RADIO_CS_Pin GPIO_PIN_6
+#define RADIO_CS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
