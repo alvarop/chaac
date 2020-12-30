@@ -17,20 +17,10 @@
 #include "sx126x.h"
 #include "sx126x-board.h"
 #include <string.h>
+#include "chaac_packet.h"
 
+static weather_packet_v1p0_t packet;
 
-extern I2C_HandleTypeDef hi2c1;
-
-static uint32_t ulRainTicks = 0;
-static uint32_t ulWindSpeedTicks = 0;
-
-void vWRRainIrq() {
-    ulRainTicks++;
-}
-
-void vWRWindSpeedIrq() {
-    ulWindSpeedTicks++;
-}
 
 #define RF_FREQUENCY 915000000
 
@@ -54,8 +44,6 @@ void vWRWindSpeedIrq() {
 #define RX_TIMEOUT_VALUE                            0
 #define BUFFER_SIZE                                 64 // Define the payload size her
 
-uint8_t txbuff[BUFFER_SIZE];
-
 static RadioEvents_t RadioEvents;
 
 void OnTxDone( void )
@@ -64,56 +52,20 @@ void OnTxDone( void )
     Radio.Standby( );
 }
 
-void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
-{
-    const uint16_t total_size = size;// + sizeof(chaac_lora_rxinfo_t);
-    if(total_size <= BUFFER_SIZE) {
-        memcpy(txbuff, payload, size);
-        (void)rssi;
-        (void)snr;
-
-        // chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[size];
-        // footer->rssi = rssi;
-        // footer->snr = snr;
-
-        // packet_tx(size + sizeof(chaac_lora_rxinfo_t), txbuff);
-        /*for(uint16_t byte = 0; byte < size; byte++) {
-            printf("%02X ", payload[byte]);
-        }
-        printf("RSSI:%d SNR:%d\n", rssi, snr);
-        */
-        Radio.Rx(RX_TIMEOUT_VALUE);
-    }
-}
-
 void OnTxTimeout( void )
 {
     Radio.Standby( );
-}
-
-void OnRxTimeout( void )
-{
-    printf("RX Timeout\n");
-    /*Radio.Standby( );*/
-    Radio.Rx( RX_TIMEOUT_VALUE );   //  Restart Rx
-}
-
-void OnRxError( void )
-{
-    printf("RX Err\n");
-    /*Radio.Standby( );*/
-    Radio.Rx( RX_TIMEOUT_VALUE );   //  Restart Rx
 }
 
 int init_radio(void) {
     /*printf("Initializing radio\n");*/
 
     RadioEvents.TxDone = OnTxDone;
-    RadioEvents.RxDone = OnRxDone;
+    // RadioEvents.RxDone = OnRxDone;
     RadioEvents.TxTimeout = OnTxTimeout;
-    RadioEvents.RxTimeout = OnRxTimeout;
-    RadioEvents.RxError = OnRxError;
-//    RadioEvents.CadDone = OnCadDone;
+    // RadioEvents.RxTimeout = OnRxTimeout;
+    // RadioEvents.RxError = OnRxError;
+    // RadioEvents.CadDone = OnCadDone;
 
     printf("Radio.Init\n");
     SX126xIoInit();
@@ -134,7 +86,7 @@ int init_radio(void) {
        return 0;
 }
 
-static float prvAdcGetSample(uint32_t ulChannel) {
+static uint32_t prvAdcGetSampleMv(uint32_t ulChannel) {
     int32_t lResult = 0;
 
     ADC_ChannelConfTypeDef xConfig = {0};
@@ -149,10 +101,11 @@ static float prvAdcGetSample(uint32_t ulChannel) {
     xIOAdcChannelConfig(&hadc1, &xConfig);
 
     xIOAdcReadMv(&hadc1, &lResult);
-    return ((float)lResult / 1000.0);
+    return ((uint32_t)lResult);
 }
 
-static char packet[] = "hello\n";
+const uint32_t *HWID = (const uint32_t *)(UID_BASE);
+
 static void prvMainTask( void *pvParameters ) {
     (void)pvParameters;
 
@@ -168,6 +121,10 @@ static void prvMainTask( void *pvParameters ) {
     vWindRainInit();
 
     init_radio();
+
+    packet.header.type = PACKET_TYPE_WEATHER_V1P0;
+    packet.header.uid = HWID[0] ^ HWID[1] ^ HWID[2];
+    packet.sample = 0;
 
     uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);
     if(ulRval == 0) {
@@ -194,13 +151,16 @@ static void prvMainTask( void *pvParameters ) {
         int16_t sTemperature, sHumidity;
         ulRval = ulSht3xRead(&hi2c1, SHT3x_ADDR, &sTemperature, &sHumidity);
         if(ulRval == 0) {
-            printf("T: %0.2fC H: %0.2f %RH\n", (float)sTemperature/100.0, (float)sHumidity/100.0);
+            packet.temperature = sTemperature;
+            packet.humidity = sHumidity;
+            printf("T: %0.2fC H: %0.2f %RH\n", (float)packet.temperature/100.0, (float)packet.humidity/100.0);
         } else {
+            packet.temperature = -27300;
+            packet.humidity = 0;
             printf("Error reading from SHT3x (%ld)\n", ulRval);
         }
 
         float fTemperature, fPressure;
-
         ulRval = dps368_measure_temp_once(&fTemperature);
         if (ulRval != 0) {
             printf("Error reading DPS368 Temperature (%d)\n", ulRval);
@@ -211,18 +171,31 @@ static void prvMainTask( void *pvParameters ) {
         }
 
         if (ulRval == 0) {
+            packet.pressure = (int16_t)(((fPressure - 100000.0)));
             printf("T: %0.2f C T: %0.2f hPa\n", fTemperature, fPressure/100.0);
+        } else {
+            // set unrealistic pressure on error
+            packet.pressure = INT16_MIN;
         }
 
-        printf("VSOLAR: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_6) * 2.0);
-        printf("BATT: %0.3f V\n", prvAdcGetSample(ADC_CHANNEL_7) * 2.0);
+        packet.battery = prvAdcGetSampleMv(ADC_CHANNEL_7) * 2;
+        packet.solar_panel = prvAdcGetSampleMv(ADC_CHANNEL_6) * 2;
+        printf("VSOLAR: %0.3f V\n", (float)packet.solar_panel /1000.0);
+        printf("BATT: %0.3f V\n", (float)packet.battery /1000.0);
 
-        printf("Wind: %0.2f kph @ %0.1f\n", (float)ulWindRainGetSpeed()/1000.0, (float)sWindRainGetDirDegrees()/10.0);
-        printf("Rain: %0.3f mm\n", (float)ulWindRainGetRain()/10000.0);
+        packet.rain = ulWindRainGetRain()/2794;
+
+        // Store wind speed in kph * 100
+        packet.wind_speed = ulWindRainGetSpeed()/10;
+        packet.wind_dir = xWindRainGetDir();
+
+        printf("Wind: %0.2f kph @ %0.1f\n", (float)packet.wind_speed/100.0, (float)sWindRainGetDirDegrees()/10.0);
+        printf("Rain: %0.3f mm\n", (float)packet.rain * 0.2794);
         vWindRainClearRain();
 
-        printf("Tx packet\n");
         Radio.Send((uint8_t *)&packet, sizeof(packet));
+
+        packet.sample++;
         vTaskDelay(9925);
     }
 }

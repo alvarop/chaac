@@ -30,6 +30,7 @@ set(LIB_INCLUDES
 	${SRC_DIR}/lib/sensor/sht3x
 	${SRC_DIR}/lib/sensor/dps368
 	${SRC_DIR}/lib/sensor/windrain
+	${SRC_DIR}/lib/chaac
 	)
 
 set(APP_FILES
@@ -47,7 +48,3 @@ set(APP_INCLUDES
 	${LIB_INCLUDES}
 	${RADIO_INCLUDES}
 	PARENT_SCOPE)
-
-#set(APP_DEFINES
-#  PARENT_SCOPE)
-
