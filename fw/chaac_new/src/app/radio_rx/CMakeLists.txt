@@ -16,10 +16,15 @@ set(RADIO_INCLUDES
 
 set(LIB_FILES
 	${SRC_DIR}/lib/debug/debug.c
+	${SRC_DIR}/lib/crc/crc.c
+	${SRC_DIR}/lib/packet/packet.c
 	)
 
 set(LIB_INCLUDES
 	${SRC_DIR}/lib/debug
+	${SRC_DIR}/lib/chaac
+	${SRC_DIR}/lib/crc
+	${SRC_DIR}/lib/packet
 	)
 
 set(APP_FILES

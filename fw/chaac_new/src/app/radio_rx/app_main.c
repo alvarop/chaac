@@ -11,6 +11,8 @@
 #include "sx126x.h"
 #include <string.h>
 #include "sx126x-board.h"
+#include "chaac_packet.h"
+#include "packet.h"
 
 #define RF_FREQUENCY 915000000
 
@@ -32,7 +34,7 @@
 
 
 #define RX_TIMEOUT_VALUE                            0
-#define BUFFER_SIZE                                 64 // Define the payload size her
+#define BUFFER_SIZE                                 64 // Define the payload size here
 
 uint8_t txbuff[BUFFER_SIZE];
 
@@ -48,18 +50,12 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     const uint16_t total_size = size;// + sizeof(chaac_lora_rxinfo_t);
     if(total_size <= BUFFER_SIZE) {
         memcpy(txbuff, payload, size);
-        // (void)rssi;
-        // (void)snr;
 
-        // chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[size];
-        // footer->rssi = rssi;
-        // footer->snr = snr;
+        chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[size];
+        footer->rssi = rssi;
+        footer->snr = snr;
 
-        // packet_tx(size + sizeof(chaac_lora_rxinfo_t), txbuff);
-        for(uint16_t byte = 0; byte < size; byte++) {
-            printf("%02X ", payload[byte]);
-        }
-        printf("RSSI:%d SNR:%d\n", rssi, snr);
+        ulPacketTx(size + sizeof(chaac_lora_rxinfo_t), txbuff);
 
         Radio.Rx(RX_TIMEOUT_VALUE);
     }
@@ -95,7 +91,6 @@ int init_radio(void) {
     RadioEvents.RxError = OnRxError;
 //    RadioEvents.CadDone = OnCadDone;
 
-    printf("Radio.Init\n");
     SX126xIoInit();
 
     Radio.Init( &RadioEvents );
@@ -114,6 +109,22 @@ int init_radio(void) {
        return 0;
 }
 
+void prvPacketTxFn(int16_t len, void* data) {
+
+
+    uint8_t *pucByte = (uint8_t *)data;
+    while(len > 0){
+      // Wait until ready to transmit
+      while(!LL_USART_IsActiveFlag_TXE(USART2)){};
+
+      LL_USART_TransmitData8(USART2, *pucByte++);
+
+      len--;
+    }
+
+}
+
+
 static void prvMainTask( void *pvParameters ) {
     (void)pvParameters;
 
@@ -123,6 +134,8 @@ static void prvMainTask( void *pvParameters ) {
 #endif
 
     init_radio();
+
+    vPacketInitTxFn(prvPacketTxFn);
 
     Radio.Rx(RX_TIMEOUT_VALUE);
 
