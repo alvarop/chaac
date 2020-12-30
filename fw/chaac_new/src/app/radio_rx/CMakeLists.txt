@@ -6,14 +6,12 @@ set(APP_NAME radio_rx PARENT_SCOPE)
 set(APP_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 
 set(RADIO_FILES
-	${SRC_DIR}/lib/LoRaMac-node/src/radio/sx126x/radio.c
-	${SRC_DIR}/lib/LoRaMac-node/src/radio/sx126x/sx126x.c
+	${SRC_DIR}/lib/radio/src/radio.c
+	${SRC_DIR}/lib/radio/src/sx126x.c
 	)
 
 set(RADIO_INCLUDES
-	${SRC_DIR}/lib/LoRaMac-node/src/radio/
-	${SRC_DIR}/lib/LoRaMac-node/src/radio/sx126x/
-	${SRC_DIR}/lib/LoRaMac-node/src/boards/
+	${SRC_DIR}/lib/radio/inc
 	)
 
 set(LIB_FILES

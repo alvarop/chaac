@@ -1,3 +1,0 @@
-[submodule "fw/chaac_new/src/lib/LoRaMac-node"]
-	path = fw/chaac_new/src/lib/LoRaMac-node
-	url = https://github.com/Lora-net/LoRaMac-node.git
