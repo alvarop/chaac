@@ -167,6 +167,8 @@ static void prvMainTask( void *pvParameters ) {
     xIOAdcInit(&hadc1);
     vWindRainInit();
 
+    init_radio();
+
     uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);
     if(ulRval == 0) {
         printf("SHT3x Initialized Successfully!\n");
@@ -225,17 +227,8 @@ static void prvMainTask( void *pvParameters ) {
     }
 }
 
-static void prvRadioTask( void *pvParameters ) {
+static void prvRadioIrqTask( void *pvParameters ) {
     (void)pvParameters;
-
-    init_radio();
-
-    // vTaskDelay(1000);
-
-    // printf("Tx packet\n");
-    // Radio.Send((uint8_t *)&packet, sizeof(packet));
-
-    // vTaskDelay(1000);
 
     printf("Start Radio processing\n");
     for(;;) {
@@ -263,7 +256,7 @@ int main(void) {
     configASSERT(xRval == pdTRUE);
 
     xRval = xTaskCreate(
-            prvRadioTask,
+            prvRadioIrqTask,
             "radio",
             512,
             NULL,

@@ -38,13 +38,8 @@ uint8_t txbuff[BUFFER_SIZE];
 
 static RadioEvents_t RadioEvents;
 
-static uint32_t rxCount = 0;
-static uint32_t rxTimeouts = 0;
-static uint32_t txCount = 0;
-
 void OnTxDone( void )
 {
-    txCount++;
     Radio.Standby( );
 }
 
@@ -69,7 +64,6 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         Radio.Rx(RX_TIMEOUT_VALUE);
     }
     // printf("rx\n");
-    rxCount++;
 }
 
 void OnTxTimeout( void )
@@ -81,7 +75,6 @@ void OnRxTimeout( void )
 {
     //printf("RX Timeout\n");
     /*Radio.Standby( );*/
-    rxTimeouts++;
     Radio.Rx( RX_TIMEOUT_VALUE );   //  Restart Rx
 }
 
@@ -129,8 +122,9 @@ static void prvMainTask( void *pvParameters ) {
     // printf("Chaac FW\n");
 #endif
 
+    init_radio();
+
     for(;;) {
-        printf("RxCount: %ld RxTimeouts: %ld TxCount: %ld \n", rxCount, rxTimeouts, txCount);
         vTaskDelay(1000);
     }
 }
@@ -139,7 +133,7 @@ static void prvMainTask( void *pvParameters ) {
 static void prvRadioTask( void *pvParameters ) {
     (void)pvParameters;
 
-    init_radio();
+
 
     // vTaskDelay(1000);
 
