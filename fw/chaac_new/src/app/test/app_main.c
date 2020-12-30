@@ -227,12 +227,15 @@ static void prvMainTask( void *pvParameters ) {
     }
 }
 
+TaskHandle_t pxRadioIrqTaskHandle = NULL;
+
 static void prvRadioIrqTask( void *pvParameters ) {
     (void)pvParameters;
 
-    printf("Start Radio processing\n");
+    pxRadioIrqTaskHandle = xTaskGetCurrentTaskHandle();
+
     for(;;) {
-        vTaskDelay(2);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         Radio.IrqProcess();
     }
 }
@@ -260,7 +263,7 @@ int main(void) {
             "radio",
             512,
             NULL,
-            tskIDLE_PRIORITY + 1,
+            tskIDLE_PRIORITY + 2,
             NULL);
 
     configASSERT(xRval == pdTRUE);

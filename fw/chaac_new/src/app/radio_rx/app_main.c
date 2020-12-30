@@ -124,32 +124,25 @@ static void prvMainTask( void *pvParameters ) {
 
     init_radio();
 
+    Radio.Rx(RX_TIMEOUT_VALUE);
+
     for(;;) {
         vTaskDelay(1000);
     }
 }
 
-// static char packet[] = "hello\n";
-static void prvRadioTask( void *pvParameters ) {
+TaskHandle_t pxRadioIrqTaskHandle = NULL;
+
+static void prvRadioIrqTask( void *pvParameters ) {
     (void)pvParameters;
 
+    pxRadioIrqTaskHandle = xTaskGetCurrentTaskHandle();
 
-
-    // vTaskDelay(1000);
-
-    // printf("Tx packet\n");
-    // Radio.Send((uint8_t *)&packet, sizeof(packet));
-
-    // vTaskDelay(1000);
-
-    Radio.Rx(RX_TIMEOUT_VALUE);
-    printf("Start Receiving\n");
     for(;;) {
-        vTaskDelay(2);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         Radio.IrqProcess();
     }
 }
-
 
 int main(void) {
     HAL_Init();
@@ -171,11 +164,11 @@ int main(void) {
     configASSERT(xRval == pdTRUE);
 
     xRval = xTaskCreate(
-            prvRadioTask,
+            prvRadioIrqTask,
             "radio",
             512,
             NULL,
-            tskIDLE_PRIORITY + 1,
+            tskIDLE_PRIORITY + 2,
             NULL);
 
     configASSERT(xRval == pdTRUE);
