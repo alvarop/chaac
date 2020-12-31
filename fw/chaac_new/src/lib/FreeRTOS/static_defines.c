@@ -1,4 +1,5 @@
 #include "FreeRTOS.h"
+#include "task.h"
 
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an
 implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
@@ -51,3 +52,18 @@ static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
     configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
+
+#if configCHECK_FOR_STACK_OVERFLOW > 0
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName ){
+  (void)xTask;
+  (void)pcTaskName;
+
+  configASSERT(0);
+}
+#endif
+
+#if configUSE_MALLOC_FAILED_HOOK == 1
+void vApplicationMallocFailedHook( void ) {
+  configASSERT(0);
+}
+#endif
