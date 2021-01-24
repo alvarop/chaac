@@ -129,7 +129,9 @@ static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-
+size_t vcpGetTxBytes(void *buff, size_t size);
+size_t vcpGetTxBytesFromISR(void *buff, size_t size);
+void vcpConnectedState(uint8_t state);
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -229,9 +231,16 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
+    {
+      volatile USBD_SetupReqTypedef *req = (USBD_SetupReqTypedef *)pbuf;
+      if((req->wValue & 0x1) != 0) {
+        vcpConnectedState(1);
+      } else {
+        vcpConnectedState(0);
+      }
 
     break;
-
+    }
     case CDC_SEND_BREAK:
 
     break;
@@ -283,12 +292,20 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 7 */
+  (void) Buf;
+  (void) Len;
+
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
   if (hcdc->TxState != 0){
     return USBD_BUSY;
   }
-  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
-  result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+
+  size_t txLen = vcpGetTxBytes(&UserTxBufferFS, sizeof(UserTxBufferFS));
+
+  if(txLen) {
+    USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, txLen);
+    result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+  }
   /* USER CODE END 7 */
   return result;
 }
@@ -312,6 +329,13 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
   UNUSED(Buf);
   UNUSED(Len);
   UNUSED(epnum);
+
+  size_t txLen = vcpGetTxBytesFromISR(&UserTxBufferFS, sizeof(UserTxBufferFS));
+
+  if(txLen) {
+    USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, txLen);
+    result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+  }
   /* USER CODE END 13 */
   return result;
 }
