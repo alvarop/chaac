@@ -53,13 +53,6 @@ target_include_directories(${EXECUTABLE} PRIVATE
 
 target_linker_map(${EXECUTABLE})
 
-# TODO - Figure out how to do this from bsp dir
-# Add file-specific flags for lib compiler warnings
-set_source_files_properties(
-	${BSP_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c
-	PROPERTIES
-	COMPILE_FLAGS -Wno-unused-parameter)
-
 # Print executable size
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
         COMMAND ${SIZE} ${EXECUTABLE})
@@ -109,8 +102,6 @@ endif()
 
 
 add_custom_target(dfu_flash
-	COMMAND bash dfu-util -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000:leave -D ${PROJECT_NAME}.bin
+	COMMAND dfu-util -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000:leave -D ${EXECUTABLE}.bin
 	DEPENDS ${EXECUTABLE}
 )
-
-
