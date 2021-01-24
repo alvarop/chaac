@@ -5,6 +5,7 @@
 #include "printf.h"
 #include "debug.h"
 #include "gpio.h"
+#include "usb_device.h"
 // #include "spi.h"
 // #include "usart.h"
 // #include "radio.h"
@@ -175,6 +176,7 @@ int main(void) {
     SystemClock_Config();
 
     MX_GPIO_Init();
+    MX_USB_DEVICE_Init();
     // MX_SPI1_Init();
     // MX_USART2_UART_Init();
 

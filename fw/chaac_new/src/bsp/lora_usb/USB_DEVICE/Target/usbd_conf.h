@@ -34,6 +34,7 @@
 #include "main.h"
 #include "stm32l4xx.h"
 #include "stm32l4xx_hal.h"
+#include "FreeRTOS.h"
 
 /* USER CODE BEGIN INCLUDE */
 
@@ -92,10 +93,12 @@
 /* Memory management macros */
 
 /** Alias for memory allocation. */
-#define USBD_malloc         malloc
+void *USDB_static_malloc(uint32_t size);
+#define USBD_malloc        USDB_static_malloc
 
 /** Alias for memory release. */
-#define USBD_free          free
+void USDB_static_free(void *p);
+#define USBD_free          USDB_static_free
 
 /** Alias for memory set. */
 #define USBD_memset         memset
