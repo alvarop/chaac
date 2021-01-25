@@ -13,8 +13,8 @@
 // #include "usart.h"
 
 
-static void prvMainTask( void *pvParameters ) {
-    (void)pvParameters;
+static void mainTask( void *parameters ) {
+    (void)parameters;
 
     for(;;) {
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
@@ -26,8 +26,12 @@ static void prvMainTask( void *pvParameters ) {
         vTaskDelay(50);
         HAL_GPIO_WritePin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin, GPIO_PIN_RESET);
         vTaskDelay(400);
-        vcpSendBytes("blink!!!\n", 9);
+        vcpTx("b1ink!!!\n", 9);
     }
+}
+
+void echo(uint8_t byte) {
+    vcpTx(&byte, 1);
 }
 
 int main(void) {
@@ -41,16 +45,17 @@ int main(void) {
     // MX_USART2_UART_Init();
 
     vcpInit();
+    vcpSetRxByteCallback(echo);
 
-    BaseType_t xRval = xTaskCreate(
-            prvMainTask,
+    BaseType_t rval = xTaskCreate(
+            mainTask,
             "main",
             512,
             NULL,
             tskIDLE_PRIORITY + 1,
             NULL);
 
-    configASSERT(xRval == pdTRUE);
+    configASSERT(rval == pdTRUE);
 
     vTaskStartScheduler();
 
