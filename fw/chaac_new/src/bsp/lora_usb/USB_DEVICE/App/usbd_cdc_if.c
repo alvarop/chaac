@@ -23,7 +23,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "vcp.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -129,9 +129,7 @@ static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 static int8_t CDC_TransmitCplt_FS(uint8_t *pbuf, uint32_t *Len, uint8_t epnum);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-size_t vcpGetTxBytes(void *buff, size_t size);
-size_t vcpGetTxBytesFromISR(void *buff, size_t size);
-void vcpConnectedState(uint8_t state);
+
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -234,9 +232,9 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     {
       volatile USBD_SetupReqTypedef *req = (USBD_SetupReqTypedef *)pbuf;
       if((req->wValue & 0x1) != 0) {
-        vcpConnectedState(1);
+        vcpSetConnectedState(true);
       } else {
-        vcpConnectedState(0);
+        vcpSetConnectedState(false);
       }
 
     break;
