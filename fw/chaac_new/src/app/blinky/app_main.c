@@ -8,9 +8,8 @@
 #include "gpio.h"
 #include "usb_device.h"
 #include "vcp.h"
-
-// #include "spi.h"
-// #include "usart.h"
+#include "loraRadio.h"
+#include "spi.h"
 
 
 static void mainTask( void *parameters ) {
@@ -21,17 +20,7 @@ static void mainTask( void *parameters ) {
         vTaskDelay(50);
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
         vTaskDelay(400);
-
-        HAL_GPIO_WritePin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin, GPIO_PIN_SET);
-        vTaskDelay(50);
-        HAL_GPIO_WritePin(RADIO_TXEN_GPIO_Port, RADIO_TXEN_Pin, GPIO_PIN_RESET);
-        vTaskDelay(400);
-        vcpTx("b1ink!!!\n", 9);
     }
-}
-
-void echo(uint8_t byte) {
-    vcpTx(&byte, 1);
 }
 
 int main(void) {
@@ -41,11 +30,12 @@ int main(void) {
 
     MX_GPIO_Init();
     MX_USB_DEVICE_Init();
-    // MX_SPI1_Init();
-    // MX_USART2_UART_Init();
+    MX_SPI1_Init();
 
     vcpInit();
-    vcpSetRxByteCallback(echo);
+    // vcpSetRxByteCallback(echo);
+
+    loraRadioInit();
 
     BaseType_t rval = xTaskCreate(
             mainTask,

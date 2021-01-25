@@ -3,6 +3,7 @@ set(BSP_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 set(BSP_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/gpio.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/main.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/spi.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/stm32l4xx_hal_msp.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/stm32l4xx_hal_timebase_tim.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/stm32l4xx_it.c
@@ -24,20 +25,25 @@ set(BSP_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_exti.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_gpio.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usb.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_utils.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c
 	${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c
+	${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32l412xx.s
+	${CMAKE_CURRENT_SOURCE_DIR}/sx1262-board.c
 	${CMAKE_CURRENT_SOURCE_DIR}/USB_DEVICE/App/usb_device.c
 	${CMAKE_CURRENT_SOURCE_DIR}/USB_DEVICE/App/usbd_cdc_if.c
 	${CMAKE_CURRENT_SOURCE_DIR}/USB_DEVICE/App/usbd_desc.c
 	${CMAKE_CURRENT_SOURCE_DIR}/USB_DEVICE/Target/usbd_conf.c
 	${CMAKE_CURRENT_SOURCE_DIR}/USB_DEVICE/usb_static_malloc.c
-
-	${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32l412xx.s
 	PARENT_SCOPE)
 
 set(BSP_INCLUDES
