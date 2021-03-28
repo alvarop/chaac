@@ -1,5 +1,4 @@
 #include "windrain.h"
-#include "IOAdc.h"
 #include "adc.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -62,7 +61,7 @@ void vWindRainClearRain() {
 // TODO - add ulWindGetMaxSpeed for wind gusts
 uint32_t ulWindRainGetSpeed() {
     uint32_t ulWindSpeed;
-   
+
     int32_t ulTimeDiff = xTaskGetTickCount() - ulLastSpeedTimeS;
     if (ulTimeDiff > 0) {
         // 1 tick/s is equivalent to 2.4kph
@@ -77,25 +76,11 @@ uint32_t ulWindRainGetSpeed() {
     return ulWindSpeed;
 }
 
-static const WindDirLUT_t *prvGetDir() {
-    int32_t lMv = 0;
-
-    ADC_ChannelConfTypeDef xConfig = {0};
-
-    xConfig.Rank = ADC_REGULAR_RANK_1;
-    xConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
-    xConfig.SingleDiff = ADC_SINGLE_ENDED;
-    xConfig.OffsetNumber = ADC_OFFSET_NONE;
-    xConfig.Offset = 0;
-
-    xConfig.Channel = ADC_CHANNEL_5;
-    xIOAdcChannelConfig(&hadc1, &xConfig);
-
-    xIOAdcReadMv(&hadc1, &lMv);
+static const WindDirLUT_t *prvGetDir(int32_t dirMv) {
 
     const WindDirLUT_t *pxDir = NULL;
     for (uint8_t dir = 0; dir < sizeof(pxWindDirLUT)/sizeof(wind_dir_t); dir++) {
-        if (lMv < pxWindDirLUT[dir].voltage) {
+        if (dirMv < pxWindDirLUT[dir].voltage) {
             pxDir = &pxWindDirLUT[dir];
             break;
         }
@@ -104,8 +89,8 @@ static const WindDirLUT_t *prvGetDir() {
     return pxDir;
 }
 
-int16_t sWindRainGetDirDegrees() {
-    const WindDirLUT_t *pxDir = prvGetDir();
+int16_t sWindRainGetDirDegrees(int32_t dirMv) {
+    const WindDirLUT_t *pxDir = prvGetDir(dirMv);
 
     if (pxDir != NULL) {
         return pxDir->degrees;
@@ -113,8 +98,8 @@ int16_t sWindRainGetDirDegrees() {
     return -1;
 }
 
-wind_dir_t xWindRainGetDir() {
-    const WindDirLUT_t *pxDir = prvGetDir();
+wind_dir_t xWindRainGetDir(int32_t dirMv) {
+    const WindDirLUT_t *pxDir = prvGetDir(dirMv);
 
     if (pxDir != NULL) {
         return pxDir->direction;

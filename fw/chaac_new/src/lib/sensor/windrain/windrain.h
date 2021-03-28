@@ -22,12 +22,12 @@ typedef enum {
     WIND_INVALID,
 } wind_dir_t;
 
-void vWindRainInit(); 
+void vWindRainInit();
 uint32_t ulWindRainGetRain();
 void vWindRainClearRain();
 uint32_t ulWindRainGetSpeed();
-wind_dir_t xWindRainGetDir();
-int16_t sWindRainGetDirDegrees();
+wind_dir_t xWindRainGetDir(int32_t dirMv);
+int16_t sWindRainGetDirDegrees(int32_t dirMv);
 
 void vWindRainRainIrq();
 void vWindRainWindSpeedIrq();
