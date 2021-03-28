@@ -96,6 +96,10 @@ elseif(${DEBUGGER} STREQUAL "stlink")
 	add_custom_target(debug
 		COMMAND bash ${CMAKE_SOURCE_DIR}/tools/debug_stlink.sh ${EXECUTABLE}
 	)
+
+	add_custom_target(debug_reset
+		COMMAND bash ${CMAKE_SOURCE_DIR}/tools/debug_stlink_reset.sh ${EXECUTABLE}
+	)
 else()
 	message("No debugger selected!!!")
 endif()
