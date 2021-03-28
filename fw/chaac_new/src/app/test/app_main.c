@@ -77,16 +77,18 @@ void HAL_Delay(uint32_t delay) {
 void OnTxDone( void )
 {
     // printf("txdone\n");
-    Radio.Standby( );
+    Radio.Sleep( );
 }
 
 void OnTxTimeout( void )
 {
-    Radio.Standby( );
+    Radio.Sleep( );
 }
 
 int init_radio(void) {
     // printf("Initializing radio\n");
+
+    MX_SPI1_Init();
 
     RadioEvents.TxDone = OnTxDone;
     // RadioEvents.RxDone = OnRxDone;
@@ -111,7 +113,11 @@ int init_radio(void) {
     //                                LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
     //                                0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
 
-       return 0;
+    Radio.Sleep( );
+
+    HAL_SPI_DeInit(&hspi1);
+
+    return 0;
 }
 
 static uint32_t prvAdcGetSampleMv(uint32_t ulChannel) {
@@ -134,18 +140,39 @@ static uint32_t prvAdcGetSampleMv(uint32_t ulChannel) {
 
 const uint32_t *HWID = (const uint32_t *)(UID_BASE);
 
+static void showError(uint32_t error) {
+    for(uint32_t x = 0; x < 20; x++) {
+        LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
+        vTaskDelay(25);
+        LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
+        vTaskDelay(25);
+    }
+
+    vTaskDelay(475);
+
+    for(uint32_t x = 0; x < error; x++) {
+        LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
+        vTaskDelay(250);
+        LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
+        vTaskDelay(250);
+    }
+
+    vTaskDelay(250);
+
+    for(uint32_t x = 0; x < 20; x++) {
+        LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
+        vTaskDelay(25);
+        LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
+        vTaskDelay(25);
+    }
+}
+
 static void prvMainTask( void *pvParameters ) {
     (void)pvParameters;
 
     LL_GPIO_ResetOutputPin(RADIO_NRST_GPIO_Port, RADIO_NRST_Pin);
 
-#ifdef BUILD_DEBUG
-    vDebugInit();
-    // printf("Chaac FW\n");
-#endif
-
     xIOI2cInit(&hi2c1);
-    xIOAdcInit(&hadc1);
     vWindRainInit();
 
     init_radio();
@@ -155,37 +182,32 @@ static void prvMainTask( void *pvParameters ) {
     packet.sample = 0;
 
     uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);
-    if(ulRval == 0) {
-        // printf("SHT3x Initialized Successfully!\n");
-    } else {
-        // printf("Error initializing SHT3x (%ld)\n", ulRval);
+    if(ulRval) {
+        showError(1);
     }
 
     ulRval = dps368_init(&hi2c1);
-    if(ulRval == 0) {
-        // printf("DPS368 Initialized Successfully!\n");
-    } else {
-        // printf("Error initializing DPS368 (%ld)\n", ulRval);
+    if(ulRval) {
+        showError(2);
     }
 
-    // Enable sensor power rail
-    LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+    xIOI2cDeInit(&hi2c1);
 
     for(;;) {
-        LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
-        vTaskDelay(25);
-        LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
+        // Enable sensor power rail
+        LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+
+        xIOI2cInit(&hi2c1);
+        xIOAdcInit(&hadc1);
 
         int16_t sTemperature, sHumidity;
         ulRval = ulSht3xRead(&hi2c1, SHT3x_ADDR, &sTemperature, &sHumidity);
         if(ulRval == 0) {
             packet.temperature = sTemperature;
             packet.humidity = sHumidity;
-            // printf("T: %0.2fC H: %0.2f %RH\n", (float)packet.temperature/100.0, (float)packet.humidity/100.0);
         } else {
             packet.temperature = -27300;
             packet.humidity = 0;
-            // printf("Error reading from SHT3x (%ld)\n", ulRval);
         }
 
         float fTemperature, fPressure;
@@ -208,27 +230,31 @@ static void prvMainTask( void *pvParameters ) {
 
         packet.battery = prvAdcGetSampleMv(ADC_CHANNEL_7) * 2;
         packet.solar_panel = prvAdcGetSampleMv(ADC_CHANNEL_6) * 2;
-        // printf("VSOLAR: %0.3f V\n", (float)packet.solar_panel /1000.0);
-        // printf("BATT: %0.3f V\n", (float)packet.battery /1000.0);
 
         packet.rain = ulWindRainGetRain()/2794;
 
         // Store wind speed in kph * 100
         packet.wind_speed = ulWindRainGetSpeed()/10;
-        packet.wind_dir = xWindRainGetDir();
+        packet.wind_dir = xWindRainGetDir(prvAdcGetSampleMv(ADC_CHANNEL_5));
 
-        // printf("Wind: %0.2f kph @ %0.1f\n", (float)packet.wind_speed/100.0, (float)sWindRainGetDirDegrees()/10.0);
-        // printf("Rain: %0.3f mm\n", (float)packet.rain * 0.2794);
         vWindRainClearRain();
 
+        MX_SPI1_Init();
         Radio.Send((uint8_t *)&packet, sizeof(packet));
+        HAL_SPI_DeInit(&hspi1);
 
         packet.sample++;
-        vTaskDelay(9925);
+
+        xIOI2cDeInit(&hi2c1);
+        xIOAdcDeInit(&hadc1);
+        // Disable sensor power rail
+        LL_GPIO_SetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+        vTaskDelay(29925);
     }
 }
 
 TaskHandle_t pxRadioIrqTaskHandle = NULL;
+extern SPI_HandleTypeDef hspi1;
 
 static void prvRadioIrqTask( void *pvParameters ) {
     (void)pvParameters;
@@ -237,7 +263,9 @@ static void prvRadioIrqTask( void *pvParameters ) {
 
     for(;;) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        MX_SPI1_Init();
         Radio.IrqProcess();
+        HAL_SPI_DeInit(&hspi1);
     }
 }
 
@@ -247,7 +275,6 @@ int main(void) {
     SystemClock_Config();
 
     MX_GPIO_Init();
-    MX_SPI1_Init();
 
     BaseType_t xRval = xTaskCreate(
             prvMainTask,
