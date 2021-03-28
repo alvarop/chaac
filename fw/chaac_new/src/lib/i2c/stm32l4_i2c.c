@@ -5,15 +5,14 @@
 
 BaseType_t xIOI2cInit(void *pvHandle) {
     (void)pvHandle;
-    
-    HAL_I2C_MspInit((I2C_HandleTypeDef *)pvHandle);
+
     MX_I2C1_Init();
     return 0;
 }
 
 
 BaseType_t xIOI2cDeInit(void *pvHandle) {
-    HAL_I2C_MspDeInit((I2C_HandleTypeDef *)pvHandle);
+    HAL_I2C_DeInit((I2C_HandleTypeDef *)pvHandle);
     return 0;
 }
 
@@ -21,7 +20,7 @@ bool bIOI2cProbe(void *pvHandle, uint8_t ucAddr) {
     configASSERT(pvHandle != NULL);
     I2C_HandleTypeDef *pxHandle = (I2C_HandleTypeDef *)pvHandle;
     HAL_StatusTypeDef xStatus = HAL_I2C_IsDeviceReady(pxHandle, ucAddr, 1, 10);
-    //printf("Trying %02X. Rval=%d\n", ucAddr, xStatus);    
+    //printf("Trying %02X. Rval=%d\n", ucAddr, xStatus);
     return (xStatus == HAL_OK);
 }
 

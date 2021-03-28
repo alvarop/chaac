@@ -5,7 +5,6 @@ BaseType_t xIOAdcInit(void *pvHandle) {
     configASSERT(pvHandle != 0);
     ADC_HandleTypeDef *pxHandle = (ADC_HandleTypeDef *)pvHandle;
 
-    HAL_ADC_MspInit(pxHandle);
     MX_ADC1_Init();
 
     // Calibrate ADC
@@ -17,7 +16,7 @@ BaseType_t xIOAdcDeInit(void *pvHandle) {
     configASSERT(pvHandle != 0);
     ADC_HandleTypeDef *pxHandle = (ADC_HandleTypeDef *)pvHandle;
 
-    HAL_ADC_MspDeInit(pxHandle);
+    HAL_ADC_DeInit(pxHandle);
     return 0;
 }
 
@@ -53,7 +52,7 @@ AdcStatus_t xIOAdcReadMv(void *pvHandle, int32_t *plValueMv) {
 AdcStatus_t xIOAdcConfig(void *pvHandle, void *pvConfig) {
     (void)pvHandle;
     (void)pvConfig;
-    
+
     // Not implemented since adc config is taken care of by the handle and adcinit
 
     return 0;
