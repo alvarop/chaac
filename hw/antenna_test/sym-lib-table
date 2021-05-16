@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name chaac-rescue)(type Legacy)(uri ${KIPRJMOD}/chaac-rescue.lib)(options "")(descr ""))
+)
