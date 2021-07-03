@@ -17,16 +17,18 @@
 
 static uint8_t txbuff[BUFFER_SIZE];
 void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
-    const uint16_t total_size = len;// + sizeof(chaac_lora_rxinfo_t);
-    if(total_size <= BUFFER_SIZE) {
-        memcpy(txbuff, buff, len);
+
+    // Check packet CRC
+    if(packetIsValid(buff, len) && (len <= BUFFER_SIZE)) {
+        packet_header_t *header = (packet_header_t *)buff;
+
+        memcpy(txbuff, (void *)&header[1], header->len);
 
         chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[len];
         footer->rssi = rssi;
         footer->snr = snr;
 
         ulPacketTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
-
     }
 
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);

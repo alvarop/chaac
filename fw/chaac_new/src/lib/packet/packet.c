@@ -115,6 +115,48 @@ int32_t ulPacketProcessByte(uint8_t byte) {
     return 0;
 }
 
+bool packetIsValid(uint8_t *buffer, size_t len) {
+    bool valid = false;
+    do {
+        packet_header_t *header = (packet_header_t *)buffer;
+
+        // Not enough data for header
+        if (len < (sizeof(packet_header_t) + sizeof(packet_footer_t))) {
+            break;
+        }
+
+        // Invalid packet start
+        if (header->start != PACKET_START) {
+            break;
+        }
+
+        // Invalid packet len
+        if (header->len > MAX_PACKET_DATA_LEN) {
+            break;
+        }
+
+        // Still not enough data total
+        if (len < (sizeof(packet_header_t) + sizeof(packet_footer_t) + header->len)) {
+            break;
+        }
+
+        packet_footer_t *footer = (packet_footer_t *)(
+                                        (uint8_t *)&header[1] + header->len);
+
+        crc_t crc = crc_init();
+        crc = crc_update(crc, header, header->len + sizeof(packet_header_t));
+        crc = crc_finalize(crc);
+
+        if(crc != footer->crc) {
+            break;
+        }
+
+        valid = true;
+    } while(0);
+
+    return valid;
+}
+
 int32_t ulPacketTx(uint16_t len, void *data) {
     int32_t rval = 0;
     do {

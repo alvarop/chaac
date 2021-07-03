@@ -2,6 +2,7 @@
 #define __PACKET_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct {
     uint16_t start;
@@ -20,5 +21,6 @@ void vPacketInitCb(void (*cb_fn)(int16_t len, void *data));
 void vPacketInitTxFn(void (*tx_fn)(int16_t len, void *data));
 int32_t ulPacketProcessByte(uint8_t byte);
 int32_t ulPacketTx(uint16_t len, void *data);
+bool packetIsValid(uint8_t *buffer, size_t len);
 
 #endif

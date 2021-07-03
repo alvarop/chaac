@@ -19,6 +19,7 @@
 #include <string.h>
 #include "chaac_packet.h"
 #include "FreeRTOSLPM.h"
+#include "packet.h"
 
 static weather_packet_v1p0_t packet;
 
@@ -167,6 +168,33 @@ static void showError(uint32_t error) {
     }
 }
 
+static uint8_t txbuff[BUFFER_SIZE];
+void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
+
+    // Check packet CRC
+    if(packetIsValid(buff, len) && (len <= BUFFER_SIZE)) {
+        packet_header_t *header = (packet_header_t *)buff;
+
+        memcpy(txbuff, (void *)&header[1], header->len);
+
+        chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[len];
+        footer->rssi = rssi;
+        footer->snr = snr;
+
+        ulPacketTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
+    }
+
+    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
+    vTaskDelay(50);
+    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+}
+
+void packetTxFn(int16_t len, void* data) {
+    MX_SPI1_Init();
+    Radio.Send((uint8_t *)data, len);
+    HAL_SPI_DeInit(&hspi1);
+}
+
 static void prvMainTask( void *pvParameters ) {
     (void)pvParameters;
 
@@ -174,6 +202,7 @@ static void prvMainTask( void *pvParameters ) {
 
     xIOI2cInit(&hi2c1);
     vWindRainInit();
+    vPacketInitTxFn(packetTxFn);
 
     init_radio();
 
@@ -239,9 +268,7 @@ static void prvMainTask( void *pvParameters ) {
 
         vWindRainClearRain();
 
-        MX_SPI1_Init();
-        Radio.Send((uint8_t *)&packet, sizeof(packet));
-        HAL_SPI_DeInit(&hspi1);
+        ulPacketTx(sizeof(packet), &packet);
 
         packet.sample++;
 
@@ -249,7 +276,7 @@ static void prvMainTask( void *pvParameters ) {
         xIOAdcDeInit(&hadc1);
         // Disable sensor power rail
         LL_GPIO_SetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
-        vTaskDelay(29925);
+        vTaskDelay(60 * 1000);
     }
 }
 
