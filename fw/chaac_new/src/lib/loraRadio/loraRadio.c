@@ -9,9 +9,6 @@
 #include "sx126x.h"
 #include <string.h>
 #include "sx126x-board.h"
-#include "chaac_packet.h"
-#include "packet.h"
-#include "vcp.h"
 #include "loraRadio.h"
 
 
@@ -35,11 +32,9 @@
 
 
 #define RX_TIMEOUT_VALUE                            0
-#define BUFFER_SIZE                                 64 // Define the payload size here
-
-uint8_t txbuff[BUFFER_SIZE];
 
 static RadioEvents_t RadioEvents;
+static loraRxCallback_t _rxCallback = NULL;
 
 void OnTxDone( void )
 {
@@ -48,18 +43,11 @@ void OnTxDone( void )
 
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
-    const uint16_t total_size = size;// + sizeof(chaac_lora_rxinfo_t);
-    if(total_size <= BUFFER_SIZE) {
-        memcpy(txbuff, payload, size);
-
-        chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[size];
-        footer->rssi = rssi;
-        footer->snr = snr;
-
-        ulPacketTx(size + sizeof(chaac_lora_rxinfo_t), txbuff);
-
-        Radio.Rx(RX_TIMEOUT_VALUE);
+    if(_rxCallback != NULL) {
+        _rxCallback(payload, size, rssi, snr);
     }
+
+    Radio.Rx(RX_TIMEOUT_VALUE);
 }
 
 void OnTxTimeout( void )
@@ -105,18 +93,12 @@ int init_radio(void) {
        return 0;
 }
 
-void packetTxFn(int16_t len, void* data) {
-    vcpTx(data, len);
-}
-
 TaskHandle_t pxRadioIrqTaskHandle = NULL;
 
 static void prvRadioIrqTask( void *pvParameters ) {
     (void)pvParameters;
 
     init_radio();
-
-    vPacketInitTxFn(packetTxFn);
 
     Radio.Rx(RX_TIMEOUT_VALUE);
 
@@ -128,7 +110,9 @@ static void prvRadioIrqTask( void *pvParameters ) {
     }
 }
 
-void loraRadioInit() {
+void loraRadioInit(loraRxCallback_t rxCallback) {
+
+    _rxCallback = rxCallback;
 
     BaseType_t xRval = xTaskCreate(
             prvRadioIrqTask,
