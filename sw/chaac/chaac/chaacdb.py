@@ -16,17 +16,18 @@ data_columns = [
     "temperature",
     "humidity",
     "pressure",
-    "temperature_in",
+    "alt_temperature",
     "light",
     "battery",
     "rain",
     "wind_speed",
+    "wind_gust",
     "wind_dir",
     "solar_panel",
 ]
 
 # Fields we don't compute stats for
-no_stat_fields = ("id", "timestamp", "uid", "wind_dir", "rain", "temperature_in")
+no_stat_fields = ("id", "timestamp", "uid", "wind_dir", "rain", "alt_temperature")
 
 # Generate stats columns from data_columns
 stat_columns = []

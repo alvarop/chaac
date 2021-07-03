@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="chaac",
-    version="0.23",
+    version="0.30",
     description="Chaac Library",
     long_description=long_description,
     long_description_content_type="text/markdown",
