@@ -5,8 +5,8 @@ $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
 Title "Chaac"
-Date "2021-06-13"
-Rev "6.2"
+Date "2021-07-03"
+Rev "6.3"
 Comp "@alvaroprieto"
 Comment1 ""
 Comment2 ""
@@ -797,13 +797,13 @@ F 5 "MCP73871T-2CCI/ML" H 4300 2600 50  0001 C CNN "MPN"
 	1    0    0    -1  
 $EndComp
 Text Notes 1700 2500 0    50   ~ 0
-Charge Current\n1000V/(20mA) = 50kOhm
+Charge Current\n1000V/(200mA) = 5kOhm
 $Comp
 L Device:R_Small R5
 U 1 1 5F44CC92
 P 2950 2350
 F 0 "R5" V 3050 2400 50  0000 R CNN
-F 1 "100k" V 3050 2250 50  0000 R CNN
+F 1 "10k" V 3050 2250 50  0000 R CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" H 2950 2350 50  0001 C CNN
 F 3 "~" H 2950 2350 50  0001 C CNN
 F 4 "311-100KLRCT-ND" H -3700 -4650 50  0001 C CNN "DKPN"
@@ -816,7 +816,7 @@ L Device:R_Small R8
 U 1 1 5F44DAA2
 P 2950 2450
 F 0 "R8" V 2850 2500 50  0000 R CNN
-F 1 "100k" V 2850 2350 50  0000 R CNN
+F 1 "10k" V 2850 2350 50  0000 R CNN
 F 2 "Resistor_SMD:R_0402_1005Metric" H 2950 2450 50  0001 C CNN
 F 3 "~" H 2950 2450 50  0001 C CNN
 F 4 "311-100KLRCT-ND" H -3700 -4550 50  0001 C CNN "DKPN"
