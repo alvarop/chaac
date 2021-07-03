@@ -36,11 +36,17 @@ last_packet = None
 
 def process_packet(packet):
     global last_packet
-    
-    header_dict = packets.PacketHeader.decode(packet)._asdict()
-    packet_dict = packets.WeatherPacketV1P0.decode(packet)._asdict()
 
-    rxinfo = packets.LoraRxInfo.decode(packet, packets.WeatherPacketV1P0.size())
+    header_dict = packets.PacketHeader.decode(packet)._asdict()
+    if header_dict["packet_type"] not in packets.PacketTypes:
+        print(f"Unknown packet type {header_dict}\n{packet}")
+        return
+
+    weatherPacket = packets.PacketTypes[header_dict["packet_type"]]
+
+    packet_dict = weatherPacket.decode(packet)._asdict()
+
+    rxinfo = packets.LoraRxInfo.decode(packet, weatherPacket.size())
     print(rxinfo)
 
     # Don't process duplicate packets!
@@ -57,11 +63,13 @@ def process_packet(packet):
     for key, value in packet_dict.items():
         if key == "wind_dir":
             data[key] = value * 360.0 / 16
+        elif key == "wind_dir_deg":
+            data[key] = value / 10.0
         elif key == "rain":
             data[key] = round(value * 0.2794, 4)
-        elif key == "wind_speed":
+        elif key == "wind_speed" or key == "gust_speed":
             data[key] = value / 100.0
-        elif key == "temperature" or key == "humidity":
+        elif key == "temperature" or key == "alt_temperature" or key == "humidity":
             data[key] = value / 100.0
         elif key == "pressure":
             data[key] = (value + 100000.0) / 100.0
@@ -69,7 +77,7 @@ def process_packet(packet):
             data[key] = value / 1000.0
         else:
             data[key] = packet_dict[key]
-    data = packets.WeatherPacketV1P0.from_dict(data)
+    data = weatherPacket.from_dict(data)
 
     print(data)
     if db is not None:

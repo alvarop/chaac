@@ -20,8 +20,9 @@
 #include "chaac_packet.h"
 #include "FreeRTOSLPM.h"
 #include "packet.h"
+#include "sensor.h"
 
-static weather_packet_v1p0_t packet;
+static weather_packet_v1p1_t packet;
 
 
 #define RF_FREQUENCY 915000000
@@ -195,20 +196,107 @@ void packetTxFn(int16_t len, void* data) {
     HAL_SPI_DeInit(&hspi1);
 }
 
-static void prvMainTask( void *pvParameters ) {
+static sensor_t shtTemperature;
+static sensor_t shtHumidity;
+static sensor_t dpsPressure;
+static sensor_t dpsTemperature;
+static sensor_t vBatt;
+static sensor_t vSolar;
+
+static void mainTask( void *pvParameters ) {
+    (void)pvParameters;
+
+    LL_GPIO_ResetOutputPin(RADIO_NRST_GPIO_Port, RADIO_NRST_Pin);
+
+    packetInitTxFn(packetTxFn);
+    windRainInit();
+
+    init_radio();
+
+    packet.header.type = PACKET_TYPE_WEATHER_V1P1;
+    packet.header.uid = HWID[0] ^ HWID[1] ^ HWID[2];
+    packet.sample = 0;
+
+    for(;;) {
+        vTaskDelay(60 * 1000);
+
+        float fVal;
+
+        if(sensorGetAvg(&shtTemperature, &fVal)) {
+            packet.temperature = (int16_t)fVal;
+            sensorClearSamples(&shtTemperature);
+        } else {
+            packet.temperature = -27300;
+        }
+
+        if(sensorGetAvg(&shtHumidity, &fVal)) {
+            packet.humidity = (uint16_t)fVal;
+            sensorClearSamples(&shtHumidity);
+        } else {
+            packet.humidity = 0;
+        }
+
+        if(sensorGetAvg(&dpsPressure, &fVal)) {
+            packet.pressure = (uint16_t)fVal;
+            sensorClearSamples(&dpsPressure);
+        } else {
+            packet.pressure = INT16_MIN;
+        }
+
+        if(sensorGetAvg(&dpsTemperature, &fVal)) {
+            packet.alt_temperature = (int16_t)(fVal * 100);
+            sensorClearSamples(&dpsTemperature);
+        } else {
+            packet.alt_temperature = -27300;
+        }
+
+        if(sensorGetAvg(&vBatt, &fVal)) {
+            packet.battery = (uint16_t)fVal;
+            sensorClearSamples(&vBatt);
+        } else {
+            packet.battery = 0;
+        }
+
+        if(sensorGetAvg(&vSolar, &fVal)) {
+            packet.solar_panel = (uint16_t)fVal;
+            sensorClearSamples(&vSolar);
+        } else {
+            packet.solar_panel = 0;
+        }
+
+        packet.rain = windRainGetRain()/2794;
+
+        // Store wind speed in kph * 100
+        packet.wind_speed = windRainGetSpeed()/10;
+        packet.gust_speed = windRainGetGust()/10;
+
+        // Enable sensor power rail
+        LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+
+        // Wait for power to make it out and back for a good measurement
+        vTaskDelay(25);
+
+        xIOAdcInit(&hadc1);
+        packet.wind_dir_deg = windRainGetDirDegrees(prvAdcGetSampleMv(ADC_CHANNEL_5));
+        xIOAdcDeInit(&hadc1);
+
+        // Disable sensor power rail
+        LL_GPIO_SetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+
+        windRainClearRain();
+
+        packetTx(sizeof(packet), &packet);
+
+        packet.sample++;
+    }
+}
+
+static void sensorsTask( void *pvParameters ) {
     (void)pvParameters;
 
     LL_GPIO_ResetOutputPin(RADIO_NRST_GPIO_Port, RADIO_NRST_Pin);
 
     xIOI2cInit(&hi2c1);
-    vWindRainInit();
-    packetInitTxFn(packetTxFn);
-
-    init_radio();
-
-    packet.header.type = PACKET_TYPE_WEATHER_V1P0;
-    packet.header.uid = HWID[0] ^ HWID[1] ^ HWID[2];
-    packet.sample = 0;
 
     uint32_t ulRval = ulSht3xInit(&hi2c1, SHT3x_ADDR);
     if(ulRval) {
@@ -223,67 +311,44 @@ static void prvMainTask( void *pvParameters ) {
     xIOI2cDeInit(&hi2c1);
 
     for(;;) {
-        // Enable sensor power rail
-        LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
 
         xIOI2cInit(&hi2c1);
-        xIOAdcInit(&hadc1);
 
         int16_t sTemperature, sHumidity;
         ulRval = ulSht3xRead(&hi2c1, SHT3x_ADDR, &sTemperature, &sHumidity);
         if(ulRval == 0) {
-            packet.temperature = sTemperature;
-            packet.humidity = sHumidity;
-        } else {
-            packet.temperature = -27300;
-            packet.humidity = 0;
+            sensorAddSample(&shtTemperature, sTemperature);
+            sensorAddSample(&shtHumidity, sHumidity);
         }
 
         float fTemperature, fPressure;
         ulRval = dps368_measure_temp_once(&fTemperature);
-        if (ulRval != 0) {
+        if (ulRval == 0) {
+            sensorAddSample(&dpsTemperature, fTemperature);
+        } else {
             // printf("Error reading DPS368 Temperature (%d)\n", ulRval);
         }
         ulRval = dps368_measure_pressure_once(&fPressure);
-        if (ulRval != 0) {
+        if (ulRval == 0) {
+            sensorAddSample(&dpsPressure, (fPressure - 100000.0));
+        } else  {
             // printf("Error reading DPS368 Pressure (%d)\n", ulRval);
         }
-
-        if (ulRval == 0) {
-            packet.pressure = (int16_t)(((fPressure - 100000.0)));
-            // printf("T: %0.2f C T: %0.2f hPa\n", fTemperature, fPressure/100.0);
-        } else {
-            // set unrealistic pressure on error
-            packet.pressure = INT16_MIN;
-        }
-
-        packet.battery = prvAdcGetSampleMv(ADC_CHANNEL_7) * 2;
-        packet.solar_panel = prvAdcGetSampleMv(ADC_CHANNEL_6) * 2;
-
-        packet.rain = ulWindRainGetRain()/2794;
-
-        // Store wind speed in kph * 100
-        packet.wind_speed = ulWindRainGetSpeed()/10;
-        packet.wind_dir = xWindRainGetDir(prvAdcGetSampleMv(ADC_CHANNEL_5));
-
-        vWindRainClearRain();
-
-        packetTx(sizeof(packet), &packet);
-
-        packet.sample++;
-
         xIOI2cDeInit(&hi2c1);
+
+        xIOAdcInit(&hadc1);
+        sensorAddSample(&vBatt, prvAdcGetSampleMv(ADC_CHANNEL_7) * 2);
+        sensorAddSample(&vSolar, prvAdcGetSampleMv(ADC_CHANNEL_6) * 2);
         xIOAdcDeInit(&hadc1);
-        // Disable sensor power rail
-        LL_GPIO_SetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
-        vTaskDelay(60 * 1000);
+
+        vTaskDelay(1000);
     }
 }
 
 TaskHandle_t pxRadioIrqTaskHandle = NULL;
 extern SPI_HandleTypeDef hspi1;
 
-static void prvRadioIrqTask( void *pvParameters ) {
+static void radioIrqTask( void *pvParameters ) {
     (void)pvParameters;
 
     pxRadioIrqTaskHandle = xTaskGetCurrentTaskHandle();
@@ -304,22 +369,32 @@ int main(void) {
     MX_GPIO_Init();
 
     BaseType_t xRval = xTaskCreate(
-            prvMainTask,
+            mainTask,
             "main",
             512,
             NULL,
-            tskIDLE_PRIORITY + 1,
+            3,
             NULL);
 
     configASSERT(xRval == pdTRUE);
 
     xRval = xTaskCreate(
-            prvRadioIrqTask,
+            radioIrqTask,
             "radio",
             512,
             NULL,
-            tskIDLE_PRIORITY + 2,
+            4,
             NULL);
+
+    configASSERT(xRval == pdTRUE);
+
+    xRval = xTaskCreate(
+        sensorsTask,
+        "sensors",
+        512,
+        NULL,
+        1,
+        NULL);
 
     configASSERT(xRval == pdTRUE);
 

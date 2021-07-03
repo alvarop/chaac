@@ -48,8 +48,8 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-void vWindRainRainIrq();
-void vWindRainWindSpeedIrq();
+void windRainRainIrq();
+void windRainWindSpeedIrq();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -208,14 +208,14 @@ void EXTI15_10_IRQHandler(void)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_10);
     /* USER CODE BEGIN LL_EXTI_LINE_10 */
-    vWindRainWindSpeedIrq();
+    windRainWindSpeedIrq();
     /* USER CODE END LL_EXTI_LINE_10 */
   }
   if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_11) != RESET)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_11);
     /* USER CODE BEGIN LL_EXTI_LINE_11 */
-    vWindRainRainIrq();
+    windRainRainIrq();
     /* USER CODE END LL_EXTI_LINE_11 */
   }
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */

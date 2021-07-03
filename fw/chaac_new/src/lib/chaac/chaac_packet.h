@@ -4,6 +4,7 @@
 // definitions in sw/chaac/chaac/packets.py
 typedef enum {
     PACKET_TYPE_WEATHER_V1P0 = 10,
+    PACKET_TYPE_WEATHER_V1P1 = 11,
 } packet_type_t;
 
 typedef struct {
@@ -24,6 +25,22 @@ typedef struct {
     uint16_t    battery;
     uint16_t    solar_panel;
 } __attribute__((packed)) weather_packet_v1p0_t;
+
+typedef struct {
+    chaac_header_t  header;
+    uint32_t    sample;
+    uint16_t    wind_dir_deg;
+    uint8_t     rain;
+    uint16_t    wind_speed;
+    uint16_t    gust_speed;
+    int16_t     temperature;
+    int16_t     alt_temperature;
+    uint16_t    humidity;
+    int16_t     pressure;
+    uint16_t    battery;
+    uint16_t    solar_panel;
+} __attribute__((packed)) weather_packet_v1p1_t;
+
 
 typedef struct {
     int16_t rssi;

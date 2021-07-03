@@ -2,6 +2,7 @@
 #include "adc.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
 #include "printf.h"
 
 typedef struct {
@@ -10,12 +11,22 @@ typedef struct {
     wind_dir_t direction;
 } WindDirLUT_t;
 
-static uint32_t ulWindSpeedTicks;
-static uint32_t ulLastSpeedTimeS;
+TaskHandle_t windRainTaskHandle;
 
-static uint32_t ulRainTicks;
+static uint32_t windSpeedTicks;
+static uint32_t windGustTicks;
+static uint32_t lastSpeedTicks;
+static uint32_t lastGustTicks;
+static volatile uint32_t maxGust;
+static uint32_t rainTicks;
 
-static const WindDirLUT_t pxWindDirLUT[] = {
+static TimerHandle_t gustTimer;
+
+#define NOTIFY_RAIN (1 << 0)
+#define NOTIFY_GUST (1 << 1)
+static volatile uint32_t windRainNotifyFlags = 0;
+
+static const WindDirLUT_t windDirLUT[] = {
     { 455, 1125, WIND_ESE},
     { 488,  675, WIND_ENE},
     { 541,  900, WIND_E},
@@ -34,84 +45,162 @@ static const WindDirLUT_t pxWindDirLUT[] = {
     {2958, 2700, WIND_W},
     {   0,    0, WIND_N}};
 
-void vWindRainWindSpeedIrq() {
+void windRainWindSpeedIrq() {
     // TODO - add debounce
-    ulWindSpeedTicks++;
+    windSpeedTicks++;
+    windGustTicks++;
 }
 
-void vWindRainRainIrq() {
-    static uint32_t ulLastRainTime;
-
-    // Use OS time for debounce (1/1000 ~= 1ms) configTICK_RATE_HZ
-    if(xTaskGetTickCount() != ulLastRainTime) {
-        ulLastRainTime = xTaskGetTickCount();
-        ulRainTicks++;
+void windRainRainIrq() {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    if(windRainTaskHandle != NULL) {
+        windRainNotifyFlags |= NOTIFY_RAIN;
+        vTaskNotifyGiveFromISR(windRainTaskHandle, &xHigherPriorityTaskWoken);
     }
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-uint32_t ulWindRainGetRain() {
+static void gustTimerCallback(TimerHandle_t timer) {
+  (void)timer;
+  taskENTER_CRITICAL();
+  windRainNotifyFlags |= NOTIFY_GUST;
+  taskEXIT_CRITICAL();
+
+  xTaskNotifyGive(windRainTaskHandle);
+}
+
+uint32_t windRainGetRain() {
     // 0.2794 mm of rain per tick
-    return ulRainTicks * 2794;
+    return rainTicks * 2794;
 }
 
-void vWindRainClearRain() {
-    ulRainTicks = 0;
+void windRainClearRain() {
+    rainTicks = 0;
 }
 
-// TODO - add ulWindGetMaxSpeed for wind gusts
-uint32_t ulWindRainGetSpeed() {
-    uint32_t ulWindSpeed;
-
-    int32_t ulTimeDiff = xTaskGetTickCount() - ulLastSpeedTimeS;
-    if (ulTimeDiff > 0) {
+static uint32_t calcWindSpeed(uint32_t ticks, uint32_t timeDiff) {
+    uint32_t windSpeed = 0;
+    if (timeDiff > 0) {
         // 1 tick/s is equivalent to 2.4kph
-        ulWindSpeed = ulWindSpeedTicks * 2400 * configTICK_RATE_HZ / (ulTimeDiff);
-    } else {
-        ulWindSpeed = 0;
+        windSpeed = ticks * 2400 * configTICK_RATE_HZ / (timeDiff);
     }
 
-    ulWindSpeedTicks = 0;
-    ulLastSpeedTimeS = xTaskGetTickCount();
-
-    return ulWindSpeed;
+    return windSpeed;
 }
 
-static const WindDirLUT_t *prvGetDir(int32_t dirMv) {
+uint32_t windRainGetSpeed() {
+    uint32_t timeDiff = xTaskGetTickCount() - lastSpeedTicks;
+    uint32_t windSpeed = calcWindSpeed(windSpeedTicks, timeDiff);
 
-    const WindDirLUT_t *pxDir = NULL;
-    for (uint8_t dir = 0; dir < sizeof(pxWindDirLUT)/sizeof(wind_dir_t); dir++) {
-        if (dirMv < pxWindDirLUT[dir].voltage) {
-            pxDir = &pxWindDirLUT[dir];
+    windSpeedTicks = 0;
+    lastSpeedTicks = xTaskGetTickCount();
+
+    return windSpeed;
+}
+
+uint32_t windRainGetGust() {
+    uint32_t gustSpeed = maxGust;
+
+    taskENTER_CRITICAL();
+    maxGust = 0;
+    taskEXIT_CRITICAL();
+
+    return gustSpeed;
+}
+
+static const WindDirLUT_t *getDir(int32_t dirMv) {
+
+    const WindDirLUT_t *pDir = NULL;
+    for (uint8_t dir = 0; dir < sizeof(windDirLUT)/sizeof(wind_dir_t); dir++) {
+        if (dirMv < windDirLUT[dir].voltage) {
+            pDir = &windDirLUT[dir];
             break;
         }
     }
 
-    return pxDir;
+    return pDir;
 }
 
-int16_t sWindRainGetDirDegrees(int32_t dirMv) {
-    const WindDirLUT_t *pxDir = prvGetDir(dirMv);
+int16_t windRainGetDirDegrees(int32_t dirMv) {
+    const WindDirLUT_t *pDir = getDir(dirMv);
 
-    if (pxDir != NULL) {
-        return pxDir->degrees;
+    if (pDir != NULL) {
+        return pDir->degrees;
     }
     return -1;
 }
 
-wind_dir_t xWindRainGetDir(int32_t dirMv) {
-    const WindDirLUT_t *pxDir = prvGetDir(dirMv);
+wind_dir_t windRainGetDir(int32_t dirMv) {
+    const WindDirLUT_t *pDir = getDir(dirMv);
 
-    if (pxDir != NULL) {
-        return pxDir->direction;
+    if (pDir != NULL) {
+        return pDir->direction;
     }
     return WIND_INVALID;
  }
 
-void vWindRainInit() {
 
-    ulLastSpeedTimeS= 0;
+static void windRainTask( void *pvParameters ) {
+    (void)pvParameters;
+    static uint32_t lastRainTime = 0; // Used for debounce
 
-    // Dummy read to reset the speed timer
-    ulWindRainGetSpeed();
+    gustTimer = xTimerCreate(
+        "gust",
+        pdMS_TO_TICKS(3 * 1000),
+        pdTRUE, // Enable auto-reload
+        NULL,
+    gustTimerCallback);
+    configASSERT(gustTimer);
+    configASSERT(xTimerStart(gustTimer, 10));
+
+    for(;;) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+        taskENTER_CRITICAL();
+        uint32_t flags = windRainNotifyFlags;
+        windRainNotifyFlags = 0;
+        taskEXIT_CRITICAL();
+
+        if(flags & NOTIFY_RAIN) {
+            // Use OS time for debounce (1/1000 ~= 1ms) configTICK_RATE_HZ
+            if(xTaskGetTickCount() != lastRainTime) {
+                lastRainTime = xTaskGetTickCount();
+                rainTicks++;
+            }
+        }
+
+        if(flags & NOTIFY_GUST) {
+            // Wind gust calculation
+            uint32_t timeDiff = xTaskGetTickCount() - lastGustTicks;
+            uint32_t gustSpeed = calcWindSpeed(windGustTicks, timeDiff);
+
+            windGustTicks = 0;
+            lastGustTicks = xTaskGetTickCount();
+
+            taskENTER_CRITICAL();
+            if(gustSpeed > maxGust) {
+                maxGust = gustSpeed;
+            }
+            taskEXIT_CRITICAL();
+        }
+    }
+}
+
+
+void windRainInit() {
+    BaseType_t xRval = xTaskCreate(
+        windRainTask,
+        "windRain",
+        512,
+        NULL,
+        3,
+        &windRainTaskHandle);
+
+    configASSERT(xRval == pdTRUE);
+    lastSpeedTicks= 0;
+
+    // Dummy read to reset the speed/gust timers
+    windRainGetSpeed();
+    windRainGetGust();
 }
 
