@@ -21,15 +21,15 @@ static packet_state_t state = PACKET_STATE_CLEAR;
 static void (*packet_cb_fn)(int16_t len, void *data) = NULL;
 static void (*packet_tx_fn)(int16_t len, void *data) = NULL;
 
-void vPacketInitCb(void (*cb_fn)(int16_t len, void *data)) {
+void packetInitCb(void (*cb_fn)(int16_t len, void *data)) {
     packet_cb_fn = cb_fn;
 }
 
-void vPacketInitTxFn(void (*tx_fn)(int16_t len, void *data)) {
+void packetInitTxFn(void (*tx_fn)(int16_t len, void *data)) {
     packet_tx_fn = tx_fn;
 }
 
-int32_t ulPacketProcessByte(uint8_t byte) {
+int32_t packetProcessByte(uint8_t byte) {
     switch(state) {
         case PACKET_STATE_CLEAR: {
             if (byte == (PACKET_START & 0xFF)) {
@@ -157,7 +157,7 @@ bool packetIsValid(uint8_t *buffer, size_t len) {
     return valid;
 }
 
-int32_t ulPacketTx(uint16_t len, void *data) {
+int32_t packetTx(uint16_t len, void *data) {
     int32_t rval = 0;
     do {
         if(packet_tx_fn == NULL) {

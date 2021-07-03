@@ -181,7 +181,7 @@ void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
         footer->rssi = rssi;
         footer->snr = snr;
 
-        ulPacketTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
+        packetTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
     }
 
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
@@ -202,7 +202,7 @@ static void prvMainTask( void *pvParameters ) {
 
     xIOI2cInit(&hi2c1);
     vWindRainInit();
-    vPacketInitTxFn(packetTxFn);
+    packetInitTxFn(packetTxFn);
 
     init_radio();
 
@@ -268,7 +268,7 @@ static void prvMainTask( void *pvParameters ) {
 
         vWindRainClearRain();
 
-        ulPacketTx(sizeof(packet), &packet);
+        packetTx(sizeof(packet), &packet);
 
         packet.sample++;
 

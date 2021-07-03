@@ -28,7 +28,7 @@ void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
         footer->rssi = rssi;
         footer->snr = snr;
 
-        ulPacketTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
+        packetTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
     }
 
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
@@ -52,7 +52,7 @@ int main(void) {
     vcpInit();
     // vcpSetRxByteCallback(echo);
 
-    vPacketInitTxFn(packetTxFn);
+    packetInitTxFn(packetTxFn);
     loraRadioInit(loraRxCallback);
 
     vTaskStartScheduler();
