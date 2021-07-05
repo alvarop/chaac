@@ -134,7 +134,6 @@ class ChaacDB:
             "day": "day_samples",
             "week": "week_samples",
             "month": "month_samples",
-            "sketchy": "sketchy_samples",
         }
 
         self.__init_tables()
@@ -167,13 +166,6 @@ class ChaacDB:
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS "
             + "day_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
-            + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
-        )
-
-        # Table to store sketchy samples
-        self.conn.execute(
-            "CREATE TABLE IF NOT EXISTS "
-            + "sketchy_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
             + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
         )
 
@@ -294,59 +286,6 @@ class ChaacDB:
         self.cur.execute(query, args)
 
         return self.cur.fetchall()
-
-    def __is_sketchy_sample(self, line, timestamp):
-
-        # Get latest sample
-        rows = self.get_records("day", order="desc", limit=1)
-        
-        # First entry!
-        if len(rows) == 0:
-            return False
-
-        latest = rows[0]
-
-        # If it's been more than 15 min since the last sample, consider non sketch
-        # This is because samples could have changed a bunch in that time
-        if abs(timestamp - latest.timestamp) > 60*15:
-            return False
-
-        # Possibly corrupt uid (REMOVE for multi device support!)
-        if getattr(line, "uid") != latest.uid:
-            print("Sketchy! Different uid", getattr(line, "uid"), latest.uid)
-            return True
-
-        # 1mm of rain in a minute is a lot, not very realistic
-        if getattr(line, "rain") > 1.0:
-            print("Sketchy! Too much rain", getattr(line, "rain"))
-            return True
-
-        # Pressure change too large
-        if abs(getattr(line, "pressure") - getattr(latest, "pressure")) > 1.0:
-            print("Sketchy! Too large pressure change", getattr(line, "pressure"), getattr(latest, "pressure"))
-            return True
-
-        # Temperature change too large
-        if abs(getattr(line, "temperature") - getattr(latest, "temperature")) > 20:
-            print("Sketchy! Too large temperature change", getattr(line, "temperature"), getattr(latest, "temperature"))
-            return True
-
-        # Humidity change too large
-        if abs(getattr(line, "humidity") - getattr(latest, "humidity")) > 25:
-            print("Sketchy! Too large humidity change", getattr(line, "humidity"), getattr(latest, "humidity"))
-            return True
-
-        # Battery change too large
-        if abs(getattr(line, "battery") - getattr(latest, "battery")) > 1.0:
-            print("Sketchy! Too large battery voltage change", getattr(line, "battery"), getattr(latest, "battery"))
-            return True
-
-        # Solar panel over realistic voltage
-        if getattr(line, "solar_panel") > 7:
-            print("Sketchy! Too large solar panel voltage", getattr(line, "solar_panel"))
-            return True
-
-        return False
 
     def __insert_line(self, line, table="day"):
         query = "INSERT INTO {} VALUES(NULL,{})".format(
@@ -507,17 +446,14 @@ class ChaacDB:
                 except AttributeError:
                     line.append(0)
 
-        if self.__is_sketchy_sample(record, timestamp):
-            print(record)
-            self.__insert_line(line, table="sketchy")
-        else:
-            self.__insert_line(line)
-            self.__downsample_check(timestamp, getattr(record, "uid"))
 
-            if getattr(record, "rain") > 0:
-                self.__insert_rain(
-                    timestamp, getattr(record, "rain"), getattr(record, "uid")
-                )
+        self.__insert_line(line)
+        self.__downsample_check(timestamp, getattr(record, "uid"))
+
+        if getattr(record, "rain") > 0:
+            self.__insert_rain(
+                timestamp, getattr(record, "rain"), getattr(record, "uid")
+            )
 
         if commit:
             self.__commit()
