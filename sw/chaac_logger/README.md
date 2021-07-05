@@ -18,4 +18,4 @@ Note that the last few characters, `KsDl4b` in this case, change everytime super
 To check for errors, just replace stdout for stderr in the command.
 
 ## Local Development
-Run `pipenv run python chaac_logger.py --port /dev/ttyUSB0 --baud_rate 115200 --db sqlite_db_filename.db`
+Run `pipenv run python chaac_logger.py --port /dev/ttyUSB0 --db sqlite_db_filename.db`
