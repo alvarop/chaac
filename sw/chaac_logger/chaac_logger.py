@@ -15,9 +15,7 @@ from serial_packet.serial_packet import decode_packet, encode_packet
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--baud_rate", default=115200, type=int, help="xbee baud rate")
-
-parser.add_argument("--port", required=True, help="xbee device to connect to")
+parser.add_argument("--port", help="device to connect to")
 
 parser.add_argument("--db", help="Sqlite db file")
 
@@ -28,48 +26,68 @@ if args.db:
 else:
     db = None
 
-stream = serial.Serial(args.port, baudrate=args.baud_rate, timeout=0.01)
+if args.port:
+    port = args.port
+else:
+    port = os.environ.get('SERIAL_PORT')
+
+if port is None:
+    raise ValueError("Invalid serial port!")
+
+stream = serial.Serial(port, timeout=0.01)
 stream.flushInput()
 
-
-def clear_rain(uid):
-    # Clear the rain count
-    # This way if we miss a packet, we don't lose the rain data
-    packet = packets.BootPacket.encode((uid, packets.PACKET_TYPE_CLEAR_RAIN, 0x00))
-    stream.write(encode_packet(packet))
+last_packet = None
 
 
-def process_data_packet(packet):
-    data = packets.WeatherPacket.decode(packet)
-    data = packets.WeatherPacket.round(data)
+def process_packet(packet):
+    global last_packet
+
+    header_dict = packets.PacketHeader.decode(packet)._asdict()
+    if header_dict["packet_type"] not in packets.PacketTypes:
+        print(f"Unknown packet type {header_dict}\n{packet}")
+        return
+
+    weatherPacket = packets.PacketTypes[header_dict["packet_type"]]
+
+    packet_dict = weatherPacket.decode(packet)._asdict()
+
+    rxinfo = packets.LoraRxInfo.decode(packet, weatherPacket.size())
+    print(rxinfo)
+
+    # Don't process duplicate packets!
+    if (
+        last_packet is not None
+        and last_packet["uid"] == packet_dict["uid"]
+        and last_packet["sample"] == packet_dict["sample"]
+    ):
+        return
+
+    last_packet = packet_dict
+
+    data = {}
+    for key, value in packet_dict.items():
+        if key == "wind_dir":
+            data[key] = value * 360.0 / 16
+        elif key == "wind_dir_deg":
+            data[key] = value / 10.0
+        elif key == "rain":
+            data[key] = round(value * 0.2794, 4)
+        elif key == "wind_speed" or key == "gust_speed":
+            data[key] = value / 100.0
+        elif key == "temperature" or key == "alt_temperature" or key == "humidity":
+            data[key] = value / 100.0
+        elif key == "pressure":
+            data[key] = (value + 100000.0) / 100.0
+        elif key == "battery" or key == "solar_panel":
+            data[key] = value / 1000.0
+        else:
+            data[key] = packet_dict[key]
+    data = weatherPacket.from_dict(data)
+
     print(data)
-
-    if data.rain > 0:
-        clear_rain(data.uid)
-
     if db is not None:
         db.add_record(data)
-
-
-packet_processors = {
-    packets.PACKET_TYPE_DATA: process_data_packet,
-    # packets.PACKET_TYPE_GPS: process_gps_packet,
-}
-
-
-def process_packet(packet_bytes):
-
-    try:
-        header = packets.PacketHeader.decode(packet_bytes)
-
-        if header.packet_type in packet_processors:
-            packet_processors[header.packet_type](packet_bytes)
-        else:
-            print("ERR: Unknown type", header.packet_type)
-
-    except UnicodeDecodeError:
-        print("unicode error")
-        pass
 
 
 buff = bytearray()

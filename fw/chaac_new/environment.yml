@@ -11,5 +11,15 @@ dependencies:
     - cmake-xpack=3.18.3_1
     - openocd-xpack=0.10.0_15
     - make=4.2.1
+    - ninja=1.10.1
     - python=3.8.6
     - pip
+    - lcov=1.15
+    - clang-tools=11.0.0
+    - doxygen=1.8.20
+    - cppcheck=2.1
+    - lizard
+    - gcovr
+variables:
+  CMAKE_GENERATOR: "Unix Makefiles"
+
