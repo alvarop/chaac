@@ -54,7 +54,7 @@ def get_latest_sample():
 
     rows = db.get_records("day", order="desc", limit=1, uid=uid)
 
-    sample = {"hotsname": hostname}
+    sample = {"hostname": hostname}
     # Convert the units
     for key, val in rows[0]._asdict().items():
         if key == "timestamp":
@@ -142,7 +142,7 @@ def get_json_str(start_date, end_date, table="day"):
 
     rows = db.get_records(table, start_date=start_date, end_date=end_date, uid=uid)
 
-    plot = {"hotsname": hostname}
+    plot = {"hostname": hostname}
 
     plot["start_date"] = datetime.fromtimestamp(start_date).strftime(
         "%Y-%m-%d %H:%M:%S"
@@ -212,7 +212,7 @@ def get_json_stat_str(start_date, end_date):
 
     rows = db.get_stats(start_date=start_date, end_date=end_date, uid=uid)
 
-    plot = {"hotsname": hostname}
+    plot = {"hostname": hostname}
 
     plot["start_date"] = datetime.fromtimestamp(start_date).strftime("%Y-%m-%d")
     plot["end_date"] = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d")
