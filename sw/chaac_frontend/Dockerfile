@@ -1,7 +1,11 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.8
+FROM python:3-slim
 
-COPY ./app /app
+WORKDIR /usr/src/
 
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./app /usr/src/app
+
+CMD ["gunicorn","--workers","5","--bind","0.0.0.0:12345","-m","007","app:app"]
