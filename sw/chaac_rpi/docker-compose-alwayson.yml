@@ -8,7 +8,6 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx
-    restart: always
     depends_on:
       - flask
     ports:
@@ -21,7 +20,6 @@ services:
   flask:
     image: alvaroops/chaac-frontend-flask:latest
     container_name: flask
-    restart: always
     depends_on:
       - chaac-logger
     volumes:
@@ -40,7 +38,6 @@ services:
   chaac-logger:
     image: alvaroops/chaac_logger:latest
     container_name: chaac-logger
-    restart: always
     environment:
       - SERIAL_PORT=/dev/ttyACM0
     devices:
