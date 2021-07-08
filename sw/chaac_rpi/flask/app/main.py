@@ -1,8 +1,9 @@
 import os
 import time
 import socket
+import zipfile
 from datetime import datetime, timedelta
-from flask import Flask, request, g, render_template, jsonify
+from flask import Flask, request, g, render_template, jsonify, redirect
 from chaac.chaacdb import ChaacDB
 
 app = Flask(__name__)
@@ -342,3 +343,14 @@ def plots():
 @app.route("/stats")
 def stats():
     return render_template("stats.html", hostname=hostname)
+
+
+@app.route("/zipdb")
+def download_zip_db():
+    dbname = "chaac.db.zip"
+    with zipfile.ZipFile(
+        f"/tmp/files/{dbname}", "w", compression=zipfile.ZIP_DEFLATED
+    ) as dbzip:
+        print("Zipping ", os.getenv("DATABASE"))
+        dbzip.write(os.getenv("DATABASE"))
+    return redirect(f"/files/{dbname}")

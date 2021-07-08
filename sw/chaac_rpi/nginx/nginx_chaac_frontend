@@ -1,11 +1,15 @@
 # nginx config for flask app
 # Copy to: /etc/nginx/sites-enabled/chaac_frontend
 server {
-        server_name chaac_frontend;
-        listen 80;
+    server_name chaac_frontend;
+    listen 80;
 
-        location / {
-                proxy_pass http://flask-app:5000;
-                proxy_set_header Host "localhost";
-        }
+    location / {
+        proxy_pass http://flask-app:5000;
+        proxy_set_header Host "localhost";
+    }
+
+    location /files/ {
+        alias /tmp/files/;
+    }
 }

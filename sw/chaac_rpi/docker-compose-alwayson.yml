@@ -3,6 +3,7 @@ version: '3.5'
 volumes:
   chaac-db:
     external: true
+  nginx-files:
 
 services:
   nginx:
@@ -14,8 +15,9 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/nginx_chaac_frontend:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx_chaac_frontend:/etc/nginx/conf.d/default.conf:ro
+      - nginx-files:/tmp/files
     networks:
       - chaac-net
 
@@ -26,8 +28,9 @@ services:
     depends_on:
       - chaac-logger
     volumes:
-      - chaac-db:/chaac
+      - chaac-db:/chaac:ro
       - ./flask/app:/usr/src/app
+      - nginx-files:/tmp/files
     environment:
       - DATABASE=/chaac/chaac.db
     command: gunicorn --workers 5 --bind 0.0.0.0:5000 -m 007 app:app
