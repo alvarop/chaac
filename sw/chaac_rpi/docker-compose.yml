@@ -1,0 +1,50 @@
+version: '3.5'
+
+volumes:
+  chaac-db:
+    external: true
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    # Uncomment for server deploys
+    # restart: always
+    depends_on:
+      - flask
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/nginx_chaac_frontend:/etc/nginx/conf.d/default.conf
+    networks:
+      - chaac-net
+
+  flask:
+    image: alvaroops/chaac-frontend-flask:latest
+    container_name: flask
+    depends_on:
+      - chaac-logger
+    volumes:
+      - chaac-db:/chaac
+      - ./flask/app:/usr/src/app
+    environment:
+      - DATABASE=/chaac/chaac.db
+    command: gunicorn --workers 5 --bind 0.0.0.0:5000 -m 007 app:app
+    networks:
+      chaac-net:
+        aliases:
+          - flask-app
+    ports:
+        - 5000:5000
+
+  chaac-logger:
+    image: alvaroops/chaac_logger:latest
+    container_name: chaac-logger
+    environment:
+      - SERIAL_PORT=/dev/ttyACM0
+    devices:
+      - /dev/ttyACM0
+    volumes:
+      - chaac-db:/chaac
+networks:
+  chaac-net:
