@@ -45,13 +45,11 @@ def close_db(error):
         g.sqlite_db.close()
 
 
-def get_latest_sample():
+def get_latest_sample(uid):
     """ Get latest weather data (and past day's rainfall) """
 
     # Get last sample
     db = get_db()
-
-    uid = get_latest_uid()
 
     rows = db.get_records("day", order="desc", limit=1, uid=uid)
 
@@ -85,13 +83,15 @@ def get_latest_sample():
 
 @app.route("/latest")
 def latest_json():
-    return jsonify(get_latest_sample())
+    db = get_db()
+    data = {}
+    for device in db.devices:
+        data[device] = get_latest_sample(device)
+    return jsonify(data)
 
 
 @app.route("/")
 def summary():
-    sample = get_latest_sample()
-
     return render_template("status.html", hostname=hostname)
 
 
@@ -344,6 +344,10 @@ def plots():
 def stats():
     return render_template("stats.html", hostname=hostname)
 
+@app.route("/devices")
+def get_devices():
+    db = get_db()
+    return jsonify(db.devices)
 
 @app.route("/zipdb")
 def download_zip_db():

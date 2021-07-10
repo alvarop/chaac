@@ -2,6 +2,17 @@
 {% block body %}
 <script type="text/javascript">
 
+  function get_devices() {
+    fetch('/devices')
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(devices) {
+      create(devices);
+      draw_chaac();
+    });
+  };
+
   function load_latest() {
     fetch('/latest')
     .then(function(response) {
@@ -18,19 +29,85 @@
     "S", "SSW", "SW", "WSW",
     "W", "WNW", "NW", "NNW"];
 
+  function makeItemTitle(name, timestamp) {
+    title_h = document.createElement("h3");
+    title_h.className = "subtitle is-3 has-text-centered";
+    title_h.innerHTML=`${name} @ <b id="${name}_timestamp"></b>`
+    col = document.createElement("div");
+    col.className = "column";
+    col.appendChild(title_h)
+
+    cols = document.createElement("div");
+    cols.className = "columns is-desktop";
+    cols.appendChild(col);
+
+    return cols;
+  }
+
+  function makeDataField(uid, fieldName) {
+    title = document.createElement("h2");
+    title.className = "title is-2";
+    title.innerHTML=`${fieldName}`
+
+    value = document.createElement("h3")
+    value.className = "subtitle is-3"
+    value.id = `${uid}_` + fieldName.toLowerCase().replace(/ /g,"_");
+    value.innerHTML = "...";
+
+    notification = document.createElement("div");
+    notification.className = "notification has-text-centered"
+    notification.appendChild(title);
+    notification.appendChild(value);
+
+    col = document.createElement("div");
+    col.className = "column";
+    col.appendChild(notification);
+
+    return col;
+  }
+
+  function makeDataFields(uid) {
+    container = document.createElement("div");
+    container.className = "container";
+
+    container.appendChild(makeItemTitle(uid, "timeeee"));
+
+    cols = document.createElement("div");
+    cols.className = "columns is-desktop";
+    cols.appendChild(makeDataField(uid, "Temperature"));
+    cols.appendChild(makeDataField(uid, "Humidity"));
+    cols.appendChild(makeDataField(uid, "Pressure"));
+    container.appendChild(cols);
+
+    cols = document.createElement("div");
+    cols.className = "columns is-desktop";
+    cols.appendChild(makeDataField(uid, "Battery"));
+    cols.appendChild(makeDataField(uid, "Rain"));
+    cols.appendChild(makeDataField(uid, "Wind"));
+    container.appendChild(cols);
+
+    cols = document.createElement("div");
+    cols.className = "columns is-desktop";
+    cols.appendChild(makeDataField(uid, "Solar Panel"));
+    container.appendChild(cols);
+
+    return container;
+  }
+
   function update_fields(latest) {
-    document.getElementById("timestamp").innerHTML = latest["timestamp"];
-    document.getElementById("humidity").innerHTML = latest["humidity"] + "%";
-    document.getElementById("battery").innerHTML = latest["battery"] + " V";
-    document.getElementById("rain").innerHTML = latest["rain"] + " mm";
-    document.getElementById("wind").innerHTML = wind_dir_str[Math.trunc(latest["wind_dir"]*16/360)] + " @ " + latest["wind_speed"] + " kph";
-    document.getElementById("solar_panel").innerHTML = latest["solar_panel"] + " V";
-    show_pressure(latest["pressure"]);
-    show_temperature(latest["temperature"]);
-  };
+    for (let [uid, values] of Object.entries(latest)) {
+        document.getElementById(uid + "_timestamp").innerHTML = values.timestamp;
+        document.getElementById(uid + "_humidity").innerHTML = values.humidity + "%";
+        document.getElementById(uid + "_battery").innerHTML = values.battery + " V";
+        document.getElementById(uid + "_rain").innerHTML = values.rain + " mm";
+        document.getElementById(uid + "_wind").innerHTML = wind_dir_str[Math.trunc(values.wind_dir*16/360)] + " @ " + values.wind_speed + " kph";
+        document.getElementById(uid + "_solar_panel").innerHTML = values["solar_panel"] + " V";
+        show_pressure(uid, values.pressure);
+        show_temperature(uid, values.temperature);
+      }
+  }
 
-  function show_pressure(pressure) {
-
+  function show_pressure(uid, pressure) {
     if(!(typeof pressure === "undefined")) {
       this.pressure = pressure;
     }
@@ -40,19 +117,19 @@
         converted_pressure = this.pressure;
         unit_str = "hPa";
         break;
-      };
+      }
 
       case "inHg": {
         converted_pressure = this.pressure / 33.8638866;
         converted_pressure = converted_pressure.toFixed(2);
         unit_str = "inHg";
         break;
-      };
+      }
     }
-    document.getElementById("pressure").innerHTML = converted_pressure + " " + unit_str;
-  };
+    document.getElementById(uid + "_pressure").innerHTML = converted_pressure + " " + unit_str;
+  }
 
-  function show_temperature(temperature) {
+  function show_temperature(uid, temperature) {
 
     if(!(typeof temperature === "undefined")) {
       this.temperature = temperature;
@@ -63,78 +140,33 @@
         converted_temperature = this.temperature;
         unit_str = "C";
         break;
-      };
+      }
       case "f": {
         converted_temperature = this.temperature * (9.0/5.0) + 32;
         converted_temperature = converted_temperature.toFixed(2);
         unit_str = "F";
         break;
-      };
+      }
     }
-    document.getElementById("temperature").innerHTML = converted_temperature + " °" + unit_str;
-  };
+    document.getElementById(uid + "_temperature").innerHTML = converted_temperature + " °" + unit_str;
+  }
 
   // Function to update data when settings change or page is loaded
   function draw_chaac() {
     load_latest();
   };
 
+  function create(devices){
+    for (let [key, value] of Object.entries(devices)) {
+      document.getElementById("mainthing").appendChild(makeDataFields(key));
+    }
+  }
+
   window.onload = function(){
-    draw_chaac();
+    get_devices();
   };
 </script>
-<div class="container">
-      <div class="columns is-desktop">
-        <div class="column">
-          <h3 class="subtitle is-3 ">Weather as of <b id="timestamp"></b></h3>
-        </div>
-      </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2">Temperature</h2>
-            <h3 class="subtitle is-3 " id="temperature">...</h3>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2">Humidity</h2>
-            <h3 class="subtitle is-3 " id="humidity">...</h3>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2">Pressure</h2>
-            <h3 class="subtitle is-3 " id="pressure">...</h3>
-          </div>
-        </div>
-      </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2">Battery</h2>
-            <h3 class="subtitle is-3 " id="battery">...</h3>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2">Rain</h2>
-            <h3 class="subtitle is-3 " id="rain">...</h3>
-          </div>
-        </div>
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2">Wind</h2>
-            <h3 class="subtitle is-3 " id="wind">...</h3>
-          </div>
-        </div>
-      </div>
-      <div class="columns is-desktop">
-        <div class="column">
-          <div class="notification has-text-centered">
-            <h2 class="title is-2">Solar Panel</h2>
-            <h3 class="subtitle is-3 " id="solar_panel">...</h3>
-          </div>
-      </div>
-    </div>
+<div id="mainthing">
+
+</div>
 {% endblock %}
