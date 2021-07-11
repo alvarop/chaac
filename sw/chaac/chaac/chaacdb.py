@@ -320,7 +320,7 @@ class ChaacDB:
         # Remove minutes and seconds to tally rain hourly
         hour = timestamp - timestamp % (60 * 60)
 
-        past_rain_record = self.get_rain(hour)
+        past_rain_record = self.get_rain(hour, uid=uid)
         if len(past_rain_record) == 1:
             past_rain_val = past_rain_record[0][3]
 
