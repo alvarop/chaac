@@ -51,6 +51,9 @@ void packetTxFn(int16_t len, void* data) {
 }
 
 static loraRadioConfig_t loraConfig = {
+    .startMode = RADIO_MODE_RX,
+    .spiSetupFn = NULL,
+    .spiTeardownFn = NULL,
     .rxCb = loraRxCallback,
     .txCb = NULL,
     .rxTimeoutCb = loraRxTimeoutCallback,

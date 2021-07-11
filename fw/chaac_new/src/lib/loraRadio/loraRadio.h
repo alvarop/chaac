@@ -12,6 +12,9 @@ typedef loraMode_t (*loraRxCb_t)(uint8_t *buff, size_t len, int16_t rssi, int8_t
 typedef loraMode_t (*loraNotifyCb_t)();
 
 typedef struct {
+    loraMode_t startMode;
+    void (*spiSetupFn)();
+    void (*spiTeardownFn)();
     loraRxCb_t      rxCb;
     loraNotifyCb_t  txCb;
     loraNotifyCb_t  rxTimeoutCb;
@@ -20,3 +23,5 @@ typedef struct {
 } loraRadioConfig_t;
 
 void loraRadioInit(loraRadioConfig_t *config);
+void loraRadioSend(uint8_t *data, size_t len);
+void loraRadioEnterMode(loraMode_t mode);

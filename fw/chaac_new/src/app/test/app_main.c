@@ -14,40 +14,14 @@
 #include "spi.h"
 #include "gpio.h"
 #include "radio.h"
-#include "sx126x.h"
-#include "sx126x-board.h"
 #include <string.h>
 #include "chaac_packet.h"
 #include "FreeRTOSLPM.h"
 #include "packet.h"
 #include "sensor.h"
+#include "loraRadio.h"
 
 static weather_packet_v1p1_t packet;
-
-
-#define RF_FREQUENCY 915000000
-
-#define TX_OUTPUT_POWER 14
-
-#define LORA_BANDWIDTH                              0         // [0: 125 kHz,
-                                                              //  1: 250 kHz,
-                                                              //  2: 500 kHz,
-                                                              //  3: Reserved]
-#define LORA_SPREADING_FACTOR                       7         // [SF7..SF12]
-#define LORA_CODINGRATE                             1         // [1: 4/5,
-                                                              //  2: 4/6,
-                                                              //  3: 4/7,
-                                                              //  4: 4/8]
-#define LORA_PREAMBLE_LENGTH                        8       // Same for Tx and Rx
-#define LORA_SYMBOL_TIMEOUT                         0       // Symbols
-#define LORA_FIX_LENGTH_PAYLOAD_ON                  false
-#define LORA_IQ_INVERSION_ON                        false
-
-
-#define RX_TIMEOUT_VALUE                            0
-#define BUFFER_SIZE                                 64 // Define the payload size her
-
-static RadioEvents_t RadioEvents;
 
 extern __IO uint32_t uwTick;
 volatile bool useFreeRTOSTick = false;
@@ -76,50 +50,20 @@ void HAL_Delay(uint32_t delay) {
     }
 }
 
-void OnTxDone( void )
-{
-    // printf("txdone\n");
-    Radio.Sleep( );
+loraMode_t loraRxTimeoutCallback() {
+    return RADIO_MODE_SLEEP;
 }
 
-void OnTxTimeout( void )
-{
-    Radio.Sleep( );
+loraMode_t loraRxErrorCallback() {
+    return RADIO_MODE_SLEEP;
 }
 
-int init_radio(void) {
-    // printf("Initializing radio\n");
+loraMode_t loraTxCallback() {
+    return RADIO_MODE_SLEEP;
+}
 
-    MX_SPI1_Init();
-
-    RadioEvents.TxDone = OnTxDone;
-    // RadioEvents.RxDone = OnRxDone;
-    RadioEvents.TxTimeout = OnTxTimeout;
-    // RadioEvents.RxTimeout = OnRxTimeout;
-    // RadioEvents.RxError = OnRxError;
-    // RadioEvents.CadDone = OnCadDone;
-
-    // printf("Radio.Init\n");
-    SX126xIoInit();
-
-    Radio.Init( &RadioEvents );
-
-    // printf("Radio.SetTxConfig\n");
-    Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
-                                   LORA_SPREADING_FACTOR, LORA_CODINGRATE,
-                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
-
-    // Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
-    //                                LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
-    //                                LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
-    //                                0, true, 0, 0, LORA_IQ_INVERSION_ON, true );
-
-    Radio.Sleep( );
-
-    HAL_SPI_DeInit(&hspi1);
-
-    return 0;
+loraMode_t loraTxTimeoutCallback() {
+    return RADIO_MODE_SLEEP;
 }
 
 static uint32_t prvAdcGetSampleMv(uint32_t ulChannel) {
@@ -169,31 +113,29 @@ static void showError(uint32_t error) {
     }
 }
 
-static uint8_t txbuff[BUFFER_SIZE];
-void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
+// static uint8_t txbuff[BUFFER_SIZE];
+// void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
 
-    // Check packet CRC
-    if(packetIsValid(buff, len) && (len <= BUFFER_SIZE)) {
-        packet_header_t *header = (packet_header_t *)buff;
+//     // Check packet CRC
+//     if(packetIsValid(buff, len) && (len <= BUFFER_SIZE)) {
+//         packet_header_t *header = (packet_header_t *)buff;
 
-        memcpy(txbuff, (void *)&header[1], header->len);
+//         memcpy(txbuff, (void *)&header[1], header->len);
 
-        chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[len];
-        footer->rssi = rssi;
-        footer->snr = snr;
+//         chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[len];
+//         footer->rssi = rssi;
+//         footer->snr = snr;
 
-        packetTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
-    }
+//         packetTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
+//     }
 
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-    vTaskDelay(50);
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-}
+//     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
+//     vTaskDelay(50);
+//     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+// }
 
 void packetTxFn(int16_t len, void* data) {
-    MX_SPI1_Init();
-    Radio.Send((uint8_t *)data, len);
-    HAL_SPI_DeInit(&hspi1);
+    loraRadioSend((uint8_t *)data, len);
 }
 
 static sensor_t shtTemperature;
@@ -210,8 +152,6 @@ static void mainTask( void *pvParameters ) {
 
     packetInitTxFn(packetTxFn);
     windRainInit();
-
-    init_radio();
 
     packet.header.type = PACKET_TYPE_WEATHER_V1P1;
     packet.header.uid = HWID[0] ^ HWID[1] ^ HWID[2];
@@ -345,21 +285,26 @@ static void sensorsTask( void *pvParameters ) {
     }
 }
 
-TaskHandle_t pxRadioIrqTaskHandle = NULL;
 extern SPI_HandleTypeDef hspi1;
 
-static void radioIrqTask( void *pvParameters ) {
-    (void)pvParameters;
-
-    pxRadioIrqTaskHandle = xTaskGetCurrentTaskHandle();
-
-    for(;;) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        MX_SPI1_Init();
-        Radio.IrqProcess();
-        HAL_SPI_DeInit(&hspi1);
-    }
+void spiSetupFn() {
+    MX_SPI1_Init();
 }
+
+void spiTeardownFn() {
+    HAL_SPI_DeInit(&hspi1);
+}
+
+static loraRadioConfig_t loraConfig = {
+    .startMode = RADIO_MODE_SLEEP,
+    .spiSetupFn = spiSetupFn,
+    .spiTeardownFn = spiTeardownFn,
+    .rxCb = NULL,
+    .txCb = loraTxCallback,
+    .rxTimeoutCb = loraRxTimeoutCallback,
+    .txTimeoutCb = loraRxErrorCallback,
+    .rxErrorCb = NULL,
+};
 
 int main(void) {
     HAL_Init();
@@ -378,15 +323,7 @@ int main(void) {
 
     configASSERT(xRval == pdTRUE);
 
-    xRval = xTaskCreate(
-            radioIrqTask,
-            "radio",
-            512,
-            NULL,
-            4,
-            NULL);
-
-    configASSERT(xRval == pdTRUE);
+    loraRadioInit(&loraConfig);
 
     xRval = xTaskCreate(
         sensorsTask,

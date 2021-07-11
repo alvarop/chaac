@@ -19,6 +19,7 @@ set(LIB_FILES
 	${SRC_DIR}/lib/crc/crc.c
 	${SRC_DIR}/lib/debug/debug_swo.c
 	${SRC_DIR}/lib/i2c/stm32l4_i2c.c
+	${SRC_DIR}/lib/loraRadio/loraRadio.c
 	${SRC_DIR}/lib/packet/packet.c
 	${SRC_DIR}/lib/sensor/dps368/dps368.c
 	${SRC_DIR}/lib/sensor/sensor.c
@@ -32,6 +33,7 @@ set(LIB_INCLUDES
 	${SRC_DIR}/lib/crc
 	${SRC_DIR}/lib/debug
 	${SRC_DIR}/lib/i2c
+	${SRC_DIR}/lib/loraRadio/
 	${SRC_DIR}/lib/packet/
 	${SRC_DIR}/lib/sensor/
 	${SRC_DIR}/lib/sensor/dps368

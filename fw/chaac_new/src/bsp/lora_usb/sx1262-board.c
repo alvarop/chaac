@@ -25,7 +25,6 @@ void SX126xIoIrqInit( DioIrqHandler dioIrq )
 {
     (void)dioIrq;
     SX126xdioIrq = dioIrq;
-
 }
 
 void SX126xIoDeInit( void )
@@ -263,4 +262,3 @@ void BoardCriticalSectionEnd( uint32_t *mask )
 {
     __set_PRIMASK( *mask );
 }
-

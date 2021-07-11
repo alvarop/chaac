@@ -12,8 +12,6 @@
 #include "loraRadio.h"
 
 
-#define RF_FREQUENCY 915000000
-
 #define TX_OUTPUT_POWER 14
 
 #define LORA_BANDWIDTH                              0         // [0: 125 kHz,
@@ -34,7 +32,20 @@ static RadioEvents_t RadioEvents;
 static loraRadioConfig_t *_config = NULL;
 static uint32_t _rxTimeout = 0;
 
-void radioEnterMode(loraMode_t mode) {
+static inline void spiSetup() {
+    if(_config->spiSetupFn) {
+        _config->spiSetupFn();
+    }
+}
+
+static inline void spiTeardown() {
+    if(_config->spiTeardownFn) {
+        _config->spiTeardownFn();
+    }
+}
+
+void loraRadioEnterMode(loraMode_t mode) {
+    spiSetup();
     switch(mode) {
         case RADIO_MODE_STANDBY: {
             Radio.Standby();
@@ -49,6 +60,7 @@ void radioEnterMode(loraMode_t mode) {
             break;
         }
     }
+    spiTeardown();
 }
 
 void OnTxDone( void )
@@ -60,7 +72,7 @@ void OnTxDone( void )
        mode = _config->txCb();
     }
 
-    radioEnterMode(mode);
+    loraRadioEnterMode(mode);
 }
 
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
@@ -72,7 +84,7 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
         mode = _config->rxCb(payload, size, rssi, snr);
     }
 
-    radioEnterMode(mode);
+    loraRadioEnterMode(mode);
 }
 
 void OnTxTimeout( void )
@@ -84,7 +96,7 @@ void OnTxTimeout( void )
        mode = _config->txTimeoutCb();
     }
 
-    radioEnterMode(mode);
+    loraRadioEnterMode(mode);
 }
 
 void OnRxTimeout( void )
@@ -96,7 +108,7 @@ void OnRxTimeout( void )
        mode = _config->rxTimeoutCb();
     }
 
-    radioEnterMode(mode);
+    loraRadioEnterMode(mode);
 }
 
 void OnRxError( void )
@@ -107,7 +119,7 @@ void OnRxError( void )
        mode = _config->rxErrorCb();
     }
 
-    radioEnterMode(mode);
+    loraRadioEnterMode(mode);
 }
 
 int init_radio(void) {
@@ -136,20 +148,36 @@ int init_radio(void) {
        return 0;
 }
 
+void loraRadioSend(uint8_t *data, size_t len) {
+    spiSetup();
+    Radio.Send((uint8_t *)data, len);
+    spiTeardown();
+}
+
 TaskHandle_t pxRadioIrqTaskHandle = NULL;
 
 static void prvRadioIrqTask( void *pvParameters ) {
     (void)pvParameters;
 
+    spiSetup();
+
     init_radio();
 
-    Radio.Rx(_rxTimeout);
+    spiTeardown();
+
+    loraRadioEnterMode(_config->startMode);
 
     pxRadioIrqTaskHandle = xTaskGetCurrentTaskHandle();
 
     for(;;) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        if(_config->spiSetupFn) {
+            _config->spiSetupFn();
+        }
         Radio.IrqProcess();
+        if(_config->spiTeardownFn) {
+            _config->spiTeardownFn();
+        }
     }
 }
 
