@@ -24,16 +24,21 @@ default_config = {
 }
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--config", required=True, help="chaac config file")
+parser.add_argument("--config", help="chaac config file")
 args = parser.parse_args()
 
+if args.config is not None:
+    config_path = args.config
+else:
+    config_path = os.environ.get('CONFIG')
+
 # Create config if not there
-if not os.path.exists(args.config):
-    print("Creating default config in " + args.config)
-    with open(args.config, "w") as outfile:
+if not os.path.exists(config_path):
+    print("Creating default config in " + config_path)
+    with open(config_path, "w") as outfile:
         yaml.dump(default_config, outfile)
 
-with open(args.config, "r") as config_file:
+with open(config_path, "r") as config_file:
     config = yaml.safe_load(config_file)
 
 if not os.path.exists(config["cache_dir"]):

@@ -1,6 +1,6 @@
 # nginx config for flask app
 server {
-    server_name chaac_frontend;
+    server_name chaac.network www.chaac.network;
     listen 80;
 
     location / {
