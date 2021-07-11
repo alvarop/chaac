@@ -38,9 +38,25 @@ loraMode_t loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
     return RADIO_MODE_RX;
 }
 
+loraMode_t loraRxTimeoutCallback() {
+    return RADIO_MODE_RX;
+}
+
+loraMode_t loraRxErrorCallback() {
+    return RADIO_MODE_RX;
+}
+
 void packetTxFn(int16_t len, void* data) {
     vcpTx(data, len);
 }
+
+static loraRadioConfig_t loraConfig = {
+    .rxCb = loraRxCallback,
+    .txCb = NULL,
+    .rxTimeoutCb = loraRxTimeoutCallback,
+    .txTimeoutCb = loraRxErrorCallback,
+    .rxErrorCb = NULL,
+};
 
 int main(void) {
     HAL_Init();
@@ -55,7 +71,8 @@ int main(void) {
     // vcpSetRxByteCallback(echo);
 
     packetInitTxFn(packetTxFn);
-    loraRadioInit(loraRxCallback, NULL);
+
+    loraRadioInit(&loraConfig);
 
     vTaskStartScheduler();
 

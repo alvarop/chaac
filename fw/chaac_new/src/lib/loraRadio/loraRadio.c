@@ -30,12 +30,9 @@
 #define LORA_FIX_LENGTH_PAYLOAD_ON                  false
 #define LORA_IQ_INVERSION_ON                        false
 
-
-#define RX_TIMEOUT_VALUE                            0
-
 static RadioEvents_t RadioEvents;
-static loraRxCallback_t _rxCallback = NULL;
-static loraTxCallback_t _txCallback = NULL;
+static loraRadioConfig_t *_config = NULL;
+static uint32_t _rxTimeout = 0;
 
 void radioEnterMode(loraMode_t mode) {
     switch(mode) {
@@ -48,7 +45,7 @@ void radioEnterMode(loraMode_t mode) {
             break;
         }
         case RADIO_MODE_RX: {
-            Radio.Rx(RX_TIMEOUT_VALUE);
+            Radio.Rx(_rxTimeout);
             break;
         }
     }
@@ -56,9 +53,11 @@ void radioEnterMode(loraMode_t mode) {
 
 void OnTxDone( void )
 {
+    configASSERT(_config != NULL);
+
     loraMode_t mode = RADIO_MODE_STANDBY;
-    if(_txCallback != NULL) {
-       mode = _txCallback();
+    if(_config->txCb != NULL) {
+       mode = _config->txCb();
     }
 
     radioEnterMode(mode);
@@ -66,10 +65,11 @@ void OnTxDone( void )
 
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
+    configASSERT(_config != NULL);
     loraMode_t mode = RADIO_MODE_STANDBY;
 
-    if(_rxCallback != NULL) {
-        mode = _rxCallback(payload, size, rssi, snr);
+    if(_config->rxCb != NULL) {
+        mode = _config->rxCb(payload, size, rssi, snr);
     }
 
     radioEnterMode(mode);
@@ -77,19 +77,37 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 
 void OnTxTimeout( void )
 {
-    Radio.Standby();
+    configASSERT(_config != NULL);
+
+    loraMode_t mode = RADIO_MODE_STANDBY;
+    if(_config->txTimeoutCb != NULL) {
+       mode = _config->txTimeoutCb();
+    }
+
+    radioEnterMode(mode);
 }
 
 void OnRxTimeout( void )
 {
-    /*Radio.Standby( );*/
-    Radio.Rx( RX_TIMEOUT_VALUE );   //  Restart Rx
+    configASSERT(_config != NULL);
+
+    loraMode_t mode = RADIO_MODE_STANDBY;
+    if(_config->rxTimeoutCb != NULL) {
+       mode = _config->rxTimeoutCb();
+    }
+
+    radioEnterMode(mode);
 }
 
 void OnRxError( void )
 {
-    /*Radio.Standby( );*/
-    Radio.Rx( RX_TIMEOUT_VALUE );   //  Restart Rx
+    configASSERT(_config != NULL);
+    loraMode_t mode = RADIO_MODE_STANDBY;
+    if(_config->rxErrorCb != NULL) {
+       mode = _config->rxErrorCb();
+    }
+
+    radioEnterMode(mode);
 }
 
 int init_radio(void) {
@@ -125,7 +143,7 @@ static void prvRadioIrqTask( void *pvParameters ) {
 
     init_radio();
 
-    Radio.Rx(RX_TIMEOUT_VALUE);
+    Radio.Rx(_rxTimeout);
 
     pxRadioIrqTaskHandle = xTaskGetCurrentTaskHandle();
 
@@ -135,10 +153,10 @@ static void prvRadioIrqTask( void *pvParameters ) {
     }
 }
 
-void loraRadioInit(loraRxCallback_t rxCallback, loraTxCallback_t txCallback) {
+void loraRadioInit(loraRadioConfig_t *config) {
+    configASSERT(config != NULL);
 
-    _rxCallback = rxCallback;
-    _txCallback = txCallback;
+    _config = config;
 
     BaseType_t xRval = xTaskCreate(
             prvRadioIrqTask,
