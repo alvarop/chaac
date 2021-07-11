@@ -10,12 +10,12 @@
         .then(function(response) {
           return response.json();
         })
-        .then(function(plot) {
-          draw_plots(plot);
+        .then(function(data) {
+          draw_plots(data);
         });
       };
 
-      function draw_plots(plot) {
+      function draw_plots(data) {
         plots = [
           {
             title:"Temperature",
@@ -81,15 +81,6 @@
             type: "scatter"
           },
           {
-            title:"Light Level",
-            xdata: "timestamp",
-            x_label: "Time",
-            ydata: "light",
-            y_label: "Light Level (0-1)",
-            div: "div-light",
-            type: "scatter"
-          },
-          {
             title:"Solar Panel",
             xdata: "timestamp",
             x_label: "Time",
@@ -100,19 +91,21 @@
           },
         ];
 
-        if (localStorage.pressure_units == "inHg") {
-          // Convert from hPa to inHg if necessary
-          for(x = 0; x < plot["pressure"].length; x++) {
-            num = plot["pressure"][x] / 33.8638866;
-            plot["pressure"][x] = num.toFixed(3);
+        for (let [uid, values] of Object.entries(data["data"])) {
+          if (localStorage.pressure_units == "inHg") {
+            // Convert from hPa to inHg if necessary
+            for(x = 0; x < values["pressure"].length; x++) {
+              num = values["pressure"][x] / 33.8638866;
+              values["pressure"][x] = num.toFixed(3);
+            }
           }
-        }
 
-        if (localStorage.temperature_units == "f") {
-          // Convert from c to f if necessary
-          for(x = 0; x < plot["temperature"].length; x++) {
-            num = plot["temperature"][x] * (9.0/5.0) + 32;
-            plot["temperature"][x] = num.toFixed(3);
+          if (localStorage.temperature_units == "f") {
+            // Convert from c to f if necessary
+            for(x = 0; x < values["temperature"].length; x++) {
+              num = values["temperature"][x] * (9.0/5.0) + 32;
+              values["temperature"][x] = num.toFixed(3);
+            }
           }
         }
 
@@ -134,18 +127,24 @@
             }
           };
 
+          plot_items = []
+
+          for (let [uid, values] of Object.entries(data["data"])) {
+            plot_items.push({x:values[item["xdata"]],
+              y:values[item["ydata"]],
+              type:item["type"],
+              name:uid});
+          }
+
           // TODO - Also add html elements here for more flexibility
           Plotly.purge(document.getElementById(item["div"]));
           Plotly.plot(document.getElementById(item["div"]),
-            [{x:plot[item["xdata"]],
-              y:plot[item["ydata"]],
-              type:item["type"],
-              name:item["title"]}],
+            plot_items,
               layout,
               {responsive: true} );
           });
 
-        document.getElementById("div-header").innerHTML = "Weather from <b>" + plot["start_date"] + "</b> to <b>" + plot["end_date"] +"</b>";
+        document.getElementById("div-header").innerHTML = "Weather from <b>" + data["start_date"] + "</b> to <b>" + data["end_date"] +"</b>";
       };
 
       // Function to update data when settings change or page is loaded
@@ -220,13 +219,6 @@
       <div class="column">
         <div class="notification has-text-centered">
           <div id="div-solar" ></div>
-        </div>
-      </div>
-    </div>
-    <div class="columns is-desktop">
-      <div class="column">
-        <div class="notification has-text-centered">
-          <div id="div-light" ></div>
         </div>
       </div>
     </div>

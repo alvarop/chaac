@@ -134,22 +134,14 @@ def get_rain_label(idx, table):
         return None
 
 
-def get_json_str(start_date, end_date, table="day"):
+def get_data_dict(uid, start_date, end_date, table="day"):
     """ Get weather data for the specified weather period """
 
     db = get_db()
 
-    uid = get_latest_uid()
-
     rows = db.get_records(table, start_date=start_date, end_date=end_date, uid=uid)
 
-    plot = {"hostname": hostname}
-
-    plot["start_date"] = datetime.fromtimestamp(start_date).strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )
-    plot["end_date"] = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d %H:%M:%S")
-
+    plot = {}
     col_names = rows[0]._asdict().keys()
 
     for name in col_names:
@@ -200,16 +192,15 @@ def get_json_str(start_date, end_date, table="day"):
 
         # Wrap around depending on the number of bins (since we don't always start at 0)
         idx = (idx + 1) % len(bins)
+    print(uid, plot["rain"])
 
-    return jsonify(plot)
+    return plot
 
 
-def get_json_stat_str(start_date, end_date):
+def get_json_stat_str(uid, start_date, end_date):
     """ Get weather data for the specified weather period """
 
     db = get_db()
-
-    uid = get_latest_uid()
 
     rows = db.get_stats(start_date=start_date, end_date=end_date, uid=uid)
 
@@ -273,7 +264,8 @@ def json_stats_year_str():
 
     end_time = time.mktime(now.timetuple())
 
-    return get_json_stat_str(start_time, end_time)
+    uid = get_latest_uid()
+    return get_json_stat_str(uid, start_time, end_time)
 
 
 @app.route("/json/day")
@@ -290,8 +282,18 @@ def json_day_str():
     )
 
     end_time = time.mktime(now.timetuple())
+    db = get_db()
 
-    return get_json_str(start_time, end_time, "day")
+    data = {"hostname": hostname}
+    data["start_date"] = datetime.fromtimestamp(start_time).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    data["end_date"] = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d %H:%M:%S")
+    data["data"] = {}
+
+    for device in db.devices:
+        data["data"][device] = get_data_dict(device, start_time, end_time, "day")
+    return jsonify(data)
 
 
 @app.route("/json/week")
@@ -310,8 +312,17 @@ def json_week_str():
     )
 
     end_time = time.mktime(now.timetuple())
+    db = get_db()
+    data = {"hostname": hostname}
+    data["start_date"] = datetime.fromtimestamp(start_time).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    data["end_date"] = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d %H:%M:%S")
+    data["data"] = {}
 
-    return get_json_str(start_time, end_time, "week")
+    for device in db.devices:
+        data["data"][device] = get_data_dict(device, start_time, end_time, "week")
+    return jsonify(data)
 
 
 @app.route("/json/month")
@@ -332,7 +343,17 @@ def json_month_str():
 
     end_time = time.mktime(now.timetuple())
 
-    return get_json_str(start_time, end_time, "month")
+    db = get_db()
+    data = {"hostname": hostname}
+    data["start_date"] = datetime.fromtimestamp(start_time).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+    data["end_date"] = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d %H:%M:%S")
+    data["data"] = {}
+
+    for device in db.devices:
+        data["data"][device] = get_data_dict(device, start_time, end_time, "month")
+    return jsonify(data)
 
 
 @app.route("/plots")
