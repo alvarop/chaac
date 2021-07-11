@@ -35,24 +35,49 @@
 
 static RadioEvents_t RadioEvents;
 static loraRxCallback_t _rxCallback = NULL;
+static loraTxCallback_t _txCallback = NULL;
+
+void radioEnterMode(loraMode_t mode) {
+    switch(mode) {
+        case RADIO_MODE_STANDBY: {
+            Radio.Standby();
+            break;
+        }
+        case RADIO_MODE_SLEEP: {
+            Radio.Sleep();
+            break;
+        }
+        case RADIO_MODE_RX: {
+            Radio.Rx(RX_TIMEOUT_VALUE);
+            break;
+        }
+    }
+}
 
 void OnTxDone( void )
 {
-    Radio.Standby( );
+    loraMode_t mode = RADIO_MODE_STANDBY;
+    if(_txCallback != NULL) {
+       mode = _txCallback();
+    }
+
+    radioEnterMode(mode);
 }
 
 void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
 {
+    loraMode_t mode = RADIO_MODE_STANDBY;
+
     if(_rxCallback != NULL) {
-        _rxCallback(payload, size, rssi, snr);
+        mode = _rxCallback(payload, size, rssi, snr);
     }
 
-    Radio.Rx(RX_TIMEOUT_VALUE);
+    radioEnterMode(mode);
 }
 
 void OnTxTimeout( void )
 {
-    Radio.Standby( );
+    Radio.Standby();
 }
 
 void OnRxTimeout( void )
@@ -80,10 +105,10 @@ int init_radio(void) {
 
     Radio.Init( &RadioEvents );
 
-    // Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
-    //                                LORA_SPREADING_FACTOR, LORA_CODINGRATE,
-    //                                LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
-    //                                true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
+    Radio.SetTxConfig( MODEM_LORA, TX_OUTPUT_POWER, 0, LORA_BANDWIDTH,
+                                   LORA_SPREADING_FACTOR, LORA_CODINGRATE,
+                                   LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
+                                   true, 0, 0, LORA_IQ_INVERSION_ON, 3000 );
 
     Radio.SetRxConfig( MODEM_LORA, LORA_BANDWIDTH, LORA_SPREADING_FACTOR,
                                    LORA_CODINGRATE, 0, LORA_PREAMBLE_LENGTH,
@@ -110,9 +135,10 @@ static void prvRadioIrqTask( void *pvParameters ) {
     }
 }
 
-void loraRadioInit(loraRxCallback_t rxCallback) {
+void loraRadioInit(loraRxCallback_t rxCallback, loraTxCallback_t txCallback) {
 
     _rxCallback = rxCallback;
+    _txCallback = txCallback;
 
     BaseType_t xRval = xTaskCreate(
             prvRadioIrqTask,

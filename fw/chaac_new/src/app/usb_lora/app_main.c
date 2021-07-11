@@ -16,7 +16,7 @@
 #define BUFFER_SIZE 64
 
 static uint8_t txbuff[BUFFER_SIZE];
-void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
+loraMode_t loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
 
     // Check packet CRC
     if(packetIsValid(buff, len) && (len <= BUFFER_SIZE)) {
@@ -34,6 +34,8 @@ void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
     vTaskDelay(50);
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+
+    return RADIO_MODE_RX;
 }
 
 void packetTxFn(int16_t len, void* data) {
@@ -53,7 +55,7 @@ int main(void) {
     // vcpSetRxByteCallback(echo);
 
     packetInitTxFn(packetTxFn);
-    loraRadioInit(loraRxCallback);
+    loraRadioInit(loraRxCallback, NULL);
 
     vTaskStartScheduler();
 
