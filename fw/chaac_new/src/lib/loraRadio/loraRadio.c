@@ -154,6 +154,10 @@ void loraRadioSend(uint8_t *data, size_t len) {
     spiTeardown();
 }
 
+void loraRadioSetRxTimeout(uint32_t rxTimeout) {
+    _rxTimeout = rxTimeout;
+}
+
 TaskHandle_t pxRadioIrqTaskHandle = NULL;
 
 static void prvRadioIrqTask( void *pvParameters ) {

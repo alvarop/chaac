@@ -67,6 +67,14 @@ BLEWeatherPacket = ChaacPacket(
     ],
 )
 
+ResetPacket = ChaacPacket(
+    "ResetPacket",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+    ],
+)
+
 WeatherPacketV1P0 = ChaacPacket(
     "WeatherPacketV1P0",
     [
@@ -135,6 +143,7 @@ RangeTestPacketV1P0 = ChaacPacket(
 )
 
 PacketTypes = {
+    1: ResetPacket,
     10: WeatherPacketV1P0,
     11: WeatherPacketV1P1,
     30: ButtonPacketV1P0,

@@ -26,6 +26,9 @@ static weather_packet_v1p1_t packet;
 extern __IO uint32_t uwTick;
 volatile bool useFreeRTOSTick = false;
 
+const uint32_t *HWID = (const uint32_t *)(UID_BASE);
+#define UID (HWID[0] ^ HWID[1] ^ HWID[2])
+
 uint32_t HAL_GetTick(void) {
     if(useFreeRTOSTick) {
         return xTaskGetTickCount();
@@ -50,6 +53,24 @@ void HAL_Delay(uint32_t delay) {
     }
 }
 
+
+loraMode_t loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
+    (void)snr;
+    (void)rssi;
+
+    // Check packet CRC
+    if(packetIsValid(buff, len)) {
+        packet_header_t *packetHeader = (packet_header_t *)buff;
+        chaac_header_t *chaacPacketHeader = (chaac_header_t *)&packetHeader[1];
+        if((chaacPacketHeader->uid == UID) &&
+            (chaacPacketHeader->type == PACKET_TYPE_RESET)) {
+            NVIC_SystemReset();
+        }
+    }
+
+    return RADIO_MODE_SLEEP;
+}
+
 loraMode_t loraRxTimeoutCallback() {
     return RADIO_MODE_SLEEP;
 }
@@ -59,7 +80,8 @@ loraMode_t loraRxErrorCallback() {
 }
 
 loraMode_t loraTxCallback() {
-    return RADIO_MODE_SLEEP;
+    loraRadioSetRxTimeout(500);
+    return RADIO_MODE_RX;
 }
 
 loraMode_t loraTxTimeoutCallback() {
@@ -84,7 +106,6 @@ static uint32_t prvAdcGetSampleMv(uint32_t ulChannel) {
     return ((uint32_t)lResult);
 }
 
-const uint32_t *HWID = (const uint32_t *)(UID_BASE);
 
 static void showError(uint32_t error) {
     for(uint32_t x = 0; x < 20; x++) {
@@ -113,27 +134,6 @@ static void showError(uint32_t error) {
     }
 }
 
-// static uint8_t txbuff[BUFFER_SIZE];
-// void loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
-
-//     // Check packet CRC
-//     if(packetIsValid(buff, len) && (len <= BUFFER_SIZE)) {
-//         packet_header_t *header = (packet_header_t *)buff;
-
-//         memcpy(txbuff, (void *)&header[1], header->len);
-
-//         chaac_lora_rxinfo_t *footer = (chaac_lora_rxinfo_t *)&txbuff[len];
-//         footer->rssi = rssi;
-//         footer->snr = snr;
-
-//         packetTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
-//     }
-
-//     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-//     vTaskDelay(50);
-//     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-// }
-
 void packetTxFn(int16_t len, void* data) {
     loraRadioSend((uint8_t *)data, len);
 }
@@ -150,11 +150,10 @@ static void mainTask( void *pvParameters ) {
 
     LL_GPIO_ResetOutputPin(RADIO_NRST_GPIO_Port, RADIO_NRST_Pin);
 
-    packetInitTxFn(packetTxFn);
     windRainInit();
 
     packet.header.type = PACKET_TYPE_WEATHER_V1P1;
-    packet.header.uid = HWID[0] ^ HWID[1] ^ HWID[2];
+    packet.header.uid = UID;
     packet.sample = 0;
 
     for(;;) {
@@ -225,7 +224,7 @@ static void mainTask( void *pvParameters ) {
 
         windRainClearRain();
 
-        packetTx(sizeof(packet), &packet);
+        packetTx(sizeof(packet), &packet, packetTxFn);
 
         packet.sample++;
     }
@@ -299,7 +298,7 @@ static loraRadioConfig_t loraConfig = {
     .startMode = RADIO_MODE_SLEEP,
     .spiSetupFn = spiSetupFn,
     .spiTeardownFn = spiTeardownFn,
-    .rxCb = NULL,
+    .rxCb = loraRxCallback,
     .txCb = loraTxCallback,
     .rxTimeoutCb = loraRxTimeoutCallback,
     .txTimeoutCb = loraRxErrorCallback,

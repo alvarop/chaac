@@ -16,6 +16,16 @@
 #define BUFFER_SIZE 64
 
 static uint8_t txbuff[BUFFER_SIZE];
+
+void vcpPacketTxFn(int16_t len, void* data) {
+    vcpTx(data, len);
+}
+
+void radioPacketTxFn(int16_t len, void* data) {
+    loraRadioSend(data, len);
+}
+
+
 loraMode_t loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
 
     // Check packet CRC
@@ -28,13 +38,17 @@ loraMode_t loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
         footer->rssi = rssi;
         footer->snr = snr;
 
-        packetTx(len + sizeof(chaac_lora_rxinfo_t), txbuff);
+        packetTx(len + sizeof(chaac_lora_rxinfo_t), txbuff, vcpPacketTxFn);
     }
 
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
     vTaskDelay(50);
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
 
+    return RADIO_MODE_RX;
+}
+
+loraMode_t loraTxCallback() {
     return RADIO_MODE_RX;
 }
 
@@ -46,8 +60,13 @@ loraMode_t loraRxErrorCallback() {
     return RADIO_MODE_RX;
 }
 
-void packetTxFn(int16_t len, void* data) {
-    vcpTx(data, len);
+
+void packetRxFn(int16_t len, void* data) {
+    if (len > 0) {
+        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
+        packetTx(len, data, radioPacketTxFn);
+        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+    }
 }
 
 static loraRadioConfig_t loraConfig = {
@@ -55,7 +74,7 @@ static loraRadioConfig_t loraConfig = {
     .spiSetupFn = NULL,
     .spiTeardownFn = NULL,
     .rxCb = loraRxCallback,
-    .txCb = NULL,
+    .txCb = loraTxCallback,
     .rxTimeoutCb = loraRxTimeoutCallback,
     .txTimeoutCb = loraRxErrorCallback,
     .rxErrorCb = NULL,
@@ -70,10 +89,10 @@ int main(void) {
     MX_USB_DEVICE_Init();
     MX_SPI1_Init();
 
-    vcpInit();
-    // vcpSetRxByteCallback(echo);
+    packetInitCb(packetRxFn);
 
-    packetInitTxFn(packetTxFn);
+    vcpInit();
+    vcpSetRxByteCallback(packetProcessByte);
 
     loraRadioInit(&loraConfig);
 

@@ -3,6 +3,7 @@
 // Note, if you update this, make sure to update the corresponding
 // definitions in sw/chaac/chaac/packets.py
 typedef enum {
+    PACKET_TYPE_RESET = 1,
     PACKET_TYPE_WEATHER_V1P0 = 10,
     PACKET_TYPE_WEATHER_V1P1 = 11,
 } packet_type_t;

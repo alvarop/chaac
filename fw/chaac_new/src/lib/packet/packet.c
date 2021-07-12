@@ -19,17 +19,12 @@ typedef enum {
 static packet_state_t state = PACKET_STATE_CLEAR;
 
 static void (*packet_cb_fn)(int16_t len, void *data) = NULL;
-static void (*packet_tx_fn)(int16_t len, void *data) = NULL;
 
 void packetInitCb(void (*cb_fn)(int16_t len, void *data)) {
     packet_cb_fn = cb_fn;
 }
 
-void packetInitTxFn(void (*tx_fn)(int16_t len, void *data)) {
-    packet_tx_fn = tx_fn;
-}
-
-int32_t packetProcessByte(uint8_t byte) {
+void packetProcessByte(uint8_t byte) {
     switch(state) {
         case PACKET_STATE_CLEAR: {
             if (byte == (PACKET_START & 0xFF)) {
@@ -111,8 +106,6 @@ int32_t packetProcessByte(uint8_t byte) {
             break;
         }
     }
-
-    return 0;
 }
 
 bool packetIsValid(uint8_t *buffer, size_t len) {
@@ -157,10 +150,10 @@ bool packetIsValid(uint8_t *buffer, size_t len) {
     return valid;
 }
 
-int32_t packetTx(uint16_t len, void *data) {
+int32_t packetTx(uint16_t len, void *data, void (*txFn)(int16_t len, void *data)) {
     int32_t rval = 0;
     do {
-        if(packet_tx_fn == NULL) {
+        if(txFn == NULL) {
             rval = -2;
             break;
         }
@@ -185,7 +178,7 @@ int32_t packetTx(uint16_t len, void *data) {
 
         footer->crc = crc;
 
-        packet_tx_fn(
+        txFn(
             header->len + sizeof(packet_footer_t) + sizeof(packet_header_t),
             packet_tx_buff);
 
