@@ -22,13 +22,17 @@ typedef enum {
     WIND_INVALID,
 } wind_dir_t;
 
-void windRainInit();
+typedef struct {
+    int32_t (*getDirMvFn)(); // Function to read direction voltage
+} windDirCfg_t;
+
+void windRainInit(windDirCfg_t *cfg);
 uint32_t windRainGetRain();
 void windRainClearRain();
 uint32_t windRainGetSpeed();
 uint32_t windRainGetGust();
-wind_dir_t windRainGetDir(int32_t dirMv);
-int16_t windRainGetDirDegrees(int32_t dirMv);
+wind_dir_t windRainGetDir();
+int16_t windRainGetDirDegrees();
 
 void windRainRainIrq();
 void windRainWindSpeedIrq();

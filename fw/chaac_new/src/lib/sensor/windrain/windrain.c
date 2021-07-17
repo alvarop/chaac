@@ -1,3 +1,4 @@
+// #include <math.h>
 #include "windrain.h"
 #include "adc.h"
 #include "FreeRTOS.h"
@@ -11,6 +12,11 @@ typedef struct {
     wind_dir_t direction;
 } WindDirLUT_t;
 
+// #define WIND_VECT_SIZE (20)
+// static float windVectE[WIND_VECT_SIZE];
+// static float windVectN[WIND_VECT_SIZE];
+// static uint16_t windVectIndex;
+
 TaskHandle_t windRainTaskHandle;
 
 static uint32_t windSpeedTicks;
@@ -21,6 +27,10 @@ static volatile uint32_t maxGust;
 static uint32_t rainTicks;
 
 static TimerHandle_t gustTimer;
+
+static windDirCfg_t *_cfg;
+
+#define GUST_TIME_S 3
 
 #define NOTIFY_RAIN (1 << 0)
 #define NOTIFY_GUST (1 << 1)
@@ -108,8 +118,8 @@ uint32_t windRainGetGust() {
     return gustSpeed;
 }
 
-static const WindDirLUT_t *getDir(int32_t dirMv) {
-
+static const WindDirLUT_t *getDir() {
+    int32_t dirMv = _cfg->getDirMvFn();
     const WindDirLUT_t *pDir = NULL;
     for (uint8_t dir = 0; dir < sizeof(windDirLUT)/sizeof(wind_dir_t); dir++) {
         if (dirMv < windDirLUT[dir].voltage) {
@@ -121,8 +131,13 @@ static const WindDirLUT_t *getDir(int32_t dirMv) {
     return pDir;
 }
 
-int16_t windRainGetDirDegrees(int32_t dirMv) {
-    const WindDirLUT_t *pDir = getDir(dirMv);
+int16_t windRainGetAvgDirDegrees() {
+
+    return -1;
+}
+
+int16_t windRainGetDirDegrees() {
+    const WindDirLUT_t *pDir = getDir();
 
     if (pDir != NULL) {
         return pDir->degrees;
@@ -130,8 +145,8 @@ int16_t windRainGetDirDegrees(int32_t dirMv) {
     return -1;
 }
 
-wind_dir_t windRainGetDir(int32_t dirMv) {
-    const WindDirLUT_t *pDir = getDir(dirMv);
+wind_dir_t windRainGetDir() {
+    const WindDirLUT_t *pDir = getDir();
 
     if (pDir != NULL) {
         return pDir->direction;
@@ -146,7 +161,7 @@ static void windRainTask( void *pvParameters ) {
 
     gustTimer = xTimerCreate(
         "gust",
-        pdMS_TO_TICKS(3 * 1000),
+        pdMS_TO_TICKS(GUST_TIME_S * 1000),
         pdTRUE, // Enable auto-reload
         NULL,
     gustTimerCallback);
@@ -186,8 +201,9 @@ static void windRainTask( void *pvParameters ) {
     }
 }
 
-
-void windRainInit() {
+void windRainInit(windDirCfg_t *cfg) {
+    configASSERT(cfg != NULL);
+    _cfg = cfg;
     BaseType_t xRval = xTaskCreate(
         windRainTask,
         "windRain",

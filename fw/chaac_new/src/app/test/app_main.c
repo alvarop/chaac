@@ -138,6 +138,27 @@ void packetTxFn(int16_t len, void* data) {
     loraRadioSend((uint8_t *)data, len);
 }
 
+int32_t winGetDirMv() {
+    int32_t mv = 0;
+
+    // Enable sensor power rail
+    LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+
+    // Wait for power to make it out and back for a good measurement
+    vTaskDelay(25);
+
+    xIOAdcInit(&hadc1);
+    mv = prvAdcGetSampleMv(ADC_CHANNEL_5);
+    xIOAdcDeInit(&hadc1);
+
+    // Disable sensor power rail
+    LL_GPIO_SetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+
+    return mv;
+}
+
+static windDirCfg_t windCfg = {&winGetDirMv};
+
 static sensor_t shtTemperature;
 static sensor_t shtHumidity;
 static sensor_t dpsPressure;
@@ -150,7 +171,7 @@ static void mainTask( void *pvParameters ) {
 
     LL_GPIO_ResetOutputPin(RADIO_NRST_GPIO_Port, RADIO_NRST_Pin);
 
-    windRainInit();
+    windRainInit(&windCfg);
 
     packet.header.type = PACKET_TYPE_WEATHER_V1P1;
     packet.header.uid = UID;
@@ -209,18 +230,8 @@ static void mainTask( void *pvParameters ) {
         packet.wind_speed = windRainGetSpeed()/10;
         packet.gust_speed = windRainGetGust()/10;
 
-        // Enable sensor power rail
-        LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
+        packet.wind_dir_deg = windRainGetDirDegrees();
 
-        // Wait for power to make it out and back for a good measurement
-        vTaskDelay(25);
-
-        xIOAdcInit(&hadc1);
-        packet.wind_dir_deg = windRainGetDirDegrees(prvAdcGetSampleMv(ADC_CHANNEL_5));
-        xIOAdcDeInit(&hadc1);
-
-        // Disable sensor power rail
-        LL_GPIO_SetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
 
         windRainClearRain();
 
