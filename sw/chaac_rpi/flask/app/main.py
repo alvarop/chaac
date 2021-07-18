@@ -3,7 +3,7 @@ import time
 import socket
 import zipfile
 from datetime import datetime, timedelta
-from flask import Flask, request, g, render_template, jsonify, redirect Response
+from flask import Flask, request, g, render_template, jsonify, redirect, Response
 from chaac.chaacdb import ChaacDB
 
 app = Flask(__name__)
