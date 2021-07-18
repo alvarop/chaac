@@ -3,7 +3,7 @@ import time
 import socket
 import zipfile
 from datetime import datetime, timedelta
-from flask import Flask, request, g, render_template, jsonify, redirect
+from flask import Flask, request, g, render_template, jsonify, redirect Response
 from chaac.chaacdb import ChaacDB
 
 app = Flask(__name__)
@@ -370,6 +370,11 @@ def get_devices():
     db = get_db()
     return jsonify(db.devices)
 
+# Don't add hostname to redirect
+# See https://stackoverflow.com/questions/30006740/how-can-i-tell-flask-not-to-add-host-scheme-info-to-my-redirect
+class NoHostnameResponse(Response):
+    autocorrect_location_header = False
+
 @app.route("/zipdb")
 def download_zip_db():
     dbname = "chaac.db.zip"
@@ -378,4 +383,4 @@ def download_zip_db():
     ) as dbzip:
         print("Zipping ", os.getenv("DATABASE"))
         dbzip.write(os.getenv("DATABASE"))
-    return redirect(f"files/{dbname}")
+    return redirect(f"files/{dbname}", Response=NoHostnameResponse)
