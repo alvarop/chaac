@@ -2,7 +2,7 @@
 {% block head %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
-      current_plot = '/json/day';
+      current_plot = 'json/day';
 
       function load_plots(url) {
         current_plot = url;
@@ -165,9 +165,9 @@
   <div class="container">
     <div class="columns">
       <div class="column">
-        <button class="button" onclick="load_plots('/json/day')">Day</button>
-        <button class="button" onclick="load_plots('/json/week')">Week</button>
-        <button class="button" onclick="load_plots('/json/month')">Month</button>
+        <button class="button" onclick="load_plots('json/day')">Day</button>
+        <button class="button" onclick="load_plots('json/week')">Week</button>
+        <button class="button" onclick="load_plots('json/month')">Month</button>
       </div>
     </div>
     <div class="columns is-desktop">
