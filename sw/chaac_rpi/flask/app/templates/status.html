@@ -3,7 +3,7 @@
 <script type="text/javascript">
 
   function get_devices() {
-    fetch('/devices')
+    fetch('devices')
     .then(function(response) {
       return response.json();
     })
@@ -14,7 +14,7 @@
   };
 
   function load_latest() {
-    fetch('/latest')
+    fetch('latest')
     .then(function(response) {
       return response.json();
     })

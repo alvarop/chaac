@@ -378,4 +378,4 @@ def download_zip_db():
     ) as dbzip:
         print("Zipping ", os.getenv("DATABASE"))
         dbzip.write(os.getenv("DATABASE"))
-    return redirect(f"/files/{dbname}")
+    return redirect(f"files/{dbname}")
