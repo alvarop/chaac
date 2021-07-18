@@ -12,15 +12,15 @@ server {
         return                    301 $uri/;
     }
 
-    location /merida {
+    location /Merida {
         try_files $uri @addslash;
     }
 
-    location /merida2 {
+    location /merida(2) {
         try_files $uri @addslash;
     }
 
-    location /sunbright {
+    location /Sunbright {
         try_files $uri @addslash;
     }
 
@@ -28,15 +28,15 @@ server {
         try_files $uri @addslash;
     }
 
-    location /merida/ {
+    location /Merida/ {
         proxy_pass http://10.1.1.11/;
     }
 
-    location /merida2/ {
+    location /Merida(2)/ {
         proxy_pass http://10.1.1.14/;
     }
 
-    location /sunbright/ {
+    location /Sunbright/ {
         proxy_pass http://10.1.1.21/;
     }
 
