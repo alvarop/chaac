@@ -12,7 +12,17 @@ app.config.from_object(__name__)  # load config from this file , flaskr.py
 # Load default config and override config from an environment variable
 app.config.update(dict(DATABASE=os.getenv("DATABASE")))
 
-hostname = socket.gethostname()
+def get_pretty_hostname():
+    hostname = socket.gethostname()
+
+    if "chaac-" in hostname:
+        hostname = " ".join(hostname.split('-')[1:]).title()
+    else:
+        hostname = " ".join(hostname.split('-')).title()
+
+    return hostname
+
+hostname = get_pretty_hostname()
 
 default_uid = None
 
