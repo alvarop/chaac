@@ -230,7 +230,7 @@ static void mainTask( void *pvParameters ) {
         packet.wind_speed = windRainGetSpeed()/10;
         packet.gust_speed = windRainGetGust()/10;
 
-        packet.wind_dir_deg = windRainGetDirDegrees();
+        packet.wind_dir_deg = windRainGetAvgDirDegrees();
 
 
         windRainClearRain();

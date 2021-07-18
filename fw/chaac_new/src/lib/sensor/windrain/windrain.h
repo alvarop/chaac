@@ -32,6 +32,7 @@ void windRainClearRain();
 uint32_t windRainGetSpeed();
 uint32_t windRainGetGust();
 wind_dir_t windRainGetDir();
+int16_t windRainGetAvgDirDegrees();
 int16_t windRainGetDirDegrees();
 
 void windRainRainIrq();

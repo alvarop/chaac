@@ -1,4 +1,4 @@
-// #include <math.h>
+#include <math.h>
 #include "windrain.h"
 #include "adc.h"
 #include "FreeRTOS.h"
@@ -12,10 +12,9 @@ typedef struct {
     wind_dir_t direction;
 } WindDirLUT_t;
 
-// #define WIND_VECT_SIZE (20)
-// static float windVectE[WIND_VECT_SIZE];
-// static float windVectN[WIND_VECT_SIZE];
-// static uint16_t windVectIndex;
+static float windVectE;
+static float windVectN;
+static uint32_t windVectCount;
 
 TaskHandle_t windRainTaskHandle;
 
@@ -131,9 +130,23 @@ static const WindDirLUT_t *getDir() {
     return pDir;
 }
 
+// Using algorithm from https://math.stackexchange.com/questions/44621/calculate-average-wind-direction
 int16_t windRainGetAvgDirDegrees() {
+    int16_t dir = -1;
+    if(windVectCount > 0) {
+        float mean_dir = atan2f(windVectE/windVectCount, windVectN/windVectCount) * 180/M_PI;
+        if (mean_dir < 0) {
+            mean_dir += 360.0;
+        }
 
-    return -1;
+        dir = (int16_t)(mean_dir * 10);
+        taskENTER_CRITICAL();
+        windVectCount = 0;
+        windVectE = 0;
+        windVectN = 0;
+        taskEXIT_CRITICAL();
+    }
+    return dir;
 }
 
 int16_t windRainGetDirDegrees() {
@@ -197,6 +210,15 @@ static void windRainTask( void *pvParameters ) {
                 maxGust = gustSpeed;
             }
             taskEXIT_CRITICAL();
+
+            float dir = (float)windRainGetDirDegrees()/10.0;
+
+            // Only take direction into account if the wind is actually blowing
+            if(dir >= 0) {
+                windVectE += gustSpeed * sinf(dir * M_PI/180.0);
+                windVectN += gustSpeed * cosf(dir * M_PI/180.0);
+                windVectCount++;
+            }
         }
     }
 }
