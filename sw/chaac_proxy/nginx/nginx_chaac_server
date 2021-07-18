@@ -1,0 +1,47 @@
+# nginx config for flask app
+server {
+    server_name chaac.network www.chaac.network;
+    listen 80;
+
+#    location / {
+#        proxy_pass http://flask-app:5000;
+#        proxy_set_header Host "localhost";
+#    }
+
+    location @addslash {
+        return                    301 $uri/;
+    }
+
+    location /merida {
+        try_files $uri @addslash;
+    }
+
+    location /merida2 {
+        try_files $uri @addslash;
+    }
+
+    location /sunbright {
+        try_files $uri @addslash;
+    }
+
+    location /test {
+        try_files $uri @addslash;
+    }
+
+    location /merida/ {
+        proxy_pass http://10.1.1.11/;
+    }
+
+    location /merida2/ {
+        proxy_pass http://10.1.1.14/;
+    }
+
+    location /sunbright/ {
+        proxy_pass http://10.1.1.21/;
+    }
+
+    location /test/ {
+        proxy_pass http://192.168.50.73/;
+    }
+
+}
