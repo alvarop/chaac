@@ -1,12 +1,12 @@
 # nginx config for flask app
+
+proxy_cache_path  /tmp  levels=1:2    keys_zone=STATIC:10m;
+
 server {
     server_name chaac.network www.chaac.network;
     listen 80;
 
-#    location / {
-#        proxy_pass http://flask-app:5000;
-#        proxy_set_header Host "localhost";
-#    }
+    root /var/www;
 
     location @addslash {
         return                    301 $uri/;
@@ -30,18 +30,26 @@ server {
 
     location /Merida/ {
         proxy_pass http://10.1.1.11/;
+        proxy_cache STATIC;
+        proxy_cache_valid 200 1m;
     }
 
     location /Merida(2)/ {
         proxy_pass http://10.1.1.14/;
+        proxy_cache STATIC;
+        proxy_cache_valid 200 1m;
     }
 
     location /Sunbright/ {
         proxy_pass http://10.1.1.21/;
+        proxy_cache STATIC;
+        proxy_cache_valid 200 1m;
     }
 
     location /test/ {
         proxy_pass http://192.168.50.73/;
+        proxy_cache STATIC;
+        proxy_cache_valid 200 1m;
     }
 
 }
