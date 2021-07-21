@@ -150,6 +150,8 @@ def get_data_dict(uid, start_date, end_date, table="day"):
     db = get_db()
 
     rows = db.get_records(table, start_date=start_date, end_date=end_date, uid=uid)
+    if len(rows) == 0:
+        return None
 
     plot = {}
     col_names = rows[0]._asdict().keys()
@@ -302,7 +304,9 @@ def json_day_str():
     data["data"] = {}
 
     for device in db.devices:
-        data["data"][device] = get_data_dict(device, start_time, end_time, "day")
+        data_dict = get_data_dict(device, start_time, end_time, "day")
+        if data_dict is not None:
+            data["data"][device] = data_dict
     return jsonify(data)
 
 
@@ -331,7 +335,9 @@ def json_week_str():
     data["data"] = {}
 
     for device in db.devices:
-        data["data"][device] = get_data_dict(device, start_time, end_time, "week")
+        data_dict = get_data_dict(device, start_time, end_time, "week")
+        if data_dict is not None:
+            data["data"][device] = data_dict
     return jsonify(data)
 
 
@@ -362,7 +368,9 @@ def json_month_str():
     data["data"] = {}
 
     for device in db.devices:
-        data["data"][device] = get_data_dict(device, start_time, end_time, "month")
+        data_dict = get_data_dict(device, start_time, end_time, "month")
+        if data_dict is not None:
+            data["data"][device] = data_dict
     return jsonify(data)
 
 
