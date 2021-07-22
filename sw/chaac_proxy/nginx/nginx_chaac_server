@@ -8,24 +8,20 @@ server {
 
     root /var/www;
 
-    location @addslash {
-        return                    301 $uri/;
-    }
-
     location /Merida {
-        try_files $uri @addslash;
+        try_files $uri 301 /Merida/;
     }
 
-    location /merida(2) {
-        try_files $uri @addslash;
+    location /Merida(2) {
+        try_files $uri 301 /Merida(2)/;
     }
 
     location /Sunbright {
-        try_files $uri @addslash;
+        try_files $uri 301 /Sunbright/;
     }
 
     location /test {
-        try_files $uri @addslash;
+        try_files $uri 301 /test/;
     }
 
     location /Merida/ {

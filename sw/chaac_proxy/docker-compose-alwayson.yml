@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx:latest
     container_name: chaac-proxy
-    # restart: always
+    restart: always
     ports:
       - 80:80
       - 443:443
@@ -19,7 +19,7 @@ services:
   cache:
     image: alvaroops/chaac-cache:latest
     container_name: chaac-cache
-    # restart: always
+    restart: always
     environment:
       - CONFIG=/cache/config.yml
     volumes:
