@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOOLS_DIR=`git rev-parse --show-toplevel`/fw/chaac_new/tools
+TOOLS_DIR=`git rev-parse --show-toplevel`/fw/chaac/tools
 
 set -m
 openocd -f $TOOLS_DIR/stlink-mod.cfg -f $TOOLS_DIR/st_nucleo_l4.cfg -c init -c halt > /dev/null 2>&1 &

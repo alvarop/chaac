@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOOLS_DIR=`git rev-parse --show-toplevel`/fw/chaac_new/tools
+TOOLS_DIR=`git rev-parse --show-toplevel`/fw/chaac/tools
 
 arm-none-eabi-gdb -nx --batch \
   -ex 'target extended-remote /dev/ttyBmpGdb' \
