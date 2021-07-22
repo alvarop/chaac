@@ -11,16 +11,16 @@ import yaml
 import os
 
 default_hosts = {
-    "San Mateo": "10.1.1.10",
-    "Merida": "10.1.1.11",
-    "chaac-dev": "10.1.1.20",
+    "Merida": "localhost/Merida",
+    "Merida(2)": "localhost/Merida(2)",
+    "Sunbright": "localhost/Sunbright",
 }
 
 default_config = {
     "hosts": default_hosts,
-    "cache_dir": "/tmp/chaac_cache",
-    "refresh_rate": 50,
+    "refresh_rate": 10,
     "request_timeout": 10,
+    "verbose": False
 }
 
 parser = argparse.ArgumentParser()
@@ -34,51 +34,35 @@ else:
 
 # Create config if not there
 if not os.path.exists(config_path):
-    print("Creating default config in " + config_path)
-    with open(config_path, "w") as outfile:
-        yaml.dump(default_config, outfile)
+    config = default_config
+else:
+    with open(config_path, "r") as config_file:
+        config = yaml.safe_load(config_file)
 
-with open(config_path, "r") as config_file:
-    config = yaml.safe_load(config_file)
-
-if not os.path.exists(config["cache_dir"]):
-    print("Creating cache dir " + config["cache_dir"])
-    os.makedirs(config["cache_dir"])
-# print(yaml.dump(config))
-
-
-def json_from_url(url):
+def get_url(url, verbose=False):
+    if verbose:
+        print(f"Getting {url}")
     try:
-        json_request = requests.get(url, timeout=config["request_timeout"])
-        if json_request.status_code != 200:
-            print(url, "Request error ({})".format(json_request.status_code))
+        url_request = requests.get(url, timeout=config["request_timeout"])
+        if url_request.status_code != 200:
+            print(url, "Request error ({})".format(url_request.status_code))
             return None
 
-        return json_request.text
+        return url_request.text
     except requests.exceptions.ReadTimeout:
-        print(url, "Read Timeout")
+        if verbose:
+            print("Timeout")
+        return None
     except requests.exceptions.ConnectionError:
-        print(url, "Connection Error")
+        if verbose:
+            print("Connection Error")
         return None
 
+print("Chaac cache config:", config)
 
 while 1:
     for name, ip in config["hosts"].items():
-        json = json_from_url("http://" + ip + "/latest")
-
-        cache_filename = "{}/{}.yml".format(config["cache_dir"], name)
-
-        if json is not None:
-            cache = {
-                "timestamp": time.time(),
-                "json": base64.b64encode(json.encode("utf-8")).decode("utf-8"),
-            }
-
-            with open(cache_filename, "w") as cache_file:
-                yaml.dump(cache, cache_file)
-        else:
-            if os.path.exists(cache_filename):
-                print("Removing cache file " + cache_filename)
-                os.remove(cache_filename)
+        get_url("http://" + ip + "/", config["verbose"])
+        get_url("http://" + ip + "/latest", config["verbose"])
 
     time.sleep(config["refresh_rate"])

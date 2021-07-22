@@ -1,0 +1,10 @@
+# Supported hosts
+hosts:
+  Merida: chaac-proxy/Merida
+  Merida(2): chaac-proxy/Merida(2)
+  Sunbright: chaac-proxy/Sunbright
+
+# Chaac cache settings
+refresh_rate: 10
+request_timeout: 10
+verbose: True
