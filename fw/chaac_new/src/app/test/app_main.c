@@ -20,6 +20,7 @@
 #include "packet.h"
 #include "sensor.h"
 #include "loraRadio.h"
+#include "iwdg.h"
 
 static weather_packet_v1p1_t packet;
 
@@ -316,12 +317,22 @@ static loraRadioConfig_t loraConfig = {
     .rxErrorCb = NULL,
 };
 
+static void watchdogTask( void *pvParameters ) {
+    (void)pvParameters;
+
+    for(;;) {
+        HAL_IWDG_Refresh(&hiwdg);
+        vTaskDelay(10);
+    }
+}
+
 int main(void) {
     HAL_Init();
 
     SystemClock_Config();
 
     MX_GPIO_Init();
+    MX_IWDG_Init();
 
     BaseType_t xRval = xTaskCreate(
             mainTask,
@@ -340,7 +351,17 @@ int main(void) {
         "sensors",
         512,
         NULL,
-        1,
+        2,
+        NULL);
+
+    configASSERT(xRval == pdTRUE);
+
+    xRval = xTaskCreate(
+        watchdogTask,
+        "iwdg",
+        128,
+        NULL,
+        0,
         NULL);
 
     configASSERT(xRval == pdTRUE);
