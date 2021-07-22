@@ -1,3 +1,0 @@
-target.app: "@mcuboot/boot/mynewt"
-target.bsp: hw/bsp/chaac_v3p1
-target.build_profile: optimized

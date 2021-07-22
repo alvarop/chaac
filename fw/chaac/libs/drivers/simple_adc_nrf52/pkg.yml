@@ -1,6 +1,0 @@
-pkg.name: libs/drivers/simple_adc_nrf52
-pkg.deps:
-    - "@apache-mynewt-core/hw/hal"
-
-pkg.deps:
-    - "@apache-mynewt-core/hw/drivers/adc/adc_nrf52"

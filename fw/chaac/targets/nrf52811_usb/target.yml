@@ -1,5 +1,0 @@
-# target.app: "@apache-mynewt-nimble/apps/btshell"
-target.app: apps/blinky_beacon
-target.bsp: hw/bsp/nrf52811_usb
-# target.bsp: "@apache-mynewt-core/hw/bsp/nordic_pca10040"
-target.build_profile: debug

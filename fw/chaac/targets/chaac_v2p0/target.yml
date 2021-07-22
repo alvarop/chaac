@@ -1,4 +1,0 @@
-target.app: apps/controller_ble
-# target.app: apps/blinky_beacon
-target.bsp: hw/bsp/chaac_v2p0
-target.build_profile: debug

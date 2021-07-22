@@ -1,3 +1,0 @@
-target.app: apps/lora_button
-target.bsp: hw/bsp/lora_button_v1p0
-target.build_profile: debug

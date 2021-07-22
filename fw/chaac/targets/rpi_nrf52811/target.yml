@@ -1,3 +1,0 @@
-target.app: apps/scanner
-target.bsp: hw/bsp/rpi_nrf52811
-target.build_profile: debug
