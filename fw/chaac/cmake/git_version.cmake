@@ -16,8 +16,8 @@ execute_process(COMMAND ${GIT_CMD} ${GIT_ARGS_SHA}
 if (GIT_VERSION_STR MATCHES "^release/fw/([a-zA-Z0-9_\\-]+)/([A-za-z0-9\\-\\+\\.]+)$")
     # Extract version info from git tag
     # Expects format release/fw/appname/vx.y.z-abcdef with optional extra stuff in the end
-    set(RELEASE_APP_STR "const char *RELEASE_APP_STR = ${CMAKE_MATCH_1};")
-    set(VERSION_STR "const char *VERSION_STR = ${CMAKE_MATCH_2};")
+    set(RELEASE_APP_STR "const char *RELEASE_APP_STR = \"${CMAKE_MATCH_1}\";")
+    set(VERSION_STR "const char *VERSION_STR = \"${CMAKE_MATCH_2}\";")
 else()
     set(RELEASE_APP_STR "const char *RELEASE_APP_STR = \"N/A\";")
     set(VERSION_STR "const char *VERSION_STR = \"N/A\";")
