@@ -1,7 +1,7 @@
 add_subdirectory(${SRC_DIR}/lib/FreeRTOS lib/freertos)
 add_subdirectory(${SRC_DIR}/lib/printf lib/printf)
 
-set(APP_NAME test PARENT_SCOPE)
+set(APP_NAME chaac PARENT_SCOPE)
 
 set(APP_DIR ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 

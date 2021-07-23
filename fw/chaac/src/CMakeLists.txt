@@ -16,8 +16,6 @@ if (NOT DEFINED HWID)
 endif()
 
 set(DEBUGGER "bmp" CACHE STRING "Options: bmp, stlink")
-# set(BSP chaac_v6p0)
-# set(APP test)
 
 add_subdirectory(bsp/${BSP})
 add_subdirectory(app/${APP})
