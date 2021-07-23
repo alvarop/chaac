@@ -94,6 +94,7 @@ RangeTestPacketV1P0 = ChaacPacket(
     ],
 )
 
+# All packet types go here
 PacketTypes = {
     1: ResetPacket,
     2: MemfaultPacket,
@@ -101,5 +102,11 @@ PacketTypes = {
     11: WeatherPacketV1P1,
     30: ButtonPacketV1P0,
     0xF0: RangeTestPacketV1P0,
+}
+
+# Valid weather packets go here
+WeatherPacketTypes = {
+    10: WeatherPacketV1P0,
+    11: WeatherPacketV1P1,
 }
 

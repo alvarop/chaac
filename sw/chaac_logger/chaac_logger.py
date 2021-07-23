@@ -59,14 +59,16 @@ def process_packet(packet):
         print_memfault_data(packet)
         return
 
-    weatherPacket = packets.PacketTypes[header_dict["packet_type"]]
+    if header_dict["packet_type"] not in packets.WeatherPacketTypes:
+        print("Not a weather packet, ignoring")
+        return
+
+    weatherPacket = packets.WeatherPacketTypes[header_dict["packet_type"]]
 
     packet_dict = weatherPacket.decode(packet)._asdict()
 
     rxinfo = packets.LoraRxInfo.decode(packet, weatherPacket.size())
     print(rxinfo)
-
-
 
     data = {}
     for key, value in packet_dict.items():
