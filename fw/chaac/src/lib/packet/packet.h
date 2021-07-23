@@ -13,7 +13,7 @@ typedef struct {
     uint16_t crc;
 } __attribute__((packed)) packet_footer_t;
 
-#define MAX_PACKET_DATA_LEN 90
+#define MAX_PACKET_DATA_LEN 272
 #define MAX_PACKET_SIZE (sizeof(packet_header_t) + sizeof(packet_footer_t) + MAX_PACKET_DATA_LEN)
 #define PACKET_START 0xAA55
 

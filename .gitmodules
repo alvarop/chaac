@@ -1,0 +1,3 @@
+[submodule "fw/chaac/src/third_party/memfault/memfault-firmware-sdk"]
+	path = fw/chaac/src/third_party/memfault/memfault-firmware-sdk
+	url = https://github.com/memfault/memfault-firmware-sdk.git

@@ -37,15 +37,27 @@ if port is None:
 stream = serial.Serial(port, timeout=0.01)
 stream.flushInput()
 
-last_packet = None
-
+def print_memfault_data(packet):
+    memfaultPacket = packets.MemfaultPacket.decode(packet)
+    dataLen = memfaultPacket.len
+    print(packets.MemfaultPacket.size(), dataLen)
+    data = packet[packets.MemfaultPacket.size():(packets.MemfaultPacket.size() + dataLen)]
+    print(len(data))
+    for byte in data:
+        print("{:02X}".format(byte), end="")
+    print("")
 
 def process_packet(packet):
-    global last_packet
 
     header_dict = packets.PacketHeader.decode(packet)._asdict()
     if header_dict["packet_type"] not in packets.PacketTypes:
         print(f"Unknown packet type {header_dict}\n{packet}")
+        return
+
+    if packets.PacketTypes[header_dict["packet_type"]] == packets.MemfaultPacket:
+        print("MEMFAULT PACKET!")
+
+        print_memfault_data(packet)
         return
 
     weatherPacket = packets.PacketTypes[header_dict["packet_type"]]
@@ -55,15 +67,7 @@ def process_packet(packet):
     rxinfo = packets.LoraRxInfo.decode(packet, weatherPacket.size())
     print(rxinfo)
 
-    # Don't process duplicate packets!
-    if (
-        last_packet is not None
-        and last_packet["uid"] == packet_dict["uid"]
-        and last_packet["sample"] == packet_dict["sample"]
-    ):
-        return
 
-    last_packet = packet_dict
 
     data = {}
     for key, value in packet_dict.items():

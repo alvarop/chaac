@@ -4,6 +4,7 @@
 // definitions in sw/chaac/chaac/packets.py
 typedef enum {
     PACKET_TYPE_RESET = 1,
+    PACKET_TYPE_MEMFAULT = 2,
     PACKET_TYPE_WEATHER_V1P0 = 10,
     PACKET_TYPE_WEATHER_V1P1 = 11,
 } packet_type_t;
@@ -48,3 +49,9 @@ typedef struct {
     int8_t snr;
     int8_t rsvd;
 } __attribute__ ((packed)) chaac_lora_rxinfo_t;
+
+typedef struct {
+    chaac_header_t  header;
+    uint16_t    len;
+    uint8_t     buf[0];
+} __attribute__((packed)) memfault_packet_t;

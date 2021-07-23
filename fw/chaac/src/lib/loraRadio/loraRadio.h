@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum {
     RADIO_MODE_STANDBY = 0,
@@ -26,3 +27,4 @@ void loraRadioInit(loraRadioConfig_t *config);
 void loraRadioSend(uint8_t *data, size_t len);
 void loraRadioEnterMode(loraMode_t mode);
 void loraRadioSetRxTimeout(uint32_t rxTimeout);
+bool isRadioReady();

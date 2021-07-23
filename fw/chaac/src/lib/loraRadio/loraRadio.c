@@ -32,6 +32,8 @@ static RadioEvents_t RadioEvents;
 static loraRadioConfig_t *_config = NULL;
 static uint32_t _rxTimeout = 0;
 
+static bool radioIsReady = false;
+
 static inline void spiSetup() {
     if(_config->spiSetupFn) {
         _config->spiSetupFn();
@@ -158,6 +160,10 @@ void loraRadioSetRxTimeout(uint32_t rxTimeout) {
     _rxTimeout = rxTimeout;
 }
 
+bool isRadioReady() {
+    return radioIsReady;
+}
+
 TaskHandle_t pxRadioIrqTaskHandle = NULL;
 
 static void prvRadioIrqTask( void *pvParameters ) {
@@ -172,6 +178,8 @@ static void prvRadioIrqTask( void *pvParameters ) {
     loraRadioEnterMode(_config->startMode);
 
     pxRadioIrqTaskHandle = xTaskGetCurrentTaskHandle();
+
+    radioIsReady = true;
 
     for(;;) {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -195,7 +203,7 @@ void loraRadioInit(loraRadioConfig_t *config) {
             "radio",
             512,
             NULL,
-            tskIDLE_PRIORITY + 2,
+            4,
             NULL);
 
     configASSERT(xRval == pdTRUE);

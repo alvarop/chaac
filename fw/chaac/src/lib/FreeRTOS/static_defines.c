@@ -53,14 +53,14 @@ static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 
-#if configCHECK_FOR_STACK_OVERFLOW > 0
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName ){
-  (void)xTask;
-  (void)pcTaskName;
+// #if configCHECK_FOR_STACK_OVERFLOW > 0
+// void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName ){
+//   (void)xTask;
+//   (void)pcTaskName;
 
-  configASSERT(0);
-}
-#endif
+//   configASSERT(0);
+// }
+// #endif
 
 #if configUSE_MALLOC_FAILED_HOOK == 1
 void vApplicationMallocFailedHook( void ) {

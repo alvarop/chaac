@@ -40,16 +40,36 @@ add_compile_options(
 	$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 	)
 
+set(MEMFAULT_PORT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/memfault)
+set(MEMFAULT_SDK_ROOT ${MEMFAULT_PORT_ROOT}/memfault-firmware-sdk)
+set(MEMFAULT_FREERTOS_PORT_ROOT ${MEMFAULT_SDK_ROOT}/ports/freertos)
+
+list(APPEND MEMFAULT_COMPONENTS core util panics metrics)
+include(${MEMFAULT_SDK_ROOT}/cmake/Memfault.cmake)
+memfault_library(${MEMFAULT_SDK_ROOT} MEMFAULT_COMPONENTS
+ MEMFAULT_COMPONENTS_SRCS MEMFAULT_COMPONENTS_INC_FOLDERS)
+
 # TODO get bsp from variable
 add_executable(${EXECUTABLE})
 
-target_sources(${EXECUTABLE} PRIVATE 
+target_sources(${EXECUTABLE} PRIVATE
 	${BSP_FILES}
-	${APP_FILES})
+	${APP_FILES}
+	${MEMFAULT_COMPONENTS_SRCS}
+	${MEMFAULT_PORT_ROOT}/memfault_platform_port.c
+	${MEMFAULT_PORT_ROOT}/memfault_rcc_reboot_tracking.c
+	${MEMFAULT_PORT_ROOT}/memfault_flash_coredump_storage.c
+	${MEMFAULT_FREERTOS_PORT_ROOT}/src/memfault_core_freertos.c
+	${MEMFAULT_FREERTOS_PORT_ROOT}/src/memfault_freertos_ram_regions.c
+	${MEMFAULT_FREERTOS_PORT_ROOT}/src/memfault_metrics_freertos.c
+	${MEMFAULT_FREERTOS_PORT_ROOT}/src/memfault_panics_freertos.c)
 
-target_include_directories(${EXECUTABLE} PRIVATE 
+target_include_directories(${EXECUTABLE} PRIVATE
 	${BSP_INCLUDES}
-	${APP_INCLUDES})
+	${APP_INCLUDES}
+	${MEMFAULT_COMPONENTS_INC_FOLDERS}
+	${MEMFAULT_SDK_ROOT}/ports/include
+	${MEMFAULT_PORT_ROOT})
 
 target_linker_map(${EXECUTABLE})
 

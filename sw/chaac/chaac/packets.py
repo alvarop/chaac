@@ -10,68 +10,20 @@ PACKET_TYPE_CLEAR_RAIN = 4
 
 PacketHeader = ChaacPacket("PacketHeader", [("uid", "I"), ("packet_type", "B")])
 
-# LEGACY chaac v1.0 WeatherPacket
-WeatherPacket = ChaacPacket(
-    "WeatherPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("sample", "I"),
-        ("wind_speed", "f"),
-        ("wind_dir", "f"),
-        ("rain", "f"),
-        ("temperature", "f"),
-        ("humidity", "f"),
-        ("temperature_in", "f"),
-        ("pressure", "f"),
-        ("light", "f"),
-        ("battery", "f"),
-        ("solar_panel", "f"),
-    ],
-)
-
-GPSPacket = ChaacPacket(
-    "GPSPacket",
-    [
-        ("uid", "I"),
-        ("packet_type", "B"),
-        ("lat_degrees", "i"),
-        ("lat_minutes", "d"),
-        ("lat_cardinal", "c"),
-        ("lon_degrees", "i"),
-        ("lon_minutes", "d"),
-        ("lon_cardinal", "c"),
-    ],
-)
-
-BootPacket = ChaacPacket(
-    "BootPacket", [("uid", "I"), ("packet_type", "B"), ("flags", "B")]
-)
-
-BLEWeatherPacket = ChaacPacket(
-    "BLEWeatherPacket",
-    [
-        ("uid", "L"),
-        ("addr_pad", "H"),
-        ("sample", "B"),
-        ("wind_dir", "B"),
-        ("rain", "B"),
-        ("rsvd", "B"),
-        ("wind_speed", "H"),
-        ("temperature", "h"),
-        ("humidity", "H"),
-        ("pressure", "H"),
-        ("battery", "H"),
-        ("solar_panel", "H"),
-        ("rssi", "b"),
-    ],
-)
-
 ResetPacket = ChaacPacket(
     "ResetPacket",
     [
         ("uid", "I"),
         ("packet_type", "B"),
+    ],
+)
+
+MemfaultPacket = ChaacPacket(
+    "MemfaultPacket",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+        ("len", "H"),
     ],
 )
 
@@ -144,6 +96,7 @@ RangeTestPacketV1P0 = ChaacPacket(
 
 PacketTypes = {
     1: ResetPacket,
+    2: MemfaultPacket,
     10: WeatherPacketV1P0,
     11: WeatherPacketV1P1,
     30: ButtonPacketV1P0,

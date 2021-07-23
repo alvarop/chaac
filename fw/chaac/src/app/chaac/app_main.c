@@ -3,32 +3,32 @@
 #include "task.h"
 #include "main.h"
 // #include "printf.h"
-#include "IOI2c.h"
-#include "IOAdc.h"
-#include "debug.h"
-#include "sht3x.h"
-#include "dps368.h"
-#include "windrain.h"
 #include "adc.h"
-#include "i2c.h"
-#include "spi.h"
-#include "gpio.h"
-#include "radio.h"
-#include <string.h>
 #include "chaac_packet.h"
+#include "debug.h"
+#include "dps368.h"
 #include "FreeRTOSLPM.h"
-#include "packet.h"
-#include "sensor.h"
-#include "loraRadio.h"
+#include "gpio.h"
+#include "i2c.h"
+#include "info.h"
+#include "IOAdc.h"
+#include "IOI2c.h"
 #include "iwdg.h"
+#include "loraRadio.h"
+#include "memfault/components.h"
+#include "memfault/core/data_packetizer.h"
+#include "packet.h"
+#include "radio.h"
+#include "sensor.h"
+#include "sht3x.h"
+#include "spi.h"
+#include "windrain.h"
+#include <string.h>
 
 static weather_packet_v1p1_t packet;
 
 extern __IO uint32_t uwTick;
 volatile bool useFreeRTOSTick = false;
-
-const uint32_t *HWID = (const uint32_t *)(UID_BASE);
-#define UID (HWID[0] ^ HWID[1] ^ HWID[2])
 
 uint32_t HAL_GetTick(void) {
     if(useFreeRTOSTick) {
@@ -63,7 +63,7 @@ loraMode_t loraRxCallback(uint8_t *buff, size_t len, int16_t rssi, int8_t snr){
     if(packetIsValid(buff, len)) {
         packet_header_t *packetHeader = (packet_header_t *)buff;
         chaac_header_t *chaacPacketHeader = (chaac_header_t *)&packetHeader[1];
-        if((chaacPacketHeader->uid == UID) &&
+        if((chaacPacketHeader->uid == getHWID()) &&
             (chaacPacketHeader->type == PACKET_TYPE_RESET)) {
             NVIC_SystemReset();
         }
@@ -167,6 +167,20 @@ static sensor_t dpsTemperature;
 static sensor_t vBatt;
 static sensor_t vSolar;
 
+#define MEMFAULT_DATA_MAX_LEN 256
+static void sendMemfaultData() {
+    uint8_t *buf = pvPortMalloc(MEMFAULT_DATA_MAX_LEN);
+    memfault_packet_t *packet = (memfault_packet_t *)buf;
+    packet->header.uid = getHWID();
+    packet->header.type = PACKET_TYPE_MEMFAULT;
+    size_t buf_len = MEMFAULT_DATA_MAX_LEN - sizeof(memfault_packet_t);
+    if(memfault_packetizer_get_chunk(&packet[1], &buf_len)) {
+        packet->len = buf_len;
+        packetTx(buf_len + sizeof(memfault_packet_t), buf, packetTxFn);
+    }
+    vPortFree(buf);
+}
+
 static void mainTask( void *pvParameters ) {
     (void)pvParameters;
 
@@ -174,8 +188,14 @@ static void mainTask( void *pvParameters ) {
 
     windRainInit(&windCfg);
 
+    while(!isRadioReady()) {
+        vTaskDelay(100);
+    }
+
+    sendMemfaultData();
+
     packet.header.type = PACKET_TYPE_WEATHER_V1P1;
-    packet.header.uid = UID;
+    packet.header.uid = getHWID();
     packet.sample = 0;
 
     for(;;) {
@@ -333,6 +353,8 @@ int main(void) {
 
     MX_GPIO_Init();
     MX_IWDG_Init();
+
+    memfault_platform_boot();
 
     BaseType_t xRval = xTaskCreate(
             mainTask,

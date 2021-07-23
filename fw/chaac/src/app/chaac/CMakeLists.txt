@@ -16,6 +16,7 @@ set(RADIO_INCLUDES
 
 set(LIB_FILES
 	${SRC_DIR}/lib/adc/stm32l4_adc.c
+	${SRC_DIR}/lib/common/info.c
 	${SRC_DIR}/lib/crc/crc.c
 	${SRC_DIR}/lib/debug/debug_swo.c
 	${SRC_DIR}/lib/i2c/stm32l4_i2c.c
@@ -30,6 +31,7 @@ set(LIB_FILES
 set(LIB_INCLUDES
 	${SRC_DIR}/lib/adc
 	${SRC_DIR}/lib/chaac
+	${SRC_DIR}/lib/common/
 	${SRC_DIR}/lib/crc
 	${SRC_DIR}/lib/debug
 	${SRC_DIR}/lib/i2c
@@ -43,6 +45,7 @@ set(LIB_INCLUDES
 
 set(APP_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/app_main.c
+	${CMAKE_CURRENT_SOURCE_DIR}/version.c
 	${FREERTOS_FILES}
 	${PRINTF_FILES}
 	${LIB_FILES}

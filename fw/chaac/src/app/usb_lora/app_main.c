@@ -12,8 +12,10 @@
 #include "vcp.h"
 #include "loraRadio.h"
 #include "spi.h"
+#include "memfault/components.h"
+#include "memfault/core/data_packetizer.h"
 
-#define BUFFER_SIZE 64
+#define BUFFER_SIZE 300
 
 static uint8_t txbuff[BUFFER_SIZE];
 
@@ -60,7 +62,6 @@ loraMode_t loraRxErrorCallback() {
     return RADIO_MODE_RX;
 }
 
-
 void packetRxFn(int16_t len, void* data) {
     if (len > 0) {
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
@@ -89,7 +90,10 @@ int main(void) {
     MX_USB_DEVICE_Init();
     MX_SPI1_Init();
 
+    memfault_platform_boot();
+
     packetInitCb(packetRxFn);
+
 
     vcpInit();
     vcpSetRxByteCallback(packetProcessByte);

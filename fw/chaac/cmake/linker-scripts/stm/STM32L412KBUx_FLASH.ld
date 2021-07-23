@@ -63,7 +63,12 @@ MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 40K
 FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 128K
+COREDUMP_FLASH (rw) : ORIGIN = 0x801FC00, LENGTH = 1K
 }
+
+__MemfaultCoreStorageStart = ORIGIN(COREDUMP_FLASH);
+__MemfaultCoreStorageEnd = ORIGIN(COREDUMP_FLASH) + LENGTH(COREDUMP_FLASH);
+
 
 /* Define output sections */
 SECTIONS
@@ -102,8 +107,8 @@ SECTIONS
     . = ALIGN(8);
   } >FLASH
 
-  .ARM.extab   : 
-  { 
+  .ARM.extab   :
+  {
   . = ALIGN(8);
   *(.ARM.extab* .gnu.linkonce.armextab.*)
   . = ALIGN(8);
@@ -124,7 +129,7 @@ SECTIONS
     PROVIDE_HIDDEN (__preinit_array_end = .);
 	. = ALIGN(8);
   } >FLASH
-  
+
   .init_array :
   {
 	. = ALIGN(8);
@@ -148,7 +153,7 @@ SECTIONS
   _sidata = LOADADDR(.data);
 
   /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
+  .data :
   {
     . = ALIGN(8);
     _sdata = .;        /* create a global symbol at data start */
@@ -159,7 +164,7 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
-  
+
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
@@ -187,7 +192,7 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

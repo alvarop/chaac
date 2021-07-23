@@ -17,6 +17,7 @@ set(RADIO_INCLUDES
 	)
 
 set(LIB_FILES
+	${SRC_DIR}/lib/common/info.c
 	${SRC_DIR}/lib/crc/crc.c
 	${SRC_DIR}/lib/loraRadio/loraRadio.c
 	${SRC_DIR}/lib/packet/packet.c
@@ -25,6 +26,7 @@ set(LIB_FILES
 
 set(LIB_INCLUDES
 	${SRC_DIR}/lib/chaac
+	${SRC_DIR}/lib/common/
 	${SRC_DIR}/lib/crc
 	${SRC_DIR}/lib/debug
 	${SRC_DIR}/lib/loraRadio
@@ -34,6 +36,7 @@ set(LIB_INCLUDES
 
 set(APP_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/app_main.c
+	${CMAKE_CURRENT_SOURCE_DIR}/version.c
 	${FREERTOS_FILES}
 	${PRINTF_FILES}
 	${LIB_FILES}

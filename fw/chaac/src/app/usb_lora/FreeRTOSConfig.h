@@ -3,7 +3,10 @@
 
 /* Here is a good place to include header files that are required across
 your application. */
-//#include "something.h"
+
+
+#include "memfault/ports/freertos_trace.h"
+#include "memfault/panics/assert.h"
 
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
 #if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
@@ -24,8 +27,8 @@ your application. */
 #define configIDLE_SHOULD_YIELD                 1
 #define configUSE_TASK_NOTIFICATIONS            1
 #define configTASK_NOTIFICATION_ARRAY_ENTRIES   3
-#define configUSE_MUTEXES                       0
-#define configUSE_RECURSIVE_MUTEXES             0
+#define configUSE_MUTEXES                       1
+#define configUSE_RECURSIVE_MUTEXES             1
 #define configUSE_COUNTING_SEMAPHORES           0
 #define configUSE_ALTERNATIVE_API               0 /* Deprecated! */
 #define configQUEUE_REGISTRY_SIZE               10
@@ -46,8 +49,8 @@ your application. */
 /* Hook function related definitions. */
 #define configUSE_IDLE_HOOK                     0
 #define configUSE_TICK_HOOK                     0
-#define configCHECK_FOR_STACK_OVERFLOW          0
-#define configUSE_MALLOC_FAILED_HOOK            0
+#define configCHECK_FOR_STACK_OVERFLOW          2
+#define configUSE_MALLOC_FAILED_HOOK            1
 #define configUSE_DAEMON_TASK_STARTUP_HOOK      0
 
 /* Run time and task stats gathering related definitions. */
@@ -66,7 +69,7 @@ your application. */
 #define configTIMER_TASK_STACK_DEPTH            configMINIMAL_STACK_SIZE
 
 /* Define to trap errors during development. */
-#define configASSERT(x) if(!(x)){while(1){};};
+#define configASSERT(x) MEMFAULT_ASSERT(x)
 
 /* Optional functions - most linkers will remove unused functions anyway. */
 #define INCLUDE_vTaskPrioritySet                1
