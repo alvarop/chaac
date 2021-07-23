@@ -10,6 +10,11 @@ if (NOT DEFINED APP)
 	return()
 endif()
 
+if (NOT DEFINED HWID)
+	message("HWID is not defined, using BSP")
+	set(HWID ${BSP})
+endif()
+
 set(DEBUGGER "bmp" CACHE STRING "Options: bmp, stlink")
 # set(BSP chaac_v6p0)
 # set(APP test)
@@ -22,6 +27,8 @@ set(EXECUTABLE ${PROJECT_NAME}-${APP_NAME}.elf)
 add_compile_definitions(
 	${BSP_DEFINES}
 	${APP_DEFINES}
+	HWID_STR="${HWID}"
+	APP_NAME="${APP}"
 	$<$<CONFIG:Debug>:BUILD_DEBUG>
 	$<$<CONFIG:Release>:BUILD_RELEASE>
 	)
@@ -55,6 +62,7 @@ add_executable(${EXECUTABLE})
 target_sources(${EXECUTABLE} PRIVATE
 	${BSP_FILES}
 	${APP_FILES}
+	${CMAKE_CURRENT_BINARY_DIR}/version.c
 	${MEMFAULT_COMPONENTS_SRCS}
 	${MEMFAULT_PORT_ROOT}/memfault_platform_port.c
 	${MEMFAULT_PORT_ROOT}/memfault_rcc_reboot_tracking.c
@@ -129,3 +137,11 @@ add_custom_target(dfu_flash
 	COMMAND dfu-util -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000:leave -D ${EXECUTABLE}.bin
 	DEPENDS ${EXECUTABLE}
 )
+
+message(STATUS "Saving to ${CMAKE_CURRENT_BINARY_DIR}/version.c")
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/version.c
+           ${CMAKE_CURRENT_BINARY_DIR}/_version.c
+    COMMAND ${CMAKE_COMMAND} -P
+            ${CMAKE_SOURCE_DIR}/cmake/git_version.cmake)

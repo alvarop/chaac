@@ -40,12 +40,13 @@ stream.flushInput()
 def print_memfault_data(packet):
     memfaultPacket = packets.MemfaultPacket.decode(packet)
     dataLen = memfaultPacket.len
-    print(packets.MemfaultPacket.size(), dataLen)
     data = packet[packets.MemfaultPacket.size():(packets.MemfaultPacket.size() + dataLen)]
-    print(len(data))
+
+    print("Memfault data received")
+    cmd_str = "--device-serial {:08X} --encoding hex ".format(memfaultPacket.uid)
     for byte in data:
-        print("{:02X}".format(byte), end="")
-    print("")
+        cmd_str += "{:02X}".format(byte)
+    print(cmd_str)
 
 def process_packet(packet):
 
@@ -55,8 +56,6 @@ def process_packet(packet):
         return
 
     if packets.PacketTypes[header_dict["packet_type"]] == packets.MemfaultPacket:
-        print("MEMFAULT PACKET!")
-
         print_memfault_data(packet)
         return
 

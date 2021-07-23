@@ -2,9 +2,11 @@
 #include "FreeRTOS.h"
 #include "stm32l4xx_hal.h"
 
-extern const char *versionStr;
-extern const char *swTypeStr;
-extern const char *hwidStr;
+extern const char *RELEASE_APP_STR;
+extern const char *VERSION_STR;
+extern const char *GIT_SHA_STR;
+const char *hwidStr = HWID_STR;
+const char *appName = APP_NAME;
 
 static const char hex[]= "0123456789ABCDEF";
 
@@ -31,11 +33,11 @@ bool getHWIDStr(char *buff, size_t len) {
 }
 
 const char *getFWVersionStr() {
-	return versionStr;
+	return GIT_SHA_STR;
 }
 
 const char *getHWVersionStr() {
-	return swTypeStr;
+	return appName;
 }
 
 const char *getFWTypeStr() {
