@@ -8,22 +8,6 @@ server {
 
     root /var/www;
 
-    location /Merida {
-        try_files $uri 301 /Merida/;
-    }
-
-    location /Merida(2) {
-        try_files $uri 301 /Merida(2)/;
-    }
-
-    location /Sunbright {
-        try_files $uri 301 /Sunbright/;
-    }
-
-    location /test {
-        try_files $uri 301 /test/;
-    }
-
     location /Merida/ {
         proxy_pass http://10.1.1.11/;
         proxy_cache STATIC;
@@ -42,8 +26,8 @@ server {
         proxy_cache_valid 200 1m;
     }
 
-    location /test/ {
-        proxy_pass http://192.168.50.73/;
+    location /Merida\ New/ {
+        proxy_pass http://10.1.1.15/;
         proxy_cache STATIC;
         proxy_cache_valid 200 1m;
     }
