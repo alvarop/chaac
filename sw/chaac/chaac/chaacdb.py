@@ -242,8 +242,10 @@ class ChaacDB:
         # Sanitize user input
         # See https://bobby-tables.com/python
         self.cur.execute(query, args)
+        self.__commit()
 
         self.devices[uid] = name
+
 
     def __wx_stat_row_factory(self, cursor, row):
         return self.WXStatRecord(*row)

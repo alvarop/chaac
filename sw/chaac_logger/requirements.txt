@@ -1,4 +1,4 @@
-chaac==0.33
+chaac==0.34
 numpy==1.21.0
 pyserial==3.5
 serial-packet==0.1
