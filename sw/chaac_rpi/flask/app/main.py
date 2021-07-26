@@ -95,7 +95,7 @@ def get_latest_sample(uid):
 def latest_json():
     db = get_db()
     data = {}
-    for device, name in db.devices.items()::
+    for device, name in db.devices.items():
         data[device] = get_latest_sample(device)
     return jsonify(data)
 
@@ -367,7 +367,7 @@ def json_month_str():
     data["end_date"] = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d %H:%M:%S")
     data["data"] = {}
 
-    for device, name in db.devices.items()::
+    for device, name in db.devices.items():
         data_dict = get_data_dict(device, start_time, end_time, "month")
         if data_dict is not None:
             data["data"][name] = data_dict
