@@ -29,10 +29,10 @@
     "S", "SSW", "SW", "WSW",
     "W", "WNW", "NW", "NNW"];
 
-  function makeItemTitle(name, timestamp) {
+  function makeItemTitle(uid, name, timestamp) {
     title_h = document.createElement("h3");
     title_h.className = "subtitle is-3 has-text-centered";
-    title_h.innerHTML=`${name} @ <b id="${name}_timestamp"></b>`
+    title_h.innerHTML=`${name} @ <b id="${uid}_timestamp"></b>`
     col = document.createElement("div");
     col.className = "column";
     col.appendChild(title_h)
@@ -66,11 +66,11 @@
     return col;
   }
 
-  function makeDataFields(uid) {
+  function makeDataFields(uid, name) {
     container = document.createElement("div");
     container.className = "container";
 
-    container.appendChild(makeItemTitle(uid, "timeeee"));
+    container.appendChild(makeItemTitle(uid, name, "timeeee"));
 
     cols = document.createElement("div");
     cols.className = "columns is-desktop";
@@ -158,7 +158,7 @@
 
   function create(devices){
     for (let [key, value] of Object.entries(devices)) {
-      document.getElementById("mainthing").appendChild(makeDataFields(key));
+      document.getElementById("mainthing").appendChild(makeDataFields(key, value));
     }
   }
 

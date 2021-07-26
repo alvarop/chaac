@@ -334,10 +334,10 @@ def json_week_str():
     data["end_date"] = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d %H:%M:%S")
     data["data"] = {}
 
-    for device in db.devices:
+    for device, name in db.devices.items():
         data_dict = get_data_dict(device, start_time, end_time, "week")
         if data_dict is not None:
-            data["data"][device] = data_dict
+            data["data"][name] = data_dict
     return jsonify(data)
 
 
