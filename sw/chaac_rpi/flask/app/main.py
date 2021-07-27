@@ -42,7 +42,7 @@ def get_latest_uid():
 
     if default_uid is None:
         db = get_db()
-        rows = db.get_records("day", order="desc", limit=1)
+        rows = db.get_records("minute", order="desc", limit=1)
         default_uid = rows[0].uid
 
     return default_uid
@@ -61,7 +61,7 @@ def get_latest_sample(uid):
     # Get last sample
     db = get_db()
 
-    rows = db.get_records("day", order="desc", limit=1, uid=uid)
+    rows = db.get_records("minute", order="desc", limit=1, uid=uid)
 
     sample = {"hostname": hostname}
     # Convert the units
@@ -146,12 +146,17 @@ def get_rain_label(idx, table):
 
 def get_data_dict(uid, start_date, end_date, table="day"):
     """ Get weather data for the specified weather period """
-
     db = get_db()
 
-    rows = db.get_records(table, start_date=start_date, end_date=end_date, uid=uid)
+    if table == "day":
+        real_table = "minute"
+    else:
+        real_table = "hour"
+    rows = db.get_records(real_table, start_date=start_date, end_date=end_date, uid=uid)
     if len(rows) == 0:
         return None
+
+    print(f"get_data_dict {start_date} {end_date} {table} {real_table}", len(rows))
 
     plot = {}
     col_names = rows[0]._asdict().keys()
@@ -204,7 +209,7 @@ def get_data_dict(uid, start_date, end_date, table="day"):
 
         # Wrap around depending on the number of bins (since we don't always start at 0)
         idx = (idx + 1) % len(bins)
-    print(uid, plot["rain"])
+    # print(uid, plot["rain"])
 
     return plot
 

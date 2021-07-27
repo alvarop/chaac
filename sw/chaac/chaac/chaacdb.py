@@ -6,8 +6,7 @@ from statistics import mean
 from datetime import datetime, timedelta
 
 SAMPLE_PERIOD_S = 60
-WEEK_TIME_DELTA_S = SAMPLE_PERIOD_S * 7
-MONTH_TIME_DELTA_S = SAMPLE_PERIOD_S * 31
+HOURLY_TIME_DELTA_S = SAMPLE_PERIOD_S * 60
 
 # timestamp and uid must be the first two
 data_columns = [
@@ -131,9 +130,8 @@ class ChaacDB:
         )
 
         self.tables = {
-            "day": "day_samples",
-            "week": "week_samples",
-            "month": "month_samples",
+            "minute": "minute_samples",
+            "hour": "hour_samples",
         }
 
         self.__init_tables()
@@ -143,18 +141,12 @@ class ChaacDB:
 
         self.config = KeyValueStore(conn=self.conn)
 
-        self.week_start = {}
-        self.month_start = {}
+        self.hour_start = {}
 
         for device in self.devices:
-            if "{}_week_start".format(device) in self.config:
-                self.week_start[device] = int(
-                    self.config["{}_week_start".format(device)]
-                )
-
-            if "{}_month_start".format(device) in self.config:
-                self.month_start[device] = int(
-                    self.config["{}_month_start".format(device)]
+            if "{}_hour_start".format(device) in self.config:
+                self.hour_start[device] = int(
+                    self.config["{}_hour_start".format(device)]
                 )
 
     def close(self):
@@ -165,21 +157,14 @@ class ChaacDB:
         # Table to store daily data (every minute)
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS "
-            + "day_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
+            + "minute_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
             + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
         )
 
-        # Table to store weekly data (7 minute average)
+        # Table to store hourly data 
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS "
-            + "week_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
-            + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
-        )
-
-        # Table to store monthly data (31 minute average)
-        self.conn.execute(
-            "CREATE TABLE IF NOT EXISTS "
-            + "month_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
+            + "hour_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
             + "{} FLOAT)".format(" FLOAT, ".join(data_columns[2:]))
         )
 
@@ -219,10 +204,8 @@ class ChaacDB:
         self.rename_device(uid, name, gps, new=True)
 
         # Update downsampling time
-        self.config["{}_week_start".format(uid)] = 0
-        self.config["{}_month_start".format(uid)] = 0
-        self.week_start[uid] = 0
-        self.month_start[uid] = 0
+        self.config["{}_hour_start".format(uid)] = 0
+        self.hour_start[uid] = 0
 
     def __wx_row_factory(self, cursor, row):
         return self.WXRecord(*row)
@@ -289,7 +272,7 @@ class ChaacDB:
 
         return self.cur.fetchall()
 
-    def __insert_line(self, line, table="day"):
+    def __insert_line(self, line, table="minute"):
         query = "INSERT INTO {} VALUES(NULL,{})".format(
             self.tables[table], ",".join(["?"] * len(data_columns))
         )
@@ -357,34 +340,13 @@ class ChaacDB:
                 break
             except sqlite3.OperationalError:
                 retries -= 1
-                continue
+                continue        
 
-    def __downsample_check(self, timestamp, uid):
-        """ See if current timestamp is outside of the latest
-            averaging range. If so, downsample chunk and commit """
-
-        if timestamp > (self.week_start[uid] + WEEK_TIME_DELTA_S):
-            self.__downsample("week", uid)
-            self.week_start[uid] = timestamp
-            self.config["{}_week_start".format(uid)] = timestamp
-
-        if timestamp > (self.month_start[uid] + MONTH_TIME_DELTA_S):
-            self.__downsample("month", uid)
-            self.month_start[uid] = timestamp
-            self.config["{}_month_start".format(uid)] = timestamp
-
-    def __downsample(self, table, uid):
-        if table == "week":
-            start_time = self.week_start[uid]
-            end_time = start_time + WEEK_TIME_DELTA_S
-        elif table == "month":
-            start_time = self.month_start[uid]
-            end_time = start_time + MONTH_TIME_DELTA_S
-        else:
-            raise ValueError("Invalid table!")
-
+    def __downsample(self, uid):
+        start_time = self.hour_start[uid]
+        end_time = start_time + HOURLY_TIME_DELTA_S
         query = """
-            SELECT * FROM day_samples
+            SELECT * FROM minute_samples
             WHERE timestamp >= ?
             AND timestamp < ?
             AND uid == ?
@@ -410,8 +372,13 @@ class ChaacDB:
 
         # Round out the timestamp to seconds
         avg_line[data_columns.index("timestamp")] = int(
-            avg_line[data_columns.index("timestamp")]
+            (end_time+start_time)/2
         )
+        # print("Downsample,", 
+        #     datetime.utcfromtimestamp(start_time),
+        #     datetime.utcfromtimestamp(end_time),
+        #     datetime.utcfromtimestamp(avg_line[data_columns.index("timestamp")])
+        #     )
 
         # Don't average the device number!
         avg_line[data_columns.index("uid")] = lines[0][data_columns.index("uid")]
@@ -429,11 +396,13 @@ class ChaacDB:
         )
 
         # Save the data
-        self.__insert_line(avg_line, table=table)
+        self.__insert_line(avg_line, table="hour")
 
     def add_record(self, record, timestamp=None, commit=True):
-        if getattr(record, "uid") not in self.devices:
-            self.__add_device(getattr(record, "uid"))
+        uid = getattr(record, "uid")
+
+        if uid not in self.devices:
+            self.__add_device(uid)
 
         # If timestamp is none, use current time
         if timestamp is None:
@@ -448,13 +417,19 @@ class ChaacDB:
                 except AttributeError:
                     line.append(0)
 
-
         self.__insert_line(line)
-        self.__downsample_check(timestamp, getattr(record, "uid"))
+        
+        """ See if current timestamp is outside of the latest
+            averaging range. If so, downsample chunk and commit """
+
+        if timestamp > (self.hour_start[uid] + HOURLY_TIME_DELTA_S):
+            self.__downsample(uid)
+            self.hour_start[uid] = timestamp - timestamp % (60 * 60)
+            self.config["{}_hour_start".format(uid)] = timestamp - timestamp % (60 * 60)
 
         if getattr(record, "rain") > 0:
             self.__insert_rain(
-                timestamp, getattr(record, "rain"), getattr(record, "uid")
+                timestamp, getattr(record, "rain"), uid
             )
 
         if commit:
@@ -520,7 +495,7 @@ class ChaacDB:
             return stat[0]
 
         rows = self.get_records(
-            "day", start_date=start_time, end_date=end_time, uid=uid
+            "minute", start_date=start_time, end_date=end_time, uid=uid
         )
 
         if len(rows) == 0:
