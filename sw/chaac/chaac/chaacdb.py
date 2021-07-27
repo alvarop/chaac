@@ -174,13 +174,6 @@ class ChaacDB:
             + "devices(uid INTEGER PRIMARY KEY, name TEXT, gps TEXT)"
         )
 
-        # Table to store rainfall data (hourly)
-        self.conn.execute(
-            "CREATE TABLE IF NOT EXISTS "
-            + "rain_samples(id INTEGER PRIMARY KEY, timestamp INTEGER, uid INTEGER, "
-            + "rain FLOAT)"
-        )
-
         # Table to store daily stats
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS "
@@ -279,59 +272,6 @@ class ChaacDB:
 
         self.cur.execute(query, line)
 
-    def get_rain(self, start_time, end_time=None, uid=None):
-
-        # Just select the single sample if there's no end time
-        if end_time is None:
-            end_time = start_time + 1
-
-        query = """
-            SELECT * FROM rain_samples
-            WHERE timestamp >= ?
-            AND timestamp < ?
-            """
-        args = [int(start_time), int(end_time)]
-
-        if uid is not None:
-            query += " AND uid == ?"
-            args.append(uid)
-
-        self.cur.row_factory = sqlite3.Row
-        self.cur.execute(query, args)
-
-        return self.cur.fetchall()
-
-    def __insert_rain(self, timestamp, rain, uid):
-        # Remove minutes and seconds to tally rain hourly
-        hour = timestamp - timestamp % (60 * 60)
-
-        past_rain_record = self.get_rain(hour, uid=uid)
-        if len(past_rain_record) == 1:
-            past_rain_val = past_rain_record[0][3]
-
-            rain += past_rain_val
-
-            query = """
-            REPLACE INTO rain_samples
-            (id, timestamp, uid, rain)
-            VALUES
-            (?, ?, ?, ?)
-            """
-            args = (
-                past_rain_record[0][0],
-                past_rain_record[0][1],
-                past_rain_record[0][2],
-                round(rain, 3),
-            )
-        else:
-            query = """
-            INSERT INTO rain_samples
-            VALUES (NULL, ?, ?, ?)
-            """
-            args = (hour, uid, round(rain, 3))
-
-        self.cur.execute(query, args)
-
     def __commit(self):
         retries = 5
         while retries > 0:
@@ -374,11 +314,6 @@ class ChaacDB:
         avg_line[data_columns.index("timestamp")] = int(
             (end_time+start_time)/2
         )
-        # print("Downsample,", 
-        #     datetime.utcfromtimestamp(start_time),
-        #     datetime.utcfromtimestamp(end_time),
-        #     datetime.utcfromtimestamp(avg_line[data_columns.index("timestamp")])
-        #     )
 
         # Don't average the device number!
         avg_line[data_columns.index("uid")] = lines[0][data_columns.index("uid")]
@@ -426,11 +361,6 @@ class ChaacDB:
             self.__downsample(uid)
             self.hour_start[uid] = timestamp - timestamp % (60 * 60)
             self.config["{}_hour_start".format(uid)] = timestamp - timestamp % (60 * 60)
-
-        if getattr(record, "rain") > 0:
-            self.__insert_rain(
-                timestamp, getattr(record, "rain"), uid
-            )
 
         if commit:
             self.__commit()
@@ -486,7 +416,7 @@ class ChaacDB:
 
         return self.cur.fetchall()
 
-    def __compute_stats(self, start_time, end_time, uid, commit=True):
+    def __compute_stats(self, start_time, end_time, uid, commit=True, delete_old_samples=True):
 
         stat = self.get_stats(start_time, end_time, uid=uid)
 
@@ -510,11 +440,9 @@ class ChaacDB:
         day_mean = self.WXRecord(*np.around(np.mean(row_array, axis=0), decimals=3))
 
         # Compute rain totals
-        rain_list = self.get_rain(start_time, end_time, uid=uid)
         rain_total = 0
-        if len(rain_list) > 0:
-            for rain_sample in rain_list:
-                rain_total += rain_sample[3]
+        for row in rows:
+            rain_total += row.rain
 
         # Create dict with all stats
         day_stats = {
@@ -522,7 +450,7 @@ class ChaacDB:
             "timestamp": start_time,
             "uid": uid,
             "wind_dir": None,
-            "rain": rain_total,
+            "rain": round(rain_total,2),
             "data_period": int(end_time - start_time),
         }
 
@@ -547,4 +475,10 @@ class ChaacDB:
         if commit:
             self.__commit()
 
-        return self.WXStatRecord(*line)
+        # Delete samples older than a day
+        if delete_old_samples:
+            query = "DELETE FROM minute_samples WHERE TIMESTAMP < ? AND UID == ?"
+            self.cur.execute(query, [start_time - (60 * 60 * 24 * 2), uid])
+
+            if commit:
+                self.__commit()

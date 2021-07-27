@@ -100,24 +100,25 @@
           },
         ];
 
-        if (localStorage.pressure_units == "inHg") {
-          // Convert from hPa to inHg if necessary
-          for (const [name, values] of Object.entries(plot["pressure"])){
-            for(x = 0; x < plot["pressure"][name].length; x++) {
-              num = plot["pressure"][name][x] / 33.8638866;
-              plot["pressure"][name][x] = num.toFixed(3);
-            }   
+        for (let [uid, plot_data] of Object.entries(plot["devices"])) {
+          if (localStorage.pressure_units == "inHg") {
+            // Convert from hPa to inHg if necessary
+            for (const [name, values] of Object.entries(plot_data["pressure"])){
+              for(x = 0; x < plot_data["pressure"][name].length; x++) {
+                num = plot_data["pressure"][name][x] / 33.8638866;
+                plot_data["pressure"][name][x] = num.toFixed(3);
+              }   
+            }
           }
-            
-        }
 
-        if (localStorage.temperature_units == "f") {
-          // Convert from c to f if necessary
-          for (const [name, values] of Object.entries(plot["temperature"])){
-            for(x = 0; x < plot["temperature"][name].length; x++) {
-              num = plot["temperature"][name][x] * (9.0/5.0) + 32;
-              plot["temperature"][name][x] = num.toFixed(3);
-            }   
+          if (localStorage.temperature_units == "f") {
+            // Convert from c to f if necessary
+            for (const [name, values] of Object.entries(plot_data["temperature"])){
+              for(x = 0; x < plot_data["temperature"][name].length; x++) {
+                num = plot_data["temperature"][name][x] * (9.0/5.0) + 32;
+                plot_data["temperature"][name][x] = num.toFixed(3);
+              }   
+            }
           }
         }
 
@@ -141,24 +142,26 @@
 
           var plot_items = [];
 
-          if(plot["stat_fields"].includes(item["ydata"])) {
-            for (const [name, values] of Object.entries(plot[item["ydata"]])){
-              plot_items.push(
-              { x:plot["timestamp"],
-                y:values,
-                type:item["type"],
-                name:name}
-              );
+          for (let [uid, plot_data] of Object.entries(plot["devices"])) {
+            if(plot_data["stat_fields"].includes(item["ydata"])) {
+              for (const [name, values] of Object.entries(plot_data[item["ydata"]])){
+                plot_items.push(
+                { x:plot_data["timestamp"],
+                  y:values,
+                  type:item["type"],
+                  name:uid +" _" + name}
+                );
+              }
             }
-          }
 
-          if(item["ydata"] == "rain") {
-            plot_items.push(
-              { x:plot["timestamp"],
-                y:plot["rain"],
-                type:item["type"],
-                name:"rain"}
-              );
+            if(item["ydata"] == "rain") {
+              plot_items.push(
+                { x:plot_data["timestamp"],
+                  y:plot_data["rain"],
+                  type:item["type"],
+                  name:uid +" _rain"}
+                );
+            }
           }
           
           // TODO - Also add html elements here for more flexibility

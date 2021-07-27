@@ -61,7 +61,15 @@ def get_latest_sample(uid):
     # Get last sample
     db = get_db()
 
-    rows = db.get_records("minute", order="desc", limit=1, uid=uid)
+     # Past day
+    now = datetime.fromtimestamp(int(time.time()))
+    end_time = start_time = time.mktime(now.timetuple())
+
+    # Start at midnight today
+    start_time = time.mktime(now.replace(hour=0, minute=0, second=0).timetuple())
+
+
+    rows = db.get_records("minute", order="desc", uid=uid)
 
     sample = {"hostname": hostname}
     # Convert the units
@@ -73,20 +81,12 @@ def get_latest_sample(uid):
         else:
             sample[key] = round(float(val), 2)
 
-    # Past day
-    now = datetime.fromtimestamp(int(time.time()))
-    end_time = start_time = time.mktime(now.timetuple())
-
-    # Start at midnight today
-    start_time = time.mktime(now.replace(hour=0, minute=0, second=0).timetuple())
-
-    rain_day = db.get_rain(start_time, end_time, uid=uid)
-
+   
     rain_total = 0
-    for rain_hour in rain_day:
-        rain_total += rain_hour[3]
+    for row in rows:
+        rain_total += row.rain
 
-    sample["rain"] = round(rain_total, 3)
+    sample["rain"] = round(rain_total, 2)
 
     return sample
 
@@ -156,8 +156,6 @@ def get_data_dict(uid, start_date, end_date, table="day"):
     if len(rows) == 0:
         return None
 
-    print(f"get_data_dict {start_date} {end_date} {table} {real_table}", len(rows))
-
     plot = {}
     col_names = rows[0]._asdict().keys()
 
@@ -184,13 +182,6 @@ def get_data_dict(uid, start_date, end_date, table="day"):
                 else:
                     plot[name].append(round(getattr(row, name), 3))
 
-    # TODO - set start date to the beginning of that day
-    # That way the bins are accurate to the day
-
-    # Get rain data for the time period
-    rain_data = db.get_rain(int(start_date), int(end_date), uid=uid)
-    rain_total = 0
-
     # Bin data into the appropriate size for histograms
     idx = get_start_bin(int(end_date - 1), table)
     bins = range(int(start_date), int(end_date), rain_mod[table])
@@ -200,31 +191,29 @@ def get_data_dict(uid, start_date, end_date, table="day"):
         plot["rain_time"].append(get_rain_label(idx, table))
         rain = 0
         # Loop through each rain sample
-        for rain_hour in rain_data:
+        for row in rows:
+            if row.rain == 0:
+                continue
             # Check if the sample falls into our bin
-            if rain_hour[1] >= rain_bin and rain_hour[1] < (rain_bin + rain_mod[table]):
-                rain += rain_hour[3]
+            if row.timestamp >= rain_bin and row.timestamp < (rain_bin + rain_mod[table]):
+                rain += row.rain
 
         plot["rain"].append(rain)
 
         # Wrap around depending on the number of bins (since we don't always start at 0)
         idx = (idx + 1) % len(bins)
-    # print(uid, plot["rain"])
 
     return plot
 
 
-def get_json_stat_str(uid, start_date, end_date):
+def get_stats(uid, start_date, end_date):
     """ Get weather data for the specified weather period """
 
     db = get_db()
 
     rows = db.get_stats(start_date=start_date, end_date=end_date, uid=uid)
-
-    plot = {"hostname": hostname}
-
-    plot["start_date"] = datetime.fromtimestamp(start_date).strftime("%Y-%m-%d")
-    plot["end_date"] = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d")
+    
+    plot = {}
 
     col_names = rows[0]._asdict().keys()
 
@@ -265,11 +254,13 @@ def get_json_stat_str(uid, start_date, end_date):
                     else:
                         plot[name].append(round(getattr(row, name), 3))
 
-    return jsonify(plot)
+    return plot
 
 
 @app.route("/json/stats/year")
 def json_stats_year_str():
+    db = get_db()
+
     # time.time() is utc time, but now is a "naive"
     # datetime object in current timezone
     now = datetime.fromtimestamp(int(time.time()))
@@ -281,8 +272,16 @@ def json_stats_year_str():
 
     end_time = time.mktime(now.timetuple())
 
-    uid = get_latest_uid()
-    return get_json_stat_str(uid, start_time, end_time)
+    stats = {"hostname": hostname}
+    stats["start_date"] = datetime.fromtimestamp(start_time).strftime("%Y-%m-%d")
+    stats["end_date"] = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d")
+    stats["devices"] = {}
+    for device, name in db.devices.items():
+        uid_stats = get_stats(device, start_time, end_time)
+        if uid_stats is not None:
+            stats["devices"][name] = uid_stats
+
+    return jsonify(stats)
 
 
 @app.route("/json/day")
