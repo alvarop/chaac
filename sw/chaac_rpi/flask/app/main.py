@@ -37,17 +37,6 @@ def get_db():
     return g.sqlite_db
 
 
-def get_latest_uid():
-    global default_uid
-
-    if default_uid is None:
-        db = get_db()
-        rows = db.get_records("minute", order="desc", limit=1)
-        default_uid = rows[0].uid
-
-    return default_uid
-
-
 @app.teardown_appcontext
 def close_db(error):
     """Closes the database again at the end of the request."""
