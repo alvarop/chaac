@@ -9,25 +9,13 @@ server {
     root /var/www;
 
     location /Merida/ {
-        proxy_pass http://10.1.1.11/;
-        proxy_cache STATIC;
-        proxy_cache_valid 200 1m;
-    }
-
-    location /Merida(2)/ {
-        proxy_pass http://10.1.1.14/;
+        proxy_pass http://10.1.1.15/;
         proxy_cache STATIC;
         proxy_cache_valid 200 1m;
     }
 
     location /Sunbright/ {
         proxy_pass http://10.1.1.21/;
-        proxy_cache STATIC;
-        proxy_cache_valid 200 1m;
-    }
-
-    location /Merida(3)/ {
-        proxy_pass http://10.1.1.15/;
         proxy_cache STATIC;
         proxy_cache_valid 200 1m;
     }

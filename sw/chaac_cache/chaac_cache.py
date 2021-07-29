@@ -11,9 +11,8 @@ import yaml
 import os
 
 default_hosts = {
-    "Merida": "localhost/Merida",
-    "Merida(2)": "localhost/Merida(2)",
-    "Sunbright": "localhost/Sunbright",
+    "Merida": "localhost:8000/Merida",
+    "Sunbright": "localhost:8000/Sunbright",
 }
 
 default_config = {

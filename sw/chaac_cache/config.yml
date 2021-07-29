@@ -1,8 +1,7 @@
 # Supported hosts
 hosts:
-  Merida: chaac-proxy/Merida
-  Merida(2): chaac-proxy/Merida(2)
-  Sunbright: chaac-proxy/Sunbright
+  Merida: localhost:8000/Merida
+  Sunbright: localhost:8000/Sunbright
 
 # Chaac cache settings
 refresh_rate: 10
