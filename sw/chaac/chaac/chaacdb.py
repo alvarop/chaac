@@ -347,8 +347,8 @@ class ChaacDB:
 
         for key in data_columns:
             if key != "timestamp":
-                if key == "wind_dir_deg":
-                    key = "wind_dir"
+                if key == "wind_dir":
+                    key = "wind_dir_deg"
                 try:
                     line.append(getattr(record, key))
                 except AttributeError:
