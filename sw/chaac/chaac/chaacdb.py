@@ -26,7 +26,7 @@ data_columns = [
 ]
 
 # Fields we don't compute stats for
-no_stat_fields = ("id", "timestamp", "uid", "wind_dir", "rain", "alt_temperature")
+no_stat_fields = ("id", "timestamp", "uid", "wind_dir", "wind_dir_deg" "rain", "alt_temperature")
 
 # Generate stats columns from data_columns
 stat_columns = []
@@ -347,6 +347,8 @@ class ChaacDB:
 
         for key in data_columns:
             if key != "timestamp":
+                if key == "wind_dir_deg":
+                    key = "wind_dir"
                 try:
                     line.append(getattr(record, key))
                 except AttributeError:

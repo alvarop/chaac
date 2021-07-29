@@ -75,7 +75,7 @@ def process_packet(packet):
         if key == "wind_dir":
             data[key] = value * 360.0 / 16
         elif key == "wind_dir_deg":
-            data["wind_dir"] = value / 10.0
+            data[key] = value / 10.0
         elif key == "rain":
             data[key] = round(value * 0.2794, 4)
         elif key == "wind_speed" or key == "gust_speed":
