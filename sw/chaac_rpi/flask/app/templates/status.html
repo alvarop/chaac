@@ -1,25 +1,18 @@
 {% extends "layout.html" %}
 {% block body %}
 <script type="text/javascript">
-
-  function get_devices() {
-    fetch('devices')
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(devices) {
-      create(devices);
-      draw_chaac();
-    });
-  };
-
+  var first_load = true;
   function load_latest() {
     fetch('latest')
     .then(function(response) {
       return response.json();
     })
     .then(function(latest) {
-      update_fields(latest);
+      if(first_load) {
+        first_load = false;
+        create(latest.devices);
+      }
+      update_fields(latest.devices);
     });
   };
 
@@ -158,12 +151,12 @@
 
   function create(devices){
     for (let [key, value] of Object.entries(devices)) {
-      document.getElementById("mainthing").appendChild(makeDataFields(key, value));
+      document.getElementById("mainthing").appendChild(makeDataFields(key, value.name));
     }
   }
 
   window.onload = function(){
-    get_devices();
+    load_latest();
   };
 </script>
 <div id="mainthing">

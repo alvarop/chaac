@@ -1,7 +1,8 @@
 import collections
+import math
+import numpy as np
 import sqlite3
 import time
-import numpy as np
 from statistics import mean
 from datetime import datetime, timedelta
 
@@ -282,6 +283,24 @@ class ChaacDB:
                 retries -= 1
                 continue        
 
+    def __get_avg_wind_dir(self, rows):
+        v_e = []
+        v_n = []
+
+        if len(rows) == 0:
+            return None
+
+        for row in rows:
+            v_e.append(row.wind_speed * math.sin(row.wind_dir * math.pi/180.0))
+            v_n.append(row.wind_speed * math.cos(row.wind_dir * math.pi/180.0))
+
+        mean_dir = math.atan2(np.mean(v_e), np.mean(v_n)) * 180/math.pi
+        if mean_dir < 0:
+            mean_dir += 360
+
+        return round(mean_dir,1)
+
+
     def __downsample(self, uid):
         start_time = self.hour_start[uid]
         end_time = start_time + HOURLY_TIME_DELTA_S
@@ -322,6 +341,9 @@ class ChaacDB:
         for idx in range(2, len(avg_line)):
             avg_line[idx] = round(avg_line[idx], 3)
 
+        # Do fancy wind direction averaging
+        avg_line[data_columns.index("wind_dir")] = self.__get_avg_wind_dir(rows)
+
         # Oh wait, except for rain! Add that one up instead of averaging...
         avg_line[data_columns.index("rain")] = 0
         for line in lines:
@@ -333,7 +355,7 @@ class ChaacDB:
         # Save the data
         self.__insert_line(avg_line, table="hour")
 
-    def add_record(self, record, timestamp=None, commit=True):
+    def add_record(self, record, timestamp=None, commit=True, legacy=False):
         uid = getattr(record, "uid")
 
         if uid not in self.devices:
@@ -347,7 +369,7 @@ class ChaacDB:
 
         for key in data_columns:
             if key != "timestamp":
-                if key == "wind_dir":
+                if not legacy and key == "wind_dir":
                     key = "wind_dir_deg"
                 try:
                     line.append(getattr(record, key))

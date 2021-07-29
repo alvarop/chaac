@@ -60,17 +60,18 @@ def get_latest_sample(uid):
 
     rows = db.get_records("minute", order="desc", uid=uid)
 
-    sample = {"hostname": hostname}
+    sample = {}
     # Convert the units
     for key, val in rows[0]._asdict().items():
         if key == "timestamp":
             sample[key] = datetime.fromtimestamp(val).strftime("%Y-%m-%d %H:%M:%S")
+            sample["ts"] = val
         elif val == None:
             sample[key] = 0
         else:
             sample[key] = round(float(val), 2)
 
-   
+
     rain_total = 0
     for row in rows:
         rain_total += row.rain
@@ -83,9 +84,15 @@ def get_latest_sample(uid):
 @app.route("/latest")
 def latest_json():
     db = get_db()
-    data = {}
+    data = {"hostname": hostname, "devices":{}}
     for device, name in db.devices.items():
-        data[device] = get_latest_sample(device)
+        sample = get_latest_sample(device)
+
+        # Don't show devices with data older than 24 hours
+        if (time.time() - sample["ts"]) < 60 * 60 * 24:
+            data["devices"][device] = get_latest_sample(device)
+            data["devices"][device]["name"] = name
+
     return jsonify(data)
 
 
@@ -194,6 +201,13 @@ def get_data_dict(uid, start_date, end_date, table="day"):
 
     return plot
 
+def join_data(prev_data, new_data):
+    for key in prev_data.keys():
+        if prev_data["timestamp"][-1] < new_data["timestamp"][0]:
+            prev_data[key] += new_data[key]
+        else:
+            prev_data[key] = new_data[key] + prev_data[key]
+    return prev_data
 
 def get_stats(uid, start_date, end_date):
     """ Get weather data for the specified weather period """
@@ -201,7 +215,8 @@ def get_stats(uid, start_date, end_date):
     db = get_db()
 
     rows = db.get_stats(start_date=start_date, end_date=end_date, uid=uid)
-    
+    if len(rows) == 0:
+        return
     plot = {}
 
     col_names = rows[0]._asdict().keys()
@@ -299,7 +314,10 @@ def json_day_str():
     for device, name in db.devices.items():
         data_dict = get_data_dict(device, start_time, end_time, "day")
         if data_dict is not None:
-            data["data"][name] = data_dict
+            if name in data["data"]:
+                data["data"][name] = join_data(data["data"][name], data_dict)
+            else:
+                data["data"][name] = data_dict
     return jsonify(data)
 
 
@@ -330,7 +348,10 @@ def json_week_str():
     for device, name in db.devices.items():
         data_dict = get_data_dict(device, start_time, end_time, "week")
         if data_dict is not None:
-            data["data"][name] = data_dict
+            if name in data["data"]:
+                data["data"][name] = join_data(data["data"][name], data_dict)
+            else:
+                data["data"][name] = data_dict
     return jsonify(data)
 
 
@@ -363,7 +384,10 @@ def json_month_str():
     for device, name in db.devices.items():
         data_dict = get_data_dict(device, start_time, end_time, "month")
         if data_dict is not None:
-            data["data"][name] = data_dict
+            if name in data["data"]:
+                data["data"][name] = join_data(data["data"][name], data_dict)
+            else:
+                data["data"][name] = data_dict
     return jsonify(data)
 
 
@@ -375,11 +399,6 @@ def plots():
 @app.route("/stats")
 def stats():
     return render_template("stats.html", hostname=hostname)
-
-@app.route("/devices")
-def get_devices():
-    db = get_db()
-    return jsonify(db.devices)
 
 # Don't add hostname to redirect
 # See https://stackoverflow.com/questions/30006740/how-can-i-tell-flask-not-to-add-host-scheme-info-to-my-redirect
