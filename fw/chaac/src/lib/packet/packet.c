@@ -18,9 +18,9 @@ typedef enum {
 
 static packet_state_t state = PACKET_STATE_CLEAR;
 
-static void (*packet_cb_fn)(int16_t len, void *data) = NULL;
+static void (*packet_cb_fn)(uint16_t len, void *data) = NULL;
 
-void packetInitCb(void (*cb_fn)(int16_t len, void *data)) {
+void packetInitCb(void (*cb_fn)(uint16_t len, void *data)) {
     packet_cb_fn = cb_fn;
 }
 
@@ -150,7 +150,7 @@ bool packetIsValid(uint8_t *buffer, size_t len) {
     return valid;
 }
 
-int32_t packetTx(uint16_t len, void *data, void (*txFn)(int16_t len, void *data)) {
+int32_t packetTx(uint16_t len, void *data, void (*txFn)(uint16_t len, void *data)) {
     int32_t rval = 0;
     do {
         if(txFn == NULL) {

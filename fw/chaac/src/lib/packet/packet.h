@@ -17,9 +17,9 @@ typedef struct {
 #define MAX_PACKET_SIZE (sizeof(packet_header_t) + sizeof(packet_footer_t) + MAX_PACKET_DATA_LEN)
 #define PACKET_START 0xAA55
 
-void packetInitCb(void (*cb_fn)(int16_t len, void *data));
+void packetInitCb(void (*cb_fn)(uint16_t len, void *data));
 void packetProcessByte(uint8_t byte);
-int32_t packetTx(uint16_t len, void *data, void (*txFn)(int16_t len, void *data));
+int32_t packetTx(uint16_t len, void *data, void (*txFn)(uint16_t len, void *data));
 bool packetIsValid(uint8_t *buffer, size_t len);
 
 #endif

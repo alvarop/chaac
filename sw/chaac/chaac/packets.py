@@ -1,12 +1,5 @@
 from chaac.chaac_packet import ChaacPacket
 
-# Note, if you update this, make sure to update the corresponding enum
-# packet_type_t in fw/chaac/apps/controller/src/chaac_packet.h
-PACKET_TYPE_DATA = 1
-PACKET_TYPE_GPS = 2
-PACKET_TYPE_BOOT = 3
-PACKET_TYPE_CLEAR_RAIN = 4
-
 
 PacketHeader = ChaacPacket("PacketHeader", [("uid", "I"), ("packet_type", "B")])
 
@@ -23,6 +16,16 @@ MemfaultPacket = ChaacPacket(
     [
         ("uid", "I"),
         ("packet_type", "B"),
+        ("len", "H"),
+    ],
+)
+
+USBCmdPacket = ChaacPacket(
+    "USBCmdPacket",
+    [
+        ("uid", "I"),
+        ("packet_type", "B"),
+        ("cmd", "H"),
         ("len", "H"),
     ],
 )
@@ -101,6 +104,7 @@ PacketTypes = {
     10: WeatherPacketV1P0,
     11: WeatherPacketV1P1,
     30: ButtonPacketV1P0,
+    0xE0: USBCmdPacket,
     0xF0: RangeTestPacketV1P0,
 }
 

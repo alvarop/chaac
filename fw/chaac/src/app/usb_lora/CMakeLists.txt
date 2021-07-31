@@ -18,6 +18,7 @@ set(RADIO_INCLUDES
 
 set(LIB_FILES
 	${SRC_DIR}/lib/common/info.c
+	${SRC_DIR}/lib/common/usb_dfu.c
 	${SRC_DIR}/lib/crc/crc.c
 	${SRC_DIR}/lib/loraRadio/loraRadio.c
 	${SRC_DIR}/lib/packet/packet.c

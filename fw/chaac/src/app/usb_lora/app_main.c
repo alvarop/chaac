@@ -14,16 +14,17 @@
 #include "spi.h"
 #include "memfault/components.h"
 #include "memfault/core/data_packetizer.h"
+#include "usb_dfu.h"
 
 #define BUFFER_SIZE 300
 
 static uint8_t txbuff[BUFFER_SIZE];
 
-void vcpPacketTxFn(int16_t len, void* data) {
+void vcpPacketTxFn(uint16_t len, void* data) {
     vcpTx(data, len);
 }
 
-void radioPacketTxFn(int16_t len, void* data) {
+void radioPacketTxFn(uint16_t len, void* data) {
     loraRadioSend(data, len);
 }
 
@@ -62,12 +63,59 @@ loraMode_t loraRxErrorCallback() {
     return RADIO_MODE_RX;
 }
 
-void packetRxFn(int16_t len, void* data) {
-    if (len > 0) {
+typedef enum {
+    usbCmdReboot = 0,
+    usbCmdBootloader = 1,
+    usbCmdRadioReset = 2,
+    usbCmdPing = 3,
+    usbCmdPong = 4,
+} chaacUSBCommand_t;
+
+void processUSBCommand(usb_cmd_packet_t *packet) {
+    switch(packet->cmd) {
+        case usbCmdReboot: {
+            NVIC_SystemReset();
+            break;
+        }
+
+        case usbCmdBootloader: {
+            dfuReset();
+            break;
+        }
+
+        case usbCmdPing: {
+            usb_cmd_packet_t response;
+            response.header.uid = 0;
+            response.header.type = PACKET_TYPE_USB_CMD;
+            response.cmd = usbCmdPong;
+            response.len = 0;
+            packetTx(sizeof(usb_cmd_packet_t), &response, vcpPacketTxFn);
+            break;
+        }
+
+        default: {
+            break;
+        }
+    }
+}
+
+void packetRxFn(uint16_t len, void* data) {
+    do {
+        if (len < sizeof(chaac_header_t)) {
+            break;
+        }
+
+        usb_cmd_packet_t *packet = (usb_cmd_packet_t *)data;
+        if(packet->header.uid == 0 && packet->header.type == PACKET_TYPE_USB_CMD) {
+            processUSBCommand(packet);
+            break;
+        }
+
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
         packetTx(len, data, radioPacketTxFn);
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
     }
+    while(0);
 }
 
 static loraRadioConfig_t loraConfig = {
@@ -82,6 +130,9 @@ static loraRadioConfig_t loraConfig = {
 };
 
 int main(void) {
+    
+    dfuCheck();
+
     HAL_Init();
 
     SystemClock_Config();
@@ -93,7 +144,6 @@ int main(void) {
     memfault_platform_boot();
 
     packetInitCb(packetRxFn);
-
 
     vcpInit();
     vcpSetRxByteCallback(packetProcessByte);
