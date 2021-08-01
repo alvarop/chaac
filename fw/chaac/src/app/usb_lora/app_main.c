@@ -15,6 +15,7 @@
 #include "memfault/components.h"
 #include "memfault/core/data_packetizer.h"
 #include "usb_dfu.h"
+#include "info.h"
 
 #define BUFFER_SIZE 300
 
@@ -59,6 +60,10 @@ loraMode_t loraRxTimeoutCallback() {
     return RADIO_MODE_RX;
 }
 
+loraMode_t loraTxTimeoutCallback() {
+    return RADIO_MODE_RX;
+}
+
 loraMode_t loraRxErrorCallback() {
     return RADIO_MODE_RX;
 }
@@ -66,10 +71,24 @@ loraMode_t loraRxErrorCallback() {
 typedef enum {
     usbCmdReboot = 0,
     usbCmdBootloader = 1,
-    usbCmdRadioReset = 2,
+    getMemfaultData = 2,
     usbCmdPing = 3,
     usbCmdPong = 4,
 } chaacUSBCommand_t;
+
+#define MEMFAULT_DATA_MAX_LEN 256
+static void sendMemfaultData() {
+    uint8_t *buf = pvPortMalloc(MEMFAULT_DATA_MAX_LEN);
+    memfault_packet_t *packet = (memfault_packet_t *)buf;
+    packet->header.uid = getHWID();
+    packet->header.type = PACKET_TYPE_MEMFAULT;
+    size_t buf_len = MEMFAULT_DATA_MAX_LEN - sizeof(memfault_packet_t);
+    if(memfault_packetizer_get_chunk(&packet[1], &buf_len)) {
+        packet->len = buf_len;
+        packetTx(buf_len + sizeof(memfault_packet_t), buf, vcpPacketTxFn);
+    }
+    vPortFree(buf);
+}
 
 void processUSBCommand(usb_cmd_packet_t *packet) {
     switch(packet->cmd) {
@@ -80,6 +99,11 @@ void processUSBCommand(usb_cmd_packet_t *packet) {
 
         case usbCmdBootloader: {
             dfuReset();
+            break;
+        }
+        
+        case getMemfaultData: {
+            sendMemfaultData();
             break;
         }
 
@@ -125,8 +149,8 @@ static loraRadioConfig_t loraConfig = {
     .rxCb = loraRxCallback,
     .txCb = loraTxCallback,
     .rxTimeoutCb = loraRxTimeoutCallback,
-    .txTimeoutCb = loraRxErrorCallback,
-    .rxErrorCb = NULL,
+    .txTimeoutCb = loraTxTimeoutCallback,
+    .rxErrorCb = loraRxErrorCallback,
 };
 
 int main(void) {
