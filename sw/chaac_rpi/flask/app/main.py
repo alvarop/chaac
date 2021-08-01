@@ -260,6 +260,9 @@ def get_stats(uid, start_date, end_date):
                     else:
                         plot[name].append(round(getattr(row, name), 3))
 
+    if sum(plot["rain"]) == 0:
+        del plot["rain"]
+
     return plot
 
 

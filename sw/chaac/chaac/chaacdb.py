@@ -27,7 +27,7 @@ data_columns = [
 ]
 
 # Fields we don't compute stats for
-no_stat_fields = ("id", "timestamp", "uid", "wind_dir", "wind_dir_deg" "rain", "alt_temperature")
+no_stat_fields = ("id", "timestamp", "uid", "wind_dir", "wind_dir_deg", "rain", "alt_temperature")
 
 # Generate stats columns from data_columns
 stat_columns = []
@@ -41,7 +41,6 @@ for field in data_columns:
     stat_columns.append(field + "__mean")
 
 stat_columns.append("data_period")
-
 
 class KeyValueStore(collections.MutableMapping):
     """ From https://stackoverflow.com/questions/47237807/use-sqlite-as-a-keyvalue-store """

@@ -154,7 +154,7 @@
               }
             }
 
-            if(item["ydata"] == "rain") {
+            if(item["ydata"] == "rain" && plot_data["rain"]) {
               plot_items.push(
                 { x:plot_data["timestamp"],
                   y:plot_data["rain"],
