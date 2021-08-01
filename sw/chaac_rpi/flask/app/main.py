@@ -56,9 +56,12 @@ def get_latest_sample(uid):
 
     # Start at midnight today
     start_time = time.mktime(now.replace(hour=0, minute=0, second=0).timetuple())
+    end_time = time.mktime(now.timetuple())
 
+    rows = db.get_records("minute", start_date=start_time, end_date=end_time, order="desc", uid=uid)
 
-    rows = db.get_records("minute", order="desc", uid=uid)
+    if len(rows) == 0:
+        return None
 
     sample = {}
     # Convert the units
@@ -88,8 +91,7 @@ def latest_json():
     for device, name in db.devices.items():
         sample = get_latest_sample(device)
 
-        # Don't show devices with data older than 24 hours
-        if (time.time() - sample["ts"]) < 60 * 60 * 24:
+        if sample:
             data["devices"][device] = get_latest_sample(device)
             data["devices"][device]["name"] = name
 
