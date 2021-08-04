@@ -266,6 +266,15 @@ def get_stats(uid, start_date, end_date):
     return plot
 
 
+def join_stats(stats1, stats2):
+    for key in stats1:
+        if isinstance(stats1[key], list):
+            stats1[key].extend(stats2[key])
+        elif isinstance(stats1[key], dict):
+            stats1[key] = join_stats(stats1[key], stats2[key])
+
+    return stats1
+
 @app.route("/json/stats/year")
 def json_stats_year_str():
     db = get_db()
@@ -287,8 +296,12 @@ def json_stats_year_str():
     stats["devices"] = {}
     for device, name in db.devices.items():
         uid_stats = get_stats(device, start_time, end_time)
+
         if uid_stats is not None:
-            stats["devices"][name] = uid_stats
+            if name in stats["devices"]:
+                stats["devices"][name] = join_stats(uid_stats, stats["devices"][name])
+            else:
+                stats["devices"][name] = uid_stats
 
     return jsonify(stats)
 
