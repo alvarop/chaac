@@ -74,13 +74,23 @@ for db in args.db:
         row = row._asdict()
         # print(row)
         # row["id"] = idx
-        if row["pressure"] < 600:
+        # if row["uid"] != 3130102622:
+            # continue
+        if row["pressure"] < 800:
             continue
-        if row["temperature"] < -200:
+        if row["pressure"] > 1100:
+            continue
+        if row["temperature"] < -50:
             continue
         if row["humidity"] == 0:
             continue
-        if row["battery"] > 5:
+        if row["humidity"] > 100:
+            continue
+        if row["battery"] > 10:
+            continue
+        if row["wind_speed"] > 100:
+            continue
+        if row["solar_panel"] > 10:
             continue
         row = WXRecord(**row)
 
