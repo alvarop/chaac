@@ -9,3 +9,6 @@ gerber/
 *.pdf
 _autosave*
 fp-info-cache
+*auto_saved*
+*.lck
+*_old
