@@ -12,6 +12,7 @@ typedef struct {
 vcrc_t vcrc_from_crc16(uint16_t crc16);
 uint16_t crc_from_vcrc(const char *crc);
 bool message_is_valid(const char *message, size_t len);
+void vaisala_parse_msg(char *buff, size_t len);
 
 // int main() {
 //   printf("Vaisala ASCII CRC test\n");

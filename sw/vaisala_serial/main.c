@@ -99,16 +99,11 @@ int main(int argc, char **argv) {
         continue;
       }
 
-      // Step back from CRLF
+      // Remove CRLF
       idx -= 2;
 
-      if (message_is_valid(buff, idx)) {
-        // Step back from CRC
-        idx -= 3;
-        printf("%.*s\n", idx, buff);
-      } else {
-        printf("Invalid mesage: %.*s\n", idx, buff);
-      }
+      vaisala_parse_msg(buff, idx);
+
       idx = 0;
     }
   }
