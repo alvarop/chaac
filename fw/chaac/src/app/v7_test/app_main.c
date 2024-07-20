@@ -79,57 +79,6 @@ static void sendMemfaultData() {
   vPortFree(buf);
 }
 
-void processUSBCommand(usb_cmd_packet_t *packet) {
-  switch (packet->cmd) {
-    case usbCmdReboot: {
-      NVIC_SystemReset();
-      break;
-    }
-
-    case usbCmdBootloader: {
-      dfuReset();
-      break;
-    }
-
-    case getMemfaultData: {
-      sendMemfaultData();
-      break;
-    }
-
-    case usbCmdPing: {
-      usb_cmd_packet_t response;
-      response.header.uid = 0;
-      response.header.type = PACKET_TYPE_USB_CMD;
-      response.cmd = usbCmdPong;
-      response.len = 0;
-      packetTx(sizeof(usb_cmd_packet_t), &response, vcpPacketTxFn);
-      break;
-    }
-
-    default: {
-      break;
-    }
-  }
-}
-
-void packetRxFn(uint16_t len, void *data) {
-  do {
-    if (len < sizeof(chaac_header_t)) {
-      break;
-    }
-
-    usb_cmd_packet_t *packet = (usb_cmd_packet_t *)data;
-    if (packet->header.uid == 0 && packet->header.type == PACKET_TYPE_USB_CMD) {
-      processUSBCommand(packet);
-      break;
-    }
-
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-    packetTx(len, data, radioPacketTxFn);
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-  } while (0);
-}
-
 static loraRadioConfig_t loraConfig = {
     .startMode = RADIO_MODE_RX,
     .spiSetupFn = NULL,
@@ -141,17 +90,18 @@ static loraRadioConfig_t loraConfig = {
     .rxErrorCb = loraRxErrorCallback,
 };
 
-static void blinkyTask(void *parameters) {
-  (void)parameters;
+void serialProcessByte(uint8_t byte) {
+  vcpTx(&byte, 1);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+  vTaskDelay(5);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+}
 
-  uint8_t buff[] = {0xAA, 0x00, 0xFF, 0x55};
-  for (;;) {
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-    vTaskDelay(10);
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-    vTaskDelay(990);
-    serialTx(buff, sizeof(buff));
-  }
+void usbProcessByte(uint8_t byte) {
+  serialTx(&byte, 1);
+  HAL_GPIO_WritePin(LED1_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+  vTaskDelay(5);
+  HAL_GPIO_WritePin(LED1_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
 }
 
 int main(void) {
@@ -168,19 +118,15 @@ int main(void) {
 
   memfault_platform_boot();
 
-  packetInitCb(packetRxFn);
+  // packetInitCb(packetRxFn);
 
   vcpInit();
-  vcpSetRxByteCallback(packetProcessByte);
+  vcpSetRxByteCallback(usbProcessByte);
 
   serialInit(LPUART1);
+  serialSetRxByteCallback(serialProcessByte);
 
-  loraRadioInit(&loraConfig);
-
-  BaseType_t rval =
-      xTaskCreate(blinkyTask, "blinky", 256, NULL, tskIDLE_PRIORITY, NULL);
-
-  configASSERT(rval == pdTRUE);
+  // loraRadioInit(&loraConfig);
 
   vTaskStartScheduler();
 

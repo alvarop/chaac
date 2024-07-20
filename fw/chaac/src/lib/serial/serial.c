@@ -75,6 +75,13 @@ static void serialTxBuff(void *buff, size_t len) {
 static void serialRxTask(void *parameters) {
   (void)parameters;
 
+  if (LL_LPUART_IsActiveFlag_ORE(device)) {
+    LL_LPUART_ClearFlag_ORE(device);
+  }
+
+  LL_LPUART_ReceiveData8(device);
+  LL_LPUART_EnableIT_RXNE(device);
+
   for (;;) {
     uint8_t rxByte;
     size_t rxLen = xStreamBufferReceive(serialRxStreamBuffer, &rxByte,
