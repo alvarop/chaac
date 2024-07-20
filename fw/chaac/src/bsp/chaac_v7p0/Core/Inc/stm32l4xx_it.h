@@ -49,6 +49,7 @@
 void DebugMon_Handler(void);
 void EXTI9_5_IRQHandler(void);
 void USB_IRQHandler(void);
+void LPUART1_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

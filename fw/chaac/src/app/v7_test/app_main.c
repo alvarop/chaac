@@ -11,9 +11,11 @@
 #include "memfault/core/data_packetizer.h"
 #include "packet.h"
 #include "printf.h"
+#include "serial.h"
 #include "spi.h"
 #include "stm32l4xx_hal.h"
 #include "task.h"
+#include "usart.h"
 #include "usb_device.h"
 #include "usb_dfu.h"
 #include "vcp.h"
@@ -142,11 +144,13 @@ static loraRadioConfig_t loraConfig = {
 static void blinkyTask(void *parameters) {
   (void)parameters;
 
+  uint8_t buff[] = {0xAA, 0x00, 0xFF, 0x55};
   for (;;) {
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
     vTaskDelay(10);
     HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
     vTaskDelay(990);
+    serialTx(buff, sizeof(buff));
   }
 }
 
@@ -159,6 +163,7 @@ int main(void) {
 
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
+  MX_LPUART1_UART_Init();
   MX_SPI1_Init();
 
   memfault_platform_boot();
@@ -167,6 +172,8 @@ int main(void) {
 
   vcpInit();
   vcpSetRxByteCallback(packetProcessByte);
+
+  serialInit(LPUART1);
 
   loraRadioInit(&loraConfig);
 

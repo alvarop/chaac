@@ -22,6 +22,7 @@ set(LIB_FILES
 	${SRC_DIR}/lib/crc/crc.c
 	${SRC_DIR}/lib/loraRadio/loraRadio.c
 	${SRC_DIR}/lib/packet/packet.c
+	${SRC_DIR}/lib/serial/serial.c
 	${SRC_DIR}/lib/vcp/vcp.c
 	)
 
@@ -32,6 +33,7 @@ set(LIB_INCLUDES
 	${SRC_DIR}/lib/debug
 	${SRC_DIR}/lib/loraRadio
 	${SRC_DIR}/lib/packet
+	${SRC_DIR}/lib/serial
 	${SRC_DIR}/lib/vcp
 	)
 
