@@ -1,6 +1,11 @@
 #include "IOAdc.h"
 #include "adc.h"
 
+#ifndef ADC_REF_MV
+#define ADC_REF_MV 3000
+#endif
+
+
 BaseType_t xIOAdcInit(void *pvHandle) {
     configASSERT(pvHandle != 0);
     ADC_HandleTypeDef *pxHandle = (ADC_HandleTypeDef *)pvHandle;
@@ -43,7 +48,7 @@ AdcStatus_t xIOAdcReadMv(void *pvHandle, int32_t *plValueMv) {
 
     AdcStatus_t xRval = xIOAdcRead(pvHandle, plValueMv);
     if (xRval == ADC_OK) {
-        *plValueMv = (*plValueMv * 3000)/(1 << 12);
+        *plValueMv = (*plValueMv * ADC_REF_MV)/(1 << 12);
     }
 
     return xRval;
