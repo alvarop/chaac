@@ -42,7 +42,7 @@ for field in data_columns:
 
 stat_columns.append("data_period")
 
-class KeyValueStore(collections.MutableMapping):
+class KeyValueStore(collections.abc.MutableMapping):
     """ From https://stackoverflow.com/questions/47237807/use-sqlite-as-a-keyvalue-store """
 
     def __init__(self, filename=None, conn=None):
