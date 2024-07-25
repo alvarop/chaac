@@ -1,10 +1,10 @@
-#include "vaisala_msg.h"
+#include "vaisala.h"
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "crc.h"
+#include "vaisala_crc.h"
 
 // Convert CRC-16 to 3 ascii characters
 // See C.1 Encoding the CRC as ASCII Characters
@@ -28,9 +28,9 @@ bool message_is_valid(const char *message, size_t len) {
     return false;
   }
 
-  crc_t computed_crc = crc_init();
-  computed_crc = crc_update(computed_crc, message, len - VCRC_LEN);
-  computed_crc = crc_finalize(computed_crc);
+  crc_t computed_crc = vaisala_crc_init();
+  computed_crc = vaisala_crc_update(computed_crc, message, len - VCRC_LEN);
+  computed_crc = vaisala_crc_finalize(computed_crc);
 
   uint16_t message_crc = crc_from_vcrc(&message[len - VCRC_LEN]);
 

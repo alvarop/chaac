@@ -72,7 +72,7 @@ typedef uint_fast16_t crc_t;
  * \param[in] data_len The width of \a data expressed in number of bits.
  * \return             The reflected data.
  */
-crc_t crc_reflect(crc_t data, size_t data_len);
+crc_t vaisala_crc_reflect(crc_t data, size_t data_len);
 
 
 /**
@@ -80,7 +80,7 @@ crc_t crc_reflect(crc_t data, size_t data_len);
  *
  * \return     The initial crc value.
  */
-static inline crc_t crc_init(void)
+static inline crc_t vaisala_crc_init(void)
 {
     return 0x0000;
 }
@@ -94,7 +94,7 @@ static inline crc_t crc_init(void)
  * \param[in] data_len Number of bytes in the \a data buffer.
  * \return             The updated crc value.
  */
-crc_t crc_update(crc_t crc, const void *data, size_t data_len);
+crc_t vaisala_crc_update(crc_t crc, const void *data, size_t data_len);
 
 
 /**
@@ -103,7 +103,7 @@ crc_t crc_update(crc_t crc, const void *data, size_t data_len);
  * \param[in] crc  The current crc value.
  * \return     The final crc value.
  */
-static inline crc_t crc_finalize(crc_t crc)
+static inline crc_t vaisala_crc_finalize(crc_t crc)
 {
     return crc;
 }

@@ -13,7 +13,7 @@
  *  - ReflectOut    = True
  *  - Algorithm     = table-driven
  */
-#include "crc.h"     /* include the header file generated with pycrc */
+#include "vaisala_crc.h"     /* include the header file generated with pycrc */
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -58,7 +58,7 @@ static const crc_t crc_table[256] = {
 };
 
 
-crc_t crc_reflect(crc_t data, size_t data_len)
+crc_t vaisala_crc_reflect(crc_t data, size_t data_len)
 {
     unsigned int i;
     crc_t ret;
@@ -72,7 +72,7 @@ crc_t crc_reflect(crc_t data, size_t data_len)
 }
 
 
-crc_t crc_update(crc_t crc, const void *data, size_t data_len)
+crc_t vaisala_crc_update(crc_t crc, const void *data, size_t data_len)
 {
     const unsigned char *d = (const unsigned char *)data;
     unsigned int tbl_idx;

@@ -7,7 +7,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "vaisala_msg.h"
+#include "vaisala.h"
 
 int main(int argc, char **argv) {
   if (argc < 2) {
