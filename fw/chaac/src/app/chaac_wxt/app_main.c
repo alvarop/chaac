@@ -202,7 +202,7 @@ static void mainTask(void *pvParameters) {
     // }
 
     // if(sensorGetAvg(&shtHumidity, &fVal)) {
-    packet.humidity = (int16_t)(latest->rh);
+    packet.humidity = (int16_t)(latest->rh * 100);
     //     sensorClearSamples(&shtHumidity);
     // } else {
     //     packet.humidity = 0;
