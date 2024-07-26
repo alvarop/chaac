@@ -19,11 +19,11 @@ vcrc_t vcrc_from_crc16(uint16_t crc16) {
 }
 
 // Convert 3 ascii characters to a CRC16 (reverse of vcrc_from_crc16)
-uint16_t crc_from_vcrc(const char *crc) {
+uint16_t crc_from_vcrc(const uint8_t *crc) {
   return ((crc[0] - 0x40) << 12) + ((crc[1] - 0x40) << 6) + (crc[2] - 0x40);
 }
 
-bool message_is_valid(const char *message, size_t len) {
+bool message_is_valid(const uint8_t *message, size_t len) {
   if (!message) {
     return false;
   }
@@ -103,92 +103,106 @@ float fake_strtof(const char *str) {
   return val;
 }
 
-static void _parse_item(vaisala_ascii_item_t *item) {
+static void _parse_item(vaisala_ascii_item_t *item,
+                        vaisala_reading_t *reading) {
+  if (!reading || !item) {
+    return;
+  }
+
   switch ((vaisala_code_t)item->code.int16) {
     case kCodeDn: {
-      int direction = strtol(item->value, NULL, 10);
-      printf("Wind direction minimum = %d degrees\n", direction);
+      reading->direction_min = strtol(item->value, NULL, 10);
+      // printf("Wind direction minimum = %d degrees\n", direction);
       break;
     }
     case kCodeDm: {
-      int direction = strtol(item->value, NULL, 10);
-      printf("Wind direction average = %d degrees\n", direction);
+      reading->direction_avg = strtol(item->value, NULL, 10);
+      // printf("Wind direction average = %d degrees\n", direction);
       break;
     }
     case kCodeDx: {
-      int direction = strtol(item->value, NULL, 10);
-      printf("Wind direction maximum = %d degrees\n", direction);
+      reading->direction_max = strtol(item->value, NULL, 10);
+      // printf("Wind direction maximum = %d degrees\n", direction);
       break;
     }
     case kCodeSn: {
-      float speed = fake_strtof(item->value);
-      printf("Wind speed minimum = %0.3f m/s\n", speed);
+      reading->speed_min = fake_strtof(item->value);
+      // printf("Wind speed minimum = %0.3f m/s\n", speed);
       break;
     }
     case kCodeSm: {
-      float speed = fake_strtof(item->value);
-      printf("Wind speed average = %0.3f m/s\n", speed);
+      reading->speed_avg = fake_strtof(item->value);
+      // printf("Wind speed average = %0.3f m/s\n", speed);
       break;
     }
     case kCodeSx: {
-      float speed = fake_strtof(item->value);
-      printf("Wind speed maximum = %0.3f m/s\n", speed);
+      reading->speed_max = fake_strtof(item->value);
+      // printf("Wind speed maximum = %0.3f m/s\n", speed);
       break;
     }
     case kCodeTa: {
-      float temp = fake_strtof(item->value);
-      printf("Air Temperature = %0.1f C\n", temp);
+      reading->temp_air = fake_strtof(item->value);
+      // printf("Air Temperature = %0.1f C\n", temp);
       break;
     }
     case kCodeTp: {
-      float temp = fake_strtof(item->value);
-      printf("Internal Temperature = %0.1f C\n", temp);
+      reading->temp_internal = fake_strtof(item->value);
+      // printf("Internal Temperature = %0.1f C\n", temp);
       break;
     }
     case kCodeUa: {
-      float rh = fake_strtof(item->value);
-      printf("Relative humidity = %0.1f %%RH\n", rh);
+      reading->rh = fake_strtof(item->value);
+      // printf("Relative humidity = %0.1f %%RH\n", rh);
       break;
     }
     case kCodePa: {
-      float pressure = fake_strtof(item->value);
-      printf("Air pressure = %0.1f hPa\n", pressure);
+      reading->pressure = fake_strtof(item->value);
+      // printf("Air pressure = %0.1f hPa\n", pressure);
       break;
     }
     case kCodeRc: {
-      printf("kCodeRc = %s\n", item->value);
+      reading->rain_acc = fake_strtof(item->value);
+      // printf("kCodeRc = %s\n", item->value);
       break;
     }
     case kCodeRd: {
-      printf("kCodeRd = %s\n", item->value);
+      reading->rain_duration = fake_strtof(item->value);
+      // printf("kCodeRd = %s\n", item->value);
       break;
     }
     case kCodeRi: {
-      printf("kCodeRi = %s\n", item->value);
+      reading->rain_intensity = fake_strtof(item->value);
+      // printf("kCodeRi = %s\n", item->value);
       break;
     }
     case kCodeHc: {
-      printf("kCodeHc = %s\n", item->value);
+      reading->hail_acc = fake_strtof(item->value);
+      // printf("kCodeHc = %s\n", item->value);
       break;
     }
     case kCodeHd: {
-      printf("kCodeHd = %s\n", item->value);
+      reading->hail_duration = fake_strtof(item->value);
+      // printf("kCodeHd = %s\n", item->value);
       break;
     }
     case kCodeHi: {
-      printf("kCodeHi = %s\n", item->value);
+      reading->hail_intensity = fake_strtof(item->value);
+      // printf("kCodeHi = %s\n", item->value);
       break;
     }
     case kCodeRp: {
-      printf("kCodeRp = %s\n", item->value);
+      reading->rain_peak_intensity = fake_strtof(item->value);
+      // printf("kCodeRp = %s\n", item->value);
       break;
     }
     case kCodeHp: {
-      printf("kCodeHp = %s\n", item->value);
+      reading->hail_peak_intensity = fake_strtof(item->value);
+      // printf("kCodeHp = %s\n", item->value);
       break;
     }
     case kCodeTh: {
-      printf("kCodeTh = %s\n", item->value);
+      reading->temp_heating = fake_strtof(item->value);
+      // printf("kCodeTh = %s\n", item->value);
       break;
     }
     default: {
@@ -197,32 +211,58 @@ static void _parse_item(vaisala_ascii_item_t *item) {
   }
 }
 
-void vaisala_parse_msg(char *buff, size_t len) {
+bool vaisala_parse_msg(uint8_t *buff, size_t len, vaisala_reading_t *reading) {
+  bool rval = false;
   if (message_is_valid(buff, len)) {
-    fake_strtof("-1.3234");
-    fake_strtof("-123.2");
-    fake_strtof("-123123");
-    fake_strtof("12345.09876");
-
     // Step back from CRC
     len -= 3;
-    printf("%.*s\n", (int)len, buff);
 
     // We've already verified the CRC, put a null character
     // so the last token doesn't include it
     buff[len] = 0;
 
-    char *token = strtok(buff, ",");
+    char *token = strtok((char *)buff, ",");
     while (token) {
       vaisala_ascii_item_t *item = (vaisala_ascii_item_t *)token;
       if (item->equals == '=') {
-        _parse_item(item);
+        _parse_item(item, reading);
       }
 
       token = strtok(NULL, ",");
     }
-
-  } else {
-    printf("Invalid mesage: %.*s\n", (int)len, buff);
+    rval = true;
   }
+  return rval;
 }
+
+static uint32_t vaisala_buff_idx;
+static uint8_t vaisala_buff[1024];
+static vaisala_reading_t latest;
+void vaisala_process_byte(uint8_t byte) {
+  do {
+    vaisala_buff[vaisala_buff_idx++] = byte;
+
+    // No overflows please
+    if (vaisala_buff_idx >= sizeof(vaisala_buff)) {
+      vaisala_buff_idx = 0;
+      break;
+    }
+
+    if (vaisala_buff[vaisala_buff_idx - 1] == '\n') {
+      // Buffer is too short (Should be at least 1 char + CRC(3) + CLRF(2))
+      if (vaisala_buff_idx <= (VCRC_LEN + 3)) {
+        vaisala_buff_idx = 0;
+        break;
+      }
+
+      // Remove CRLF
+      vaisala_buff_idx -= 2;
+
+      vaisala_parse_msg(vaisala_buff, vaisala_buff_idx, &latest);
+
+      vaisala_buff_idx = 0;
+    }
+  } while (0);
+}
+
+vaisala_reading_t *vaisala_get_latest() { return &latest; }

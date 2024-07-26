@@ -21,8 +21,10 @@ set(LIB_FILES
 	${SRC_DIR}/lib/debug/debug_swo.c
 	${SRC_DIR}/lib/loraRadio/loraRadio.c
 	${SRC_DIR}/lib/packet/packet.c
-	${SRC_DIR}/lib/serial/serial.c
 	${SRC_DIR}/lib/sensor/sensor.c
+	${SRC_DIR}/lib/serial/serial.c
+	${SRC_DIR}/lib/vaisala/vaisala.c
+	${SRC_DIR}/lib/vaisala/vaisala_crc.c
 	${SRC_DIR}/lib/vcp/vcp.c
 	)
 
@@ -36,6 +38,7 @@ set(LIB_INCLUDES
 	${SRC_DIR}/lib/packet/
 	${SRC_DIR}/lib/sensor/
 	${SRC_DIR}/lib/serial/
+	${SRC_DIR}/lib/vaisala/
 	${SRC_DIR}/lib/vcp/
 	)
 

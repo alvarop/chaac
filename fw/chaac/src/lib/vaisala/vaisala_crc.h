@@ -40,13 +40,12 @@
 #ifndef CRC_H
 #define CRC_H
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /**
  * The definition of the used algorithm.
@@ -56,14 +55,12 @@ extern "C" {
  */
 #define CRC_ALGO_TABLE_DRIVEN 1
 
-
 /**
  * The type of the CRC values.
  *
  * This type must be big enough to contain at least 16 bits.
  */
 typedef uint_fast16_t crc_t;
-
 
 /**
  * Reflect all bits of a \a data word of \a data_len bytes.
@@ -74,17 +71,12 @@ typedef uint_fast16_t crc_t;
  */
 crc_t vaisala_crc_reflect(crc_t data, size_t data_len);
 
-
 /**
  * Calculate the initial crc value.
  *
  * \return     The initial crc value.
  */
-static inline crc_t vaisala_crc_init(void)
-{
-    return 0x0000;
-}
-
+static inline crc_t vaisala_crc_init(void) { return 0x0000; }
 
 /**
  * Update the crc value with new data.
@@ -96,21 +88,16 @@ static inline crc_t vaisala_crc_init(void)
  */
 crc_t vaisala_crc_update(crc_t crc, const void *data, size_t data_len);
 
-
 /**
  * Calculate the final crc value.
  *
  * \param[in] crc  The current crc value.
  * \return     The final crc value.
  */
-static inline crc_t vaisala_crc_finalize(crc_t crc)
-{
-    return crc;
-}
-
+static inline crc_t vaisala_crc_finalize(crc_t crc) { return crc; }
 
 #ifdef __cplusplus
-}           /* closing brace for extern "C" */
+} /* closing brace for extern "C" */
 #endif
 
-#endif      /* CRC_H */
+#endif /* CRC_H */

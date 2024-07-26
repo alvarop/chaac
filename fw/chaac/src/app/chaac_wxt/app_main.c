@@ -3,12 +3,14 @@
 #include "stm32l4xx_hal.h"
 #include "task.h"
 // #include "printf.h"
+#include <string.h>
+
 #include "FreeRTOSLPM.h"
+#include "IOAdc.h"
 #include "adc.h"
 #include "chaac_packet.h"
 #include "debug.h"
 #include "gpio.h"
-#include "IOAdc.h"
 #include "info.h"
 #include "iwdg.h"
 #include "loraRadio.h"
@@ -18,9 +20,9 @@
 #include "radio.h"
 #include "sensor.h"
 #include "serial.h"
-#include "usart.h"
 #include "spi.h"
-#include <string.h>
+#include "usart.h"
+#include "vaisala.h"
 
 static weather_packet_v1p1_t packet;
 
@@ -171,23 +173,6 @@ static void sendMemfaultData() {
   vPortFree(buf);
 }
 
-static uint32_t serial_rx_idx;
-static uint8_t serial_rx_buff[1024];
-void serialProcessByte(uint8_t byte) {
-  serial_rx_buff[serial_rx_idx++] = byte;
-  
-  if (byte == '\n') {
-    serial_rx_idx = 0;
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
-    vTaskDelay(2);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
-  }
-
-  if(serial_rx_idx >= sizeof(serial_rx_buff)) {
-    serial_rx_idx = 0;
-  }
-}
-
 static void mainTask(void *pvParameters) {
   (void)pvParameters;
 
@@ -208,36 +193,37 @@ static void mainTask(void *pvParameters) {
   for (;;) {
     vTaskDelay(60 * 1000);
 
-    float fVal;
-
+    vaisala_reading_t *latest = vaisala_get_latest();
     // if(sensorGetAvg(&shtTemperature, &fVal)) {
-    //     packet.temperature = (int16_t)fVal;
+    packet.temperature = (int16_t)(latest->temp_air * 100);
     //     sensorClearSamples(&shtTemperature);
     // } else {
     //     packet.temperature = -27300;
     // }
 
     // if(sensorGetAvg(&shtHumidity, &fVal)) {
-    //     packet.humidity = (uint16_t)fVal;
+    packet.humidity = (int16_t)(latest->rh);
     //     sensorClearSamples(&shtHumidity);
     // } else {
     //     packet.humidity = 0;
     // }
 
     // if(sensorGetAvg(&dpsPressure, &fVal)) {
-    //     packet.pressure = (uint16_t)fVal;
+    packet.pressure = (int16_t)(latest->pressure * 100 - 100000.0);
+
     //     sensorClearSamples(&dpsPressure);
     // } else {
     //     packet.pressure = INT16_MIN;
     // }
 
     // if(sensorGetAvg(&dpsTemperature, &fVal)) {
-    //     packet.alt_temperature = (int16_t)(fVal * 100);
+    packet.alt_temperature = (int16_t)(latest->temp_internal * 100);
     //     sensorClearSamples(&dpsTemperature);
     // } else {
     //     packet.alt_temperature = -27300;
     // }
 
+    float fVal;
     if (sensorGetAvg(&vBatt, &fVal)) {
       packet.battery = (uint16_t)fVal;
       sensorClearSamples(&vBatt);
@@ -255,10 +241,10 @@ static void mainTask(void *pvParameters) {
     // packet.rain = windRainGetRain()/2794;
 
     // // Store wind speed in kph * 100
-    // packet.wind_speed = windRainGetSpeed()/10;
-    // packet.gust_speed = windRainGetGust()/10;
+    packet.wind_speed = (uint16_t)(latest->speed_avg * 360);
+    packet.gust_speed = (uint16_t)(latest->speed_max * 360);
 
-    // packet.wind_dir_deg = windRainGetAvgDirDegrees();
+    packet.wind_dir_deg = latest->direction_avg;
 
     // windRainClearRain();
 
@@ -356,7 +342,7 @@ int main(void) {
   configASSERT(xRval == pdTRUE);
 
   serialInit(LPUART1);
-  serialSetRxByteCallback(serialProcessByte);
+  serialSetRxByteCallback(vaisala_process_byte);
 
   lpmInit();
   // lpmEnable();
