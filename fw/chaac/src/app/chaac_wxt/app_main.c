@@ -173,6 +173,9 @@ static void sendMemfaultData() {
   vPortFree(buf);
 }
 
+// Wait up to this amount before sending a message
+// (in case there's not vaisala data to send)
+static uint32_t max_message_interval_ms = 65 * 1000;
 static void mainTask(void *pvParameters) {
   (void)pvParameters;
 
@@ -190,38 +193,31 @@ static void mainTask(void *pvParameters) {
   packet.header.uid = getHWID();
   packet.sample = 0;
 
+  // "Subscribe" to task notifications for new vaisala messages
+  vaisala_task_to_notify(xTaskGetCurrentTaskHandle());
+
   for (;;) {
-    vTaskDelay(60 * 1000);
+    BaseType_t received_vaisala_data =
+        xTaskNotifyWait(pdFALSE, UINT32_MAX, NULL, max_message_interval_ms);
+    if (received_vaisala_data == pdPASS) {
+      vaisala_reading_t *latest = vaisala_get_latest();
+      packet.temperature = (int16_t)(latest->temp_air * 100);
+      packet.humidity = (int16_t)(latest->rh * 100);
+      packet.pressure = (int16_t)(latest->pressure * 100 - 100000.0);
+      packet.alt_temperature = (int16_t)(latest->temp_internal * 100);
+      // Store wind speed in kph * 100
+      packet.wind_speed = (uint16_t)(latest->speed_avg * 360);
+      packet.gust_speed = (uint16_t)(latest->speed_max * 360);
 
-    vaisala_reading_t *latest = vaisala_get_latest();
-    // if(sensorGetAvg(&shtTemperature, &fVal)) {
-    packet.temperature = (int16_t)(latest->temp_air * 100);
-    //     sensorClearSamples(&shtTemperature);
-    // } else {
-    //     packet.temperature = -27300;
-    // }
-
-    // if(sensorGetAvg(&shtHumidity, &fVal)) {
-    packet.humidity = (int16_t)(latest->rh * 100);
-    //     sensorClearSamples(&shtHumidity);
-    // } else {
-    //     packet.humidity = 0;
-    // }
-
-    // if(sensorGetAvg(&dpsPressure, &fVal)) {
-    packet.pressure = (int16_t)(latest->pressure * 100 - 100000.0);
-
-    //     sensorClearSamples(&dpsPressure);
-    // } else {
-    //     packet.pressure = INT16_MIN;
-    // }
-
-    // if(sensorGetAvg(&dpsTemperature, &fVal)) {
-    packet.alt_temperature = (int16_t)(latest->temp_internal * 100);
-    //     sensorClearSamples(&dpsTemperature);
-    // } else {
-    //     packet.alt_temperature = -27300;
-    // }
+      packet.wind_dir_deg = latest->direction_avg;
+      // packet.rain = windRainGetRain()/2794;
+    } else {
+      packet.temperature = -27300;
+      packet.humidity = 0;
+      packet.pressure = INT16_MIN;
+      packet.alt_temperature = -27300;
+      packet.rain = 0;
+    }
 
     float fVal;
     if (sensorGetAvg(&vBatt, &fVal)) {
@@ -237,16 +233,6 @@ static void mainTask(void *pvParameters) {
     } else {
       packet.solar_panel = 0;
     }
-
-    // packet.rain = windRainGetRain()/2794;
-
-    // // Store wind speed in kph * 100
-    packet.wind_speed = (uint16_t)(latest->speed_avg * 360);
-    packet.gust_speed = (uint16_t)(latest->speed_max * 360);
-
-    packet.wind_dir_deg = latest->direction_avg;
-
-    // windRainClearRain();
 
     packetTx(sizeof(packet), &packet, packetTxFn);
 

@@ -2,6 +2,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #define VCRC_LEN (3)
 
 typedef struct {
@@ -36,4 +39,5 @@ uint16_t crc_from_vcrc(const uint8_t *crc);
 bool message_is_valid(const uint8_t *message, size_t len);
 bool vaisala_parse_msg(uint8_t *buff, size_t len, vaisala_reading_t *reading);
 void vaisala_process_byte(uint8_t byte);
+void vaisala_task_to_notify(TaskHandle_t task_to_notify);
 vaisala_reading_t *vaisala_get_latest();

@@ -4,7 +4,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "task.h"
 #include "vaisala_crc.h"
+
+static TaskHandle_t _task_to_notify;
 
 // Convert CRC-16 to 3 ascii characters
 // See C.1 Encoding the CRC as ASCII Characters
@@ -222,13 +225,21 @@ bool vaisala_parse_msg(uint8_t *buff, size_t len, vaisala_reading_t *reading) {
     buff[len] = 0;
 
     char *token = strtok((char *)buff, ",");
-    while (token) {
-      vaisala_ascii_item_t *item = (vaisala_ascii_item_t *)token;
-      if (item->equals == '=') {
-        _parse_item(item, reading);
+
+    // Make sure we process the correct message
+    if (strcmp("0r0", token) == 0) {
+      while (token) {
+        vaisala_ascii_item_t *item = (vaisala_ascii_item_t *)token;
+        if (item->equals == '=') {
+          _parse_item(item, reading);
+        }
+
+        token = strtok(NULL, ",");
       }
 
-      token = strtok(NULL, ",");
+      if (_task_to_notify) {
+        xTaskNotify(_task_to_notify, 0, 0);
+      }
     }
     rval = true;
   }
@@ -266,3 +277,7 @@ void vaisala_process_byte(uint8_t byte) {
 }
 
 vaisala_reading_t *vaisala_get_latest() { return &latest; }
+
+void vaisala_task_to_notify(TaskHandle_t task_to_notify) {
+  _task_to_notify = task_to_notify;
+}
