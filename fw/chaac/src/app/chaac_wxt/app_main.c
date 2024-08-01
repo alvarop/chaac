@@ -100,62 +100,10 @@ static uint32_t prvAdcGetSampleMv(uint32_t ulChannel) {
   return ((uint32_t)lResult);
 }
 
-static void showError(uint32_t error) {
-  for (uint32_t x = 0; x < 20; x++) {
-    LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    vTaskDelay(25);
-    LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    vTaskDelay(25);
-  }
-
-  vTaskDelay(475);
-
-  for (uint32_t x = 0; x < error; x++) {
-    LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    vTaskDelay(250);
-    LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    vTaskDelay(250);
-  }
-
-  vTaskDelay(250);
-
-  for (uint32_t x = 0; x < 20; x++) {
-    LL_GPIO_SetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    vTaskDelay(25);
-    LL_GPIO_ResetOutputPin(LED1_GPIO_Port, LED1_Pin);
-    vTaskDelay(25);
-  }
-}
-
 void packetTxFn(uint16_t len, void *data) {
   loraRadioSend((uint8_t *)data, len);
 }
 
-// int32_t winGetDirMv() {
-//     int32_t mv = 0;
-
-//     // Enable sensor power rail
-//     LL_GPIO_ResetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
-
-//     // Wait for power to make it out and back for a good measurement
-//     vTaskDelay(25);
-
-//     xIOAdcInit(&hadc1);
-//     mv = prvAdcGetSampleMv(ADC_CHANNEL_5);
-//     xIOAdcDeInit(&hadc1);
-
-//     // Disable sensor power rail
-//     LL_GPIO_SetOutputPin(SNS_3V3_EN_GPIO_Port, SNS_3V3_EN_Pin);
-
-//     return mv;
-// }
-
-// static windDirCfg_t windCfg = {&winGetDirMv};
-
-// static sensor_t shtTemperature;
-// static sensor_t shtHumidity;
-// static sensor_t dpsPressure;
-// static sensor_t dpsTemperature;
 static sensor_t vBatt;
 static sensor_t vSolar;
 
@@ -173,6 +121,11 @@ static void sendMemfaultData() {
   vPortFree(buf);
 }
 
+// Rain accumulator, since old chaac used to send increments of
+// 0.2794 mm of rain per tick, so 279400 nm
+static uint32_t rain_acc_nm;
+#define RAIN_STEP_NM 279400
+
 // Wait up to this amount before sending a message
 // (in case there's not vaisala data to send)
 static uint32_t max_message_interval_ms = 65 * 1000;
@@ -180,8 +133,6 @@ static void mainTask(void *pvParameters) {
   (void)pvParameters;
 
   LL_GPIO_ResetOutputPin(RADIO_NRST_GPIO_Port, RADIO_NRST_Pin);
-
-  // windRainInit(&windCfg);
 
   while (!isRadioReady()) {
     vTaskDelay(100);
@@ -210,7 +161,18 @@ static void mainTask(void *pvParameters) {
       packet.gust_speed = (uint16_t)(latest->speed_max * 360);
 
       packet.wind_dir_deg = latest->direction_avg;
-      // packet.rain = windRainGetRain()/2794;
+
+      // Convert from millimeters to nanometers and add to accumulator
+      rain_acc_nm += (uint32_t)(latest->rain_acc * 1000000.0);
+
+      if (rain_acc_nm >= RAIN_STEP_NM) {
+        packet.rain = rain_acc_nm / RAIN_STEP_NM;
+        // "rain_acc_nm %= RAIN_STEP_NM"
+        rain_acc_nm -= (packet.rain * RAIN_STEP_NM);
+      } else {
+        packet.rain = 0;
+      }
+
     } else {
       packet.temperature = -27300;
       packet.humidity = 0;
