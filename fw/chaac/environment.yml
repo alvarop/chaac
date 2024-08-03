@@ -7,19 +7,19 @@ channels:
     - defaults
 
 dependencies:
-    - arm-none-eabi-gcc=9_2020_q2_update
-    - cmake-xpack=3.18.3_1
-    - openocd-xpack=0.10.0_15
+    - arm-none-eabi-gcc=13.2.rel1
+    - cmake-xpack=3.20.6_2
+    - openocd-xpack=0.12.0_3
     - make=4.2.1
     - ninja=1.10.1
     - python=3.8.6
     - pip
-    - lcov=1.15
+    # - lcov=1.15
     - clang-tools=11.0.0
-    - doxygen=1.8.20
-    - cppcheck=2.1
-    - lizard
-    - gcovr
+    # - doxygen=1.8.20
+    # - cppcheck=2.1
+    # - lizard
+    # - gcovr
 variables:
   CMAKE_GENERATOR: "Unix Makefiles"
 
