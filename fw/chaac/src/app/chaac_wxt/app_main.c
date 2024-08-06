@@ -160,7 +160,7 @@ static void mainTask(void *pvParameters) {
       packet.wind_speed = (uint16_t)(latest->speed_avg * 360);
       packet.gust_speed = (uint16_t)(latest->speed_max * 360);
 
-      packet.wind_dir_deg = latest->direction_avg;
+      packet.wind_dir_deg = latest->direction_avg * 10;
 
       // Convert from millimeters to nanometers and add to accumulator
       rain_acc_nm += (uint32_t)(latest->rain_acc * 1000000.0);
