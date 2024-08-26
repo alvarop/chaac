@@ -2,6 +2,7 @@
 hosts:
   Merida: localhost:8000/Merida
   Sunbright: localhost:8000/Sunbright
+  Sunnyvale: localhost:8000/Sunnyvale
 
 # Chaac cache settings
 refresh_rate: 10

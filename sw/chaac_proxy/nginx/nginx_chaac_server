@@ -20,4 +20,10 @@ server {
         proxy_cache_valid 200 1m;
     }
 
+    location /Sunnyvale/ {
+        proxy_pass http://10.1.1.17/;
+        proxy_cache STATIC;
+        proxy_cache_valid 200 1m;
+    }
+
 }
