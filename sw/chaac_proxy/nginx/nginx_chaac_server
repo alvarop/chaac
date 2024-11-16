@@ -15,7 +15,7 @@ server {
     }
 
     location /Sunbright/ {
-        proxy_pass http://10.1.1.21/;
+        proxy_pass http://10.1.1.22/;
         proxy_cache STATIC;
         proxy_cache_valid 200 1m;
     }

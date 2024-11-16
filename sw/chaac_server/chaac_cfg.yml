@@ -2,7 +2,7 @@
 hosts:
   Merida: 10.1.1.11
   Merida(2): 10.1.1.14
-  Sunbright: 10.1.1.21
+  Sunbright: 10.1.1.22
   #  San Mateo: 10.1.1.10
   #  San Mateo(new): 10.1.1.12
   # chaac-dev: 10.1.1.20
