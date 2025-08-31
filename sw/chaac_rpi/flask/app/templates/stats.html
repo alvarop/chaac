@@ -19,7 +19,7 @@
         plots = [
           {
             title:"Temperature",
-            xdata: "timestamp",
+            xdata: "timestamp-th",
             x_label: "Time",
             ydata: "temperature",
             y_label: "Temperature (°" + localStorage.temperature_units.toUpperCase() + ")",
@@ -37,7 +37,7 @@
           },
           {
             title:"Humidity",
-            xdata: "timestamp",
+            xdata: "timestamp-th",
             x_label: "Time",
             ydata: "humidity",
             y_label: "Humidity (%RH)",
@@ -101,6 +101,22 @@
         ];
 
         for (let [uid, plot_data] of Object.entries(plot["devices"])) {
+
+          // duplicate timestamps for temp/humidity sensor (to remove bad sensor reads)
+          plot_data["timestamp-th"] = plot_data["timestamp"]
+          for (let idx = plot_data["temperature"]["min"].length - 1; idx >= 0; idx--) {
+            
+            if ((plot_data["temperature"]["min"][idx] < -100) || (plot_data["humidity"]["min"] <= 1)) {
+              plot_data["temperature"]["min"].splice(idx, 1);
+              plot_data["temperature"]["mean"].splice(idx, 1);
+              plot_data["temperature"]["max"].splice(idx, 1);
+              plot_data["humidity"]["min"].splice(idx, 1);
+              plot_data["humidity"]["mean"].splice(idx, 1);
+              plot_data["humidity"]["max"].splice(idx, 1);
+              plot_data["timestamp-th"].splice(idx, 1);
+            }
+          }
+
           if (localStorage.pressure_units == "inHg") {
             // Convert from hPa to inHg if necessary
             for (const [name, values] of Object.entries(plot_data["pressure"])){
