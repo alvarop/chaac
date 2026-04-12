@@ -2,17 +2,69 @@
 {% block head %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
-      current_plot = 'json/stats/year';
+      current_plot = 'json/stats/range?days=365';
 
       function load_plots(url) {
         current_plot = url;
+        var btns = document.querySelectorAll('#range-selector .button');
+        btns.forEach(function(b) {
+          b.classList.toggle('is-link', b.dataset.range === url);
+        });
+        var yearSel = document.getElementById('year-select');
+        if (yearSel && url.indexOf('year=') === -1) {
+          yearSel.value = '';
+        }
         fetch(url)
         .then(function(response) {
           return response.json();
         })
         .then(function(plot) {
+          populate_year_dropdown(plot.available_years || []);
           draw_plots(plot);
         });
+      };
+
+      function build_range_selector() {
+        var container = document.getElementById('range-selector');
+        var ranges = [
+          { label: 'Last 12 months', url: 'json/stats/range?days=365' },
+          { label: 'This year',      url: 'json/stats/range?year=' + new Date().getFullYear() },
+          { label: 'All time',       url: 'json/stats/range' },
+        ];
+        ranges.forEach(function(r) {
+          var btn = document.createElement('a');
+          btn.className = 'button is-small';
+          btn.textContent = r.label;
+          btn.dataset.range = r.url;
+          btn.onclick = function() { load_plots(r.url); };
+          container.appendChild(btn);
+        });
+
+        var wrap = document.createElement('span');
+        wrap.className = 'select is-small';
+        var sel = document.createElement('select');
+        sel.id = 'year-select';
+        var placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Year...';
+        sel.appendChild(placeholder);
+        sel.onchange = function() {
+          if (sel.value) load_plots('json/stats/range?year=' + sel.value);
+        };
+        wrap.appendChild(sel);
+        container.appendChild(wrap);
+      };
+
+      function populate_year_dropdown(years) {
+        var sel = document.getElementById('year-select');
+        if (!sel || sel.dataset.populated === 'true' || years.length === 0) return;
+        years.slice().reverse().forEach(function(y) {
+          var opt = document.createElement('option');
+          opt.value = String(y);
+          opt.textContent = String(y);
+          sel.appendChild(opt);
+        });
+        sel.dataset.populated = 'true';
       };
 
       function draw_plots(plot) {
@@ -197,6 +249,7 @@
       };
 
       window.onload = function(){
+        build_range_selector();
         draw_chaac();
       };
 
@@ -209,6 +262,11 @@
     <div class="columns is-desktop">
       <div class="column">
         <h3 class="subtitle is-3 " id="div-header">Weather</h3>
+      </div>
+    </div>
+    <div class="columns is-desktop">
+      <div class="column">
+        <div id="range-selector" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;"></div>
       </div>
     </div>
     <div class="columns is-desktop">

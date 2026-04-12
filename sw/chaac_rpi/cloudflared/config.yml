@@ -1,19 +1,52 @@
 # Cloudflare Tunnel configuration template for Chaac RPi stations
 #
-# Setup steps:
-#   1. Install cloudflared: curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb
-#   2. Authenticate: cloudflared tunnel login
-#   3. Create tunnel: cloudflared tunnel create chaac-<location>
-#   4. Copy the tunnel credentials JSON to /etc/cloudflared/
-#   5. Copy this config to /etc/cloudflared/config.yml and fill in tunnel ID
-#   6. Add DNS route: cloudflared tunnel route dns <tunnel-name> <location>.chaac.network
-#   7. Install as service: sudo cloudflared service install
-#   8. Start: sudo systemctl start cloudflared
+# SETUP (run on the RPi itself):
+#
+#   1. Install cloudflared (pick arch: arm64 for Pi 4/5, armhf for Pi 3):
+#      curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb -o cloudflared.deb
+#      sudo dpkg -i cloudflared.deb
+#
+#   2. Authenticate (opens browser — pick chaac.network):
+#      cloudflared tunnel login
+#
+#   3. Create the tunnel (name it chaac-<location>, e.g. chaac-merida):
+#      cloudflared tunnel create chaac-<location>
+#      # Note the tunnel UUID printed in the output.
+#
+#   4. Route DNS (watch for typos — Cloudflare caches NXDOMAIN for a while):
+#      cloudflared tunnel route dns chaac-<location> <location>.chaac.network
+#
+#   5. Move credentials into place (systemd service runs as root and reads /etc/cloudflared/):
+#      sudo mkdir -p /etc/cloudflared
+#      sudo cp ~/.cloudflared/*.json /etc/cloudflared/
+#      sudo cp ~/.cloudflared/cert.pem /etc/cloudflared/
+#
+#   6. Copy this template and fill in the tunnel UUID:
+#      sudo cp config.yml /etc/cloudflared/config.yml
+#      sudo nano /etc/cloudflared/config.yml  # replace TUNNEL_UUID_HERE (two places)
+#
+#   7. Install and start the service:
+#      sudo cloudflared service install
+#      sudo systemctl start cloudflared
+#      sudo systemctl status cloudflared   # should show 4 registered tunnel connections
+#
+#   8. Verify from another machine (bypass local DNS cache if needed):
+#      curl --resolve <location>.chaac.network:443:104.21.20.56 https://<location>.chaac.network/latest
+#
+# NOTES:
+#   - If `cloudflared service install` says "already installed", that's fine —
+#     it just means a prior tunnel was configured. `systemctl restart cloudflared`
+#     will pick up the new config.
+#   - If a new DNS name doesn't resolve after creation, your local resolver
+#     (router, pi-hole, systemd-resolved) is caching NXDOMAIN. Restart the
+#     router or use `--resolve` with curl to bypass while you wait.
+#   - Tailscale can stay installed for SSH management; cloudflared handles
+#     only the public web traffic.
 
-# Replace with your tunnel UUID (from step 3)
+# Replace with the tunnel UUID from step 3
 tunnel: TUNNEL_UUID_HERE
 credentials-file: /etc/cloudflared/TUNNEL_UUID_HERE.json
 
 ingress:
-  # Route all traffic to the local nginx (which proxies to Flask)
+  # All traffic goes to the local nginx, which proxies to the Flask app
   - service: http://localhost:80

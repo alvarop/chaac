@@ -275,24 +275,22 @@ def join_stats(stats1, stats2):
 
     return stats1
 
-@app.route("/json/stats/year")
-def json_stats_year_str():
+def _build_stats_response(start_time, end_time):
     db = get_db()
-
-    # time.time() is utc time, but now is a "naive"
-    # datetime object in current timezone
-    now = datetime.fromtimestamp(int(time.time()))
-
-    # Start this year before the next full hour
-    start_time = time.mktime(
-        (now.replace(minute=0, second=0, hour=0, day=1, month=1)).timetuple()
-    )
-
-    end_time = time.mktime(now.timetuple())
-
     stats = {"hostname": hostname}
     stats["start_date"] = datetime.fromtimestamp(start_time).strftime("%Y-%m-%d")
     stats["end_date"] = datetime.fromtimestamp(end_time).strftime("%Y-%m-%d")
+
+    # Report which calendar years have data, so the frontend can populate a year picker
+    db.cur.execute("SELECT MIN(timestamp), MAX(timestamp) FROM stat_samples")
+    row = db.cur.fetchone()
+    if row and row[0] is not None:
+        first_year = datetime.fromtimestamp(row[0]).year
+        last_year = datetime.fromtimestamp(row[1]).year
+        stats["available_years"] = list(range(first_year, last_year + 1))
+    else:
+        stats["available_years"] = []
+
     stats["devices"] = {}
     for device, name in db.devices.items():
         uid_stats = get_stats(device, start_time, end_time)
@@ -304,6 +302,60 @@ def json_stats_year_str():
                 stats["devices"][name] = uid_stats
 
     return jsonify(stats)
+
+
+@app.route("/json/stats/year")
+def json_stats_year_str():
+    # time.time() is utc time, but now is a "naive"
+    # datetime object in current timezone
+    now = datetime.fromtimestamp(int(time.time()))
+
+    # Start this year before the next full hour
+    start_time = time.mktime(
+        (now.replace(minute=0, second=0, hour=0, day=1, month=1)).timetuple()
+    )
+
+    end_time = time.mktime(now.timetuple())
+
+    return _build_stats_response(start_time, end_time)
+
+
+@app.route("/json/stats/range")
+def json_stats_range_str():
+    """Stats for an arbitrary time range.
+
+    Query params (first match wins):
+      ?days=N               rolling last N days
+      ?year=YYYY            calendar year YYYY
+      ?start=YYYY-MM-DD&end=YYYY-MM-DD   explicit range (end defaults to now)
+      (none)                all-time
+    """
+    now = datetime.fromtimestamp(int(time.time()))
+    end_time = time.mktime(now.timetuple())
+
+    days = request.args.get("days", type=int)
+    year = request.args.get("year", type=int)
+    start = request.args.get("start")
+    end = request.args.get("end")
+
+    if days is not None:
+        start_time = time.mktime((now - timedelta(days=days)).timetuple())
+    elif year is not None:
+        start_time = time.mktime(datetime(year, 1, 1).timetuple())
+        end_time = time.mktime(datetime(year + 1, 1, 1).timetuple())
+    elif start is not None:
+        start_time = time.mktime(datetime.strptime(start, "%Y-%m-%d").timetuple())
+        if end is not None:
+            end_time = time.mktime(datetime.strptime(end, "%Y-%m-%d").timetuple())
+    else:
+        # All time: use earliest stat_samples timestamp so the UI header
+        # shows a real date instead of 1970-01-01
+        db = get_db()
+        db.cur.execute("SELECT MIN(timestamp) FROM stat_samples")
+        row = db.cur.fetchone()
+        start_time = row[0] if row and row[0] is not None else 0
+
+    return _build_stats_response(start_time, end_time)
 
 
 @app.route("/json/day")

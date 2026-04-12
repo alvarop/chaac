@@ -1,5 +1,3 @@
-version: '3.5'
-
 volumes:
   chaac-db:
     external: true
@@ -27,8 +25,8 @@ services:
     image: alvaroops/chaac-frontend-flask:latest
     container_name: flask
     # restart: always
-    depends_on:
-      - chaac-logger
+    # depends_on:
+      # - chaac-logger
     volumes:
       - chaac-db:/chaac:ro
       - ./flask/app:/usr/src/app
@@ -45,17 +43,17 @@ services:
     ports:
         - 5000:5000
 
-  chaac-logger:
-    image: alvaroops/chaac_logger:latest
-    container_name: chaac-logger
-    # restart: always
-    environment:
-      - SERIAL_PORT=/dev/ttyACM0
-    devices:
-      - /dev/ttyACM0
-    volumes:
-      - chaac-db:/chaac
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+  # chaac-logger:
+  #   image: alvaroops/chaac_logger:latest
+  #   container_name: chaac-logger
+  #   # restart: always
+  #   environment:
+  #     - SERIAL_PORT=/dev/ttyACM0
+  #   devices:
+  #     - /dev/ttyACM0
+  #   volumes:
+  #     - chaac-db:/chaac
+  #     - /etc/timezone:/etc/timezone:ro
+  #     - /etc/localtime:/etc/localtime:ro
 networks:
   chaac-net:
