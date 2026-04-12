@@ -1,0 +1,16 @@
+name = "chaac-worker"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Static assets served from ../static/
+[assets]
+directory = "../static"
+
+# Optional: Cron trigger to pre-warm cache (every 1 minute)
+# [triggers]
+# crons = ["* * * * *"]
+
+[vars]
+# Tunnel hostnames for each RPi station
+# Update these after creating Cloudflare Tunnels
+HOSTS = '{"Merida":"merida.chaac.network","Sunbright":"sunbright.chaac.network","Sunnyvale":"sunnyvale.chaac.network"}'

@@ -1,0 +1,19 @@
+# Cloudflare Tunnel configuration template for Chaac RPi stations
+#
+# Setup steps:
+#   1. Install cloudflared: curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb -o cloudflared.deb && sudo dpkg -i cloudflared.deb
+#   2. Authenticate: cloudflared tunnel login
+#   3. Create tunnel: cloudflared tunnel create chaac-<location>
+#   4. Copy the tunnel credentials JSON to /etc/cloudflared/
+#   5. Copy this config to /etc/cloudflared/config.yml and fill in tunnel ID
+#   6. Add DNS route: cloudflared tunnel route dns <tunnel-name> <location>.chaac.network
+#   7. Install as service: sudo cloudflared service install
+#   8. Start: sudo systemctl start cloudflared
+
+# Replace with your tunnel UUID (from step 3)
+tunnel: TUNNEL_UUID_HERE
+credentials-file: /etc/cloudflared/TUNNEL_UUID_HERE.json
+
+ingress:
+  # Route all traffic to the local nginx (which proxies to Flask)
+  - service: http://localhost:80
