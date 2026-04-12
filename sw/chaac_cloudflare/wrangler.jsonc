@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chaac-cloudflare",
+  "main": "worker/src/index.js",
+  "compatibility_date": "2026-04-12",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "static",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "HOSTS": "{\"Merida\":\"merida.chaac.network\",\"Sunnyvale\":\"sunnyvale.chaac.network\"}"
+  }
+}
