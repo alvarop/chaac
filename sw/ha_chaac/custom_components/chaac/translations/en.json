@@ -7,11 +7,19 @@
         "data": {
           "serial_port": "Serial port"
         }
+      },
+      "history": {
+        "title": "Import history",
+        "description": "Optionally upload a chaac.db from the old system. Its stations are created with their names, and their hourly history goes into the new sensors' statistics. Skip this to start with no history.",
+        "data": {
+          "history_db": "chaac.db"
+        }
       }
     },
     "error": {
       "cannot_connect": "Could not open the serial port.",
-      "no_response": "The port opened but no Chaac receiver answered a ping."
+      "no_response": "The port opened but no Chaac receiver answered a ping.",
+      "invalid_history": "That file is not a chaac.db with hourly samples."
     },
     "abort": {
       "already_configured": "This receiver is already configured."
@@ -35,13 +43,27 @@
   },
   "entity": {
     "sensor": {
-      "alt_temperature": { "name": "Internal temperature" },
-      "gust_speed": { "name": "Wind gust" },
-      "battery": { "name": "Battery voltage" },
-      "solar_panel": { "name": "Solar panel voltage" },
-      "snr": { "name": "Signal-to-noise ratio" },
-      "rain": { "name": "Rain total" },
-      "last_packet": { "name": "Last packet" }
+      "alt_temperature": {
+        "name": "Internal temperature"
+      },
+      "gust_speed": {
+        "name": "Wind gust"
+      },
+      "battery": {
+        "name": "Battery voltage"
+      },
+      "solar_panel": {
+        "name": "Solar panel voltage"
+      },
+      "snr": {
+        "name": "Signal-to-noise ratio"
+      },
+      "rain": {
+        "name": "Rain total"
+      },
+      "last_packet": {
+        "name": "Last packet"
+      }
     }
   }
 }

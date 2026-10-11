@@ -3,6 +3,8 @@
 DOMAIN = "chaac"
 
 CONF_SERIAL_PORT = "serial_port"
+# Copy of an uploaded chaac.db, imported once at setup
+CONF_HISTORY_DB = "history_db"
 # Create devices for any station UID heard (otherwise only approved UIDs)
 CONF_AUTO_ADD = "auto_add"
 CONF_APPROVED = "approved_stations"

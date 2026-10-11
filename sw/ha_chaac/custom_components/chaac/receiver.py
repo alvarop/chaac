@@ -29,6 +29,7 @@ from .const import (
     signal_tick,
     uid_str,
 )
+from .history import ChaacStore
 from .protocol import FrameDecoder, MemfaultChunk, ResetEvent, WeatherReading, decode_payload
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,9 +45,10 @@ class ChaacReceiver:
     is heard, if auto-add is on or it was approved in the options.
     """
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, store: ChaacStore) -> None:
         self.hass = hass
         self.entry = entry
+        self.store = store
         self.port: str = entry.data[CONF_SERIAL_PORT]
         self.auto_add: bool = entry.options.get(CONF_AUTO_ADD, DEFAULT_AUTO_ADD)
         self.approved: set[int] = {
@@ -72,6 +74,10 @@ class ChaacReceiver:
         self.entry.async_on_unload(
             async_track_time_interval(self.hass, self._tick, TICK_INTERVAL)
         )
+
+    def station_info(self, uid: int) -> dict:
+        """Name, packet type and rain start of a station from an import."""
+        return self.store.data["stations"].get(uid_str(uid), {})
 
     def is_available(self, uid: int) -> bool:
         seen = self.last_seen.get(uid)

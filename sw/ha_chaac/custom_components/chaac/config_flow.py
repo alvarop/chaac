@@ -2,17 +2,23 @@
 
 from __future__ import annotations
 
+import logging
 import os
+from pathlib import Path
+import shutil
 import time
 from typing import Any
 
 import serial
 import voluptuous as vol
 
+from homeassistant.components.file_upload import process_uploaded_file
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.selector import (
     BooleanSelector,
+    FileSelector,
+    FileSelectorConfig,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -26,6 +32,7 @@ from .const import (
     BAUD_RATE,
     CONF_APPROVED,
     CONF_AUTO_ADD,
+    CONF_HISTORY_DB,
     CONF_SERIAL_PORT,
     CONF_UNAVAILABLE_AFTER,
     DEFAULT_AUTO_ADD,
@@ -33,7 +40,10 @@ from .const import (
     DOMAIN,
     uid_str,
 )
+from .history_db import InvalidHistoryDb, read_history
 from .protocol import FrameDecoder, encode_ping, is_pong
+
+_LOGGER = logging.getLogger(__name__)
 
 BY_ID_DIR = "/dev/serial/by-id"
 PING_TIMEOUT = 2.0  # seconds
@@ -63,8 +73,27 @@ def _ping(port: str) -> bool:
     return False
 
 
+def _save_history_db(hass: HomeAssistant, file_id: str, dest: Path) -> str:
+    """Keep a copy of the uploaded chaac.db for setup, after checking it."""
+    with process_uploaded_file(hass, file_id) as uploaded:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(uploaded, dest)
+    try:
+        stations = read_history(str(dest))
+    except InvalidHistoryDb:
+        dest.unlink(missing_ok=True)
+        raise
+    return ", ".join(
+        f"{s.name or f'{s.uid:08X}'}: {s.hours} hours from {s.first_hour:%Y-%m-%d}"
+        for s in stations
+    )
+
+
 class ChaacConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
+
+    def __init__(self) -> None:
+        self._data: dict[str, Any] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -80,9 +109,8 @@ class ChaacConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             else:
                 if ok:
-                    return self.async_create_entry(
-                        title="Chaac receiver", data={CONF_SERIAL_PORT: port}
-                    )
+                    self._data[CONF_SERIAL_PORT] = port
+                    return await self.async_step_history()
                 errors["base"] = "no_response"
 
         ports = await self.hass.async_add_executor_job(_list_ports)
@@ -98,6 +126,38 @@ class ChaacConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=self.add_suggested_values_to_schema(schema, user_input),
+            errors=errors,
+        )
+
+    async def async_step_history(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Optionally import an old chaac.db before the receiver starts."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            if file_id := user_input.get(CONF_HISTORY_DB):
+                dest = Path(self.hass.config.path(".storage", f"chaac_import_{self.flow_id}.db"))
+                try:
+                    summary = await self.hass.async_add_executor_job(
+                        _save_history_db, self.hass, file_id, dest
+                    )
+                except (InvalidHistoryDb, ValueError, OSError):
+                    errors["base"] = "invalid_history"
+                else:
+                    self._data[CONF_HISTORY_DB] = str(dest)
+                    _LOGGER.info("History to import: %s", summary)
+            if not errors:
+                return self.async_create_entry(title="Chaac receiver", data=self._data)
+
+        return self.async_show_form(
+            step_id="history",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(CONF_HISTORY_DB): FileSelector(
+                        FileSelectorConfig(accept=".db,.sqlite,.sqlite3")
+                    )
+                }
+            ),
             errors=errors,
         )
 

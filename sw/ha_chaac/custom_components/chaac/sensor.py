@@ -161,6 +161,10 @@ LAST_PACKET = SensorEntityDescription(
     entity_category=EntityCategory.DIAGNOSTIC,
 )
 
+DESCRIPTIONS: dict[str, SensorEntityDescription] = {
+    d.key: d for d in (*SENSORS, RAIN, LAST_PACKET)
+}
+
 
 def _entities_for(
     receiver: ChaacReceiver, uid: int, keys: set[str] | None, packet_type: int | None
@@ -201,6 +205,13 @@ async def async_setup_entry(
         receiver.stations.add(uid)
         async_add_entities(_entities_for(receiver, uid, keys, None))
 
+    # Stations imported from a chaac.db get their entities before any packet
+    for uid_hex, info in receiver.store.data["stations"].items():
+        uid = int(uid_hex, 16)
+        if uid not in known:
+            receiver.stations.add(uid)
+            async_add_entities(_entities_for(receiver, uid, None, info["packet_type"]))
+
     @callback
     def _new_station(uid: int) -> None:
         reading = receiver.latest[uid]
@@ -224,7 +235,7 @@ class ChaacEntity(SensorEntity):
         self._attr_unique_id = f"{uid_str(uid)}_{description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, uid_str(uid))},
-            name=f"Chaac {uid_str(uid)}",
+            name=receiver.station_info(uid).get("name") or f"Chaac {uid_str(uid)}",
             manufacturer="Chaac",
             model="Weather station",
             serial_number=uid_str(uid),
@@ -292,9 +303,15 @@ class ChaacRainSensor(ChaacEntity, RestoreSensor):
         self._attr_native_value = 0.0
 
     async def async_added_to_hass(self) -> None:
-        if (last := await self.async_get_last_sensor_data()) is not None:
-            if isinstance(last.native_value, (int, float)):
-                self._attr_native_value = float(last.native_value)
+        last = await self.async_get_last_sensor_data()
+        if last is not None and isinstance(last.native_value, (int, float)):
+            self._attr_native_value = float(last.native_value)
+        else:
+            # New meter: continue from the imported history, if any. HA has
+            # recorded nothing for it yet, so this is its starting point.
+            self._attr_native_value = float(
+                self.receiver.station_info(self.uid).get("rain_start", 0.0)
+            )
         await super().async_added_to_hass()
 
     @callback

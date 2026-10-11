@@ -22,23 +22,31 @@ monorepo through HACS won't work as-is.
 
 ## Importing old data
 
-`scripts/import_chaac_db.py` copies `hour_samples` from a `chaac.db` into the
-Chaac sensors' long-term statistics, so the graphs go back before the switch.
-Run it once the integration has recorded at least one hour: it only imports
-hours before the first hour HA already has, and never overwrites.
+When adding the receiver, the setup dialog has an optional step to upload a
+`chaac.db` from the old system. Take a fresh copy of it right before adding
+the integration (on the old Pi, the Flask app serves one at `/zipdb`). Rain
+that falls between the copy and the first live packet is not recorded.
 
-```
-sw/venv/bin/python sw/ha_chaac/scripts/import_chaac_db.py --db chaac.db \
-    --url ws://homeassistant.local:8123 --token-file ~/.config/ha_token \
-    --rename-devices --dry-run
-```
+The import runs once, before the receiver starts listening:
 
-Drop `--dry-run` to import. Needs the `websockets` package. Try it on a
-throwaway HA first: imported statistics are hard to remove.
+- Stations in the DB get their devices up front, named as in the DB
+  (`devices` table), so entities are e.g. `sensor.garden_temperature`.
+- Hourly history (`hour_samples`) goes into each sensor's own long-term
+  statistics, so old and new data are one series. Gust is skipped: the old
+  logger always stored 0.
+- Each rain meter starts at the station's imported rain total. HA hasn't
+  recorded the meter yet, so it takes that as its starting point rather than
+  rain. The recorder starts the live rain sum at 0, so once the first live
+  5-minute statistics exist the integration shifts them up by the imported
+  total (same as *Adjust sum* in Developer tools > Statistics). Both the
+  reading and the sum are then continuous across the switch.
+
+Try it on a throwaway HA first: imported statistics are hard to remove.
+Uploads are limited to 100 MB.
 
 ## Tests
 
-The protocol decoder has no HA dependency:
+The protocol decoder and the chaac.db reader have no HA dependency:
 
 ```
 sw/venv/bin/python -m pytest sw/ha_chaac/tests

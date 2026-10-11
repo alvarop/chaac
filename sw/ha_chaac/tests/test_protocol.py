@@ -1,17 +1,10 @@
-import importlib.util
-import pathlib
 import random
 import struct
-import sys
 
 import pytest
+from conftest import load
 
-# Load protocol.py directly so the tests don't need Home Assistant installed
-_PATH = pathlib.Path(__file__).parents[1] / "custom_components" / "chaac" / "protocol.py"
-_spec = importlib.util.spec_from_file_location("chaac_protocol", _PATH)
-protocol = importlib.util.module_from_spec(_spec)
-sys.modules[_spec.name] = protocol
-_spec.loader.exec_module(protocol)
+protocol = load("protocol")
 
 # Frame captured from the Sunnyvale "Garden" station on 2026-10-11
 GARDEN_FRAME = bytes.fromhex(
