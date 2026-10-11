@@ -218,7 +218,7 @@ static void mainTask( void *pvParameters ) {
         }
 
         if(sensorGetAvg(&dpsPressure, &fVal)) {
-            packet.pressure = (uint16_t)fVal;
+            packet.pressure = (int16_t)fVal;
             sensorClearSamples(&dpsPressure);
         } else {
             packet.pressure = INT16_MIN;
