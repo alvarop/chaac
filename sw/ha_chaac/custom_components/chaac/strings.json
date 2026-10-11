@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Chaac receiver",
+        "description": "Select the serial port of the Chaac USB LoRa receiver.",
+        "data": {
+          "serial_port": "Serial port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not open the serial port.",
+      "no_response": "The port opened but no Chaac receiver answered a ping."
+    },
+    "abort": {
+      "already_configured": "This receiver is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Chaac receiver options",
+        "data": {
+          "auto_add": "Automatically add new stations",
+          "approved_stations": "Approved stations (UID)",
+          "unavailable_after": "Mark a station unavailable after"
+        },
+        "data_description": {
+          "auto_add": "When off, only approved stations get devices. Stations heard but not approved are listed below.",
+          "approved_stations": "Station UIDs (hex) allowed to create devices when auto-add is off."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "alt_temperature": { "name": "Internal temperature" },
+      "gust_speed": { "name": "Wind gust" },
+      "battery": { "name": "Battery voltage" },
+      "solar_panel": { "name": "Solar panel voltage" },
+      "snr": { "name": "Signal-to-noise ratio" },
+      "rain": { "name": "Rain total" },
+      "last_packet": { "name": "Last packet" }
+    }
+  }
+}

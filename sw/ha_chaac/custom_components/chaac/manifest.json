@@ -1,0 +1,12 @@
+{
+  "domain": "chaac",
+  "name": "Chaac Weather Station",
+  "codeowners": ["@alvarop"],
+  "config_flow": true,
+  "documentation": "https://github.com/alvarop/chaac",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/alvarop/chaac/issues",
+  "requirements": ["pyserial-asyncio-fast>=0.11"],
+  "version": "0.1.0"
+}
