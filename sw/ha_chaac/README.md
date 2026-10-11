@@ -20,6 +20,22 @@ Station* integration and pick the receiver's `/dev/serial/by-id/...` port.
 HACS needs `custom_components/` at the repository root, so installing from this
 monorepo through HACS won't work as-is.
 
+## Importing old data
+
+`scripts/import_chaac_db.py` copies `hour_samples` from a `chaac.db` into the
+Chaac sensors' long-term statistics, so the graphs go back before the switch.
+Run it once the integration has recorded at least one hour: it only imports
+hours before the first hour HA already has, and never overwrites.
+
+```
+sw/venv/bin/python sw/ha_chaac/scripts/import_chaac_db.py --db chaac.db \
+    --url ws://homeassistant.local:8123 --token-file ~/.config/ha_token \
+    --rename-devices --dry-run
+```
+
+Drop `--dry-run` to import. Needs the `websockets` package. Try it on a
+throwaway HA first: imported statistics are hard to remove.
+
 ## Tests
 
 The protocol decoder has no HA dependency:
