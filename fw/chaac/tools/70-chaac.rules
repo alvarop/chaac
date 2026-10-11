@@ -1,0 +1,15 @@
+# udev rules for chaac boards (STM32 USB)
+#
+# Install:
+#   sudo cp 70-chaac.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload && sudo udevadm trigger
+#
+# Must sort before 73-seat-late.rules so TAG+="uaccess" takes effect
+# (grants the logged-in user access without dialout/plugdev groups).
+
+# STM32 ROM bootloader in DFU mode (dfu-util)
+SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", TAG+="uaccess"
+
+# STM32 virtual COM port (usb_lora gateway, chaac CDC console)
+# Keep ModemManager from probing it with AT commands.
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
