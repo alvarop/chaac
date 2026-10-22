@@ -96,3 +96,10 @@ def test_ping_pong():
     (payload,) = protocol.FrameDecoder().feed(protocol.encode_frame(pong))
     assert protocol.is_pong(payload)
     assert not protocol.is_pong(GARDEN_FRAME[4:-2])
+
+
+def test_reboot_command():
+    (payload,) = protocol.FrameDecoder().feed(protocol.encode_reboot())
+    assert struct.unpack("<IBHH", payload) == (
+        0, protocol.PACKET_TYPE_USB_CMD, protocol.USB_CMD_REBOOT, 0
+    )

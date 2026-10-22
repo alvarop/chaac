@@ -30,6 +30,7 @@ PACKET_TYPE_WEATHER_V1P0 = 10
 PACKET_TYPE_WEATHER_V1P1 = 11
 PACKET_TYPE_USB_CMD = 0xE0
 
+USB_CMD_REBOOT = 0
 USB_CMD_PING = 3
 USB_CMD_PONG = 4
 
@@ -73,6 +74,10 @@ def encode_frame(payload: bytes) -> bytes:
 
 def encode_ping() -> bytes:
     return encode_frame(_USB_CMD.pack(0, PACKET_TYPE_USB_CMD, USB_CMD_PING, 0))
+
+
+def encode_reboot() -> bytes:
+    return encode_frame(_USB_CMD.pack(0, PACKET_TYPE_USB_CMD, USB_CMD_REBOOT, 0))
 
 
 def is_pong(payload: bytes) -> bool:

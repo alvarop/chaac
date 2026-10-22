@@ -30,12 +30,23 @@ from .const import (
     uid_str,
 )
 from .history import ChaacStore
-from .protocol import FrameDecoder, MemfaultChunk, ResetEvent, WeatherReading, decode_payload
+from .protocol import (
+    FrameDecoder,
+    MemfaultChunk,
+    ResetEvent,
+    WeatherReading,
+    decode_payload,
+    encode_reboot,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 RECONNECT_MAX_DELAY = 60  # seconds
 TICK_INTERVAL = timedelta(seconds=30)
+# The receiver's radio can stop delivering packets while USB keeps working.
+# Reboot it after this long without a frame, backing off while it stays quiet.
+STALL_AFTER = timedelta(minutes=10)
+STALL_AFTER_MAX = timedelta(hours=6)
 
 
 class ChaacReceiver:
@@ -66,6 +77,9 @@ class ChaacReceiver:
         self.last_seen: dict[int, datetime] = {}
         self._last_sample: dict[int, int] = {}
         self._decoder = FrameDecoder()
+        self._writer: asyncio.StreamWriter | None = None
+        self._last_frame = dt_util.utcnow()
+        self._stall_after = STALL_AFTER
 
     def start(self) -> None:
         self.entry.async_create_background_task(
@@ -85,7 +99,22 @@ class ChaacReceiver:
 
     @callback
     def _tick(self, _now: datetime) -> None:
+        self._check_stall()
         async_dispatcher_send(self.hass, signal_tick(self.entry.entry_id))
+
+    @callback
+    def _check_stall(self) -> None:
+        quiet = dt_util.utcnow() - self._last_frame
+        if self._writer is None or quiet < self._stall_after:
+            return
+        _LOGGER.warning(
+            "No packets from %s for %d min, rebooting the receiver",
+            self.port,
+            quiet.total_seconds() // 60,
+        )
+        self._writer.write(encode_reboot())
+        self._last_frame = dt_util.utcnow()
+        self._stall_after = min(self._stall_after * 2, STALL_AFTER_MAX)
 
     async def _run(self) -> None:
         delay = 1
@@ -105,17 +134,22 @@ class ChaacReceiver:
             self.connected = True
             delay = 1
             self._decoder = FrameDecoder()
+            self._writer = writer
+            self._last_frame = dt_util.utcnow()
             try:
                 while True:
                     data = await reader.read(1024)
                     if not data:
                         raise ConnectionError("serial port closed")
                     for payload in self._decoder.feed(data):
+                        self._last_frame = dt_util.utcnow()
+                        self._stall_after = STALL_AFTER
                         self._handle(payload)
             except (OSError, serial.SerialException, ConnectionError) as err:
                 _LOGGER.warning("Lost connection to %s: %s", self.port, err)
             finally:
                 self.connected = False
+                self._writer = None
                 writer.close()
             await asyncio.sleep(delay)
 
