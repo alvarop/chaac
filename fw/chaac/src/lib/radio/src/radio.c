@@ -319,6 +319,7 @@ uint32_t RadioGetWakeupTime( void );
  * \brief Process radio irq
  */
 void RadioIrqProcess( void );
+static void RadioIrqHandle( uint16_t irqRegs );
 
 /*!
  * \brief Sets the radio in reception mode with Max LNA gain for the given time
@@ -1252,121 +1253,133 @@ void RadioIrqProcess( void )
         IrqFired = false;
         CRITICAL_SECTION_END( );
 
+        // DIO1 is a rising edge interrupt. If another IRQ flag sets between
+        // reading the status and clearing it, DIO1 stays high and no new edge
+        // ever arrives, so keep going until no flags are left pending.
         uint16_t irqRegs = SX126xGetIrqStatus( );
-        SX126xClearIrqStatus( irqRegs );
-
-        if( ( irqRegs & IRQ_TX_DONE ) == IRQ_TX_DONE )
+        for( uint8_t pass = 0; ( irqRegs != 0 ) && ( pass < 8 ); pass++ )
         {
-            xTimerStop( TxTimeoutTimer, 0);
-            //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-            SX126xSetOperatingMode( MODE_STDBY_RC );
-            if( ( RadioEvents != NULL ) && ( RadioEvents->TxDone != NULL ) )
-            {
-                RadioEvents->TxDone( );
-            }
+            RadioIrqHandle( irqRegs );
+            irqRegs = SX126xGetIrqStatus( );
         }
+    }
+}
 
-        if( ( irqRegs & IRQ_RX_DONE ) == IRQ_RX_DONE )
+static void RadioIrqHandle( uint16_t irqRegs )
+{
+    SX126xClearIrqStatus( irqRegs );
+
+    if( ( irqRegs & IRQ_TX_DONE ) == IRQ_TX_DONE )
+    {
+        xTimerStop( TxTimeoutTimer, 0);
+        //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+        SX126xSetOperatingMode( MODE_STDBY_RC );
+        if( ( RadioEvents != NULL ) && ( RadioEvents->TxDone != NULL ) )
         {
-            if( ( irqRegs & IRQ_CRC_ERROR ) == IRQ_CRC_ERROR )
-            {
-                if( RxContinuous == false )
-                {
-                    //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-                    SX126xSetOperatingMode( MODE_STDBY_RC );
-                }
-                if( ( RadioEvents != NULL ) && ( RadioEvents->RxError ) )
-                {
-                    RadioEvents->RxError( );
-                }
-            }
-            else
-            {
-                uint8_t size;
-
-                xTimerStop( RxTimeoutTimer, 0);
-                if( RxContinuous == false )
-                {
-                    //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-                    SX126xSetOperatingMode( MODE_STDBY_RC );
-
-                    // WORKAROUND - Implicit Header Mode Timeout Behavior, see DS_SX1261-2_V1.2 datasheet chapter 15.3
-                    // RegRtcControl = @address 0x0902
-                    SX126xWriteRegister( 0x0902, 0x00 );
-                    // RegEventMask = @address 0x0944
-                    SX126xWriteRegister( 0x0944, SX126xReadRegister( 0x0944 ) | ( 1 << 1 ) );
-                    // WORKAROUND END
-                }
-                SX126xGetPayload( RadioRxPayload, &size , 255 );
-                SX126xGetPacketStatus( &RadioPktStatus );
-                if( ( RadioEvents != NULL ) && ( RadioEvents->RxDone != NULL ) )
-                {
-                    RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt );
-                }
-            }
+            RadioEvents->TxDone( );
         }
+    }
 
-        if( ( irqRegs & IRQ_CAD_DONE ) == IRQ_CAD_DONE )
+    if( ( irqRegs & IRQ_RX_DONE ) == IRQ_RX_DONE )
+    {
+        if( ( irqRegs & IRQ_CRC_ERROR ) == IRQ_CRC_ERROR )
         {
-            //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-            SX126xSetOperatingMode( MODE_STDBY_RC );
-            if( ( RadioEvents != NULL ) && ( RadioEvents->CadDone != NULL ) )
-            {
-                RadioEvents->CadDone( ( ( irqRegs & IRQ_CAD_ACTIVITY_DETECTED ) == IRQ_CAD_ACTIVITY_DETECTED ) );
-            }
-        }
-
-        if( ( irqRegs & IRQ_RX_TX_TIMEOUT ) == IRQ_RX_TX_TIMEOUT )
-        {
-            if( SX126xGetOperatingMode( ) == MODE_TX )
-            {
-                xTimerStop( TxTimeoutTimer, 0);
-                //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-                SX126xSetOperatingMode( MODE_STDBY_RC );
-                if( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) )
-                {
-                    RadioEvents->TxTimeout( );
-                }
-            }
-            else if( SX126xGetOperatingMode( ) == MODE_RX )
-            {
-                xTimerStop( RxTimeoutTimer, 0);
-                //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-                SX126xSetOperatingMode( MODE_STDBY_RC );
-                if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
-                {
-                    RadioEvents->RxTimeout( );
-                }
-            }
-        }
-
-        if( ( irqRegs & IRQ_PREAMBLE_DETECTED ) == IRQ_PREAMBLE_DETECTED )
-        {
-            //__NOP( );
-        }
-
-        if( ( irqRegs & IRQ_SYNCWORD_VALID ) == IRQ_SYNCWORD_VALID )
-        {
-            //__NOP( );
-        }
-
-        if( ( irqRegs & IRQ_HEADER_VALID ) == IRQ_HEADER_VALID )
-        {
-            //__NOP( );
-        }
-
-        if( ( irqRegs & IRQ_HEADER_ERROR ) == IRQ_HEADER_ERROR )
-        {
-            xTimerStop( RxTimeoutTimer, 0);
             if( RxContinuous == false )
             {
                 //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
                 SX126xSetOperatingMode( MODE_STDBY_RC );
             }
+            if( ( RadioEvents != NULL ) && ( RadioEvents->RxError ) )
+            {
+                RadioEvents->RxError( );
+            }
+        }
+        else
+        {
+            uint8_t size;
+
+            xTimerStop( RxTimeoutTimer, 0);
+            if( RxContinuous == false )
+            {
+                //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+                SX126xSetOperatingMode( MODE_STDBY_RC );
+
+                // WORKAROUND - Implicit Header Mode Timeout Behavior, see DS_SX1261-2_V1.2 datasheet chapter 15.3
+                // RegRtcControl = @address 0x0902
+                SX126xWriteRegister( 0x0902, 0x00 );
+                // RegEventMask = @address 0x0944
+                SX126xWriteRegister( 0x0944, SX126xReadRegister( 0x0944 ) | ( 1 << 1 ) );
+                // WORKAROUND END
+            }
+            SX126xGetPayload( RadioRxPayload, &size , 255 );
+            SX126xGetPacketStatus( &RadioPktStatus );
+            if( ( RadioEvents != NULL ) && ( RadioEvents->RxDone != NULL ) )
+            {
+                RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt );
+            }
+        }
+    }
+
+    if( ( irqRegs & IRQ_CAD_DONE ) == IRQ_CAD_DONE )
+    {
+        //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+        SX126xSetOperatingMode( MODE_STDBY_RC );
+        if( ( RadioEvents != NULL ) && ( RadioEvents->CadDone != NULL ) )
+        {
+            RadioEvents->CadDone( ( ( irqRegs & IRQ_CAD_ACTIVITY_DETECTED ) == IRQ_CAD_ACTIVITY_DETECTED ) );
+        }
+    }
+
+    if( ( irqRegs & IRQ_RX_TX_TIMEOUT ) == IRQ_RX_TX_TIMEOUT )
+    {
+        if( SX126xGetOperatingMode( ) == MODE_TX )
+        {
+            xTimerStop( TxTimeoutTimer, 0);
+            //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+            SX126xSetOperatingMode( MODE_STDBY_RC );
+            if( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) )
+            {
+                RadioEvents->TxTimeout( );
+            }
+        }
+        else if( SX126xGetOperatingMode( ) == MODE_RX )
+        {
+            xTimerStop( RxTimeoutTimer, 0);
+            //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+            SX126xSetOperatingMode( MODE_STDBY_RC );
             if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
             {
                 RadioEvents->RxTimeout( );
             }
+        }
+    }
+
+    if( ( irqRegs & IRQ_PREAMBLE_DETECTED ) == IRQ_PREAMBLE_DETECTED )
+    {
+        //__NOP( );
+    }
+
+    if( ( irqRegs & IRQ_SYNCWORD_VALID ) == IRQ_SYNCWORD_VALID )
+    {
+        //__NOP( );
+    }
+
+    if( ( irqRegs & IRQ_HEADER_VALID ) == IRQ_HEADER_VALID )
+    {
+        //__NOP( );
+    }
+
+    if( ( irqRegs & IRQ_HEADER_ERROR ) == IRQ_HEADER_ERROR )
+    {
+        xTimerStop( RxTimeoutTimer, 0);
+        if( RxContinuous == false )
+        {
+            //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+            SX126xSetOperatingMode( MODE_STDBY_RC );
+        }
+        if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
+        {
+            RadioEvents->RxTimeout( );
         }
     }
 }
