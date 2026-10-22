@@ -61,6 +61,9 @@
       "rain": {
         "name": "Rain total"
       },
+      "rain_today": {
+        "name": "Rain today"
+      },
       "last_packet": {
         "name": "Last packet"
       }

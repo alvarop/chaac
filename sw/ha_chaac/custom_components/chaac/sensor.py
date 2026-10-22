@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -30,6 +30,8 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.event import async_track_time_change
+from homeassistant.util import dt as dt_util
 
 from . import ChaacConfigEntry
 from .const import DOMAIN, signal_new_station, signal_reading, signal_tick, uid_str
@@ -145,9 +147,22 @@ SENSORS: tuple[ChaacSensorDescription, ...] = (
     ),
 )
 
+# Lifetime total: the source for rain statistics (per hour/day/month), not
+# something to look at, so hidden by default
 RAIN = SensorEntityDescription(
     key="rain",
     translation_key="rain",
+    device_class=SensorDeviceClass.PRECIPITATION,
+    state_class=SensorStateClass.TOTAL_INCREASING,
+    native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
+    suggested_display_precision=1,
+    entity_registry_visible_default=False,
+)
+
+# Resets at local midnight; total_increasing treats the drop to 0 as a reset
+RAIN_TODAY = SensorEntityDescription(
+    key="rain_today",
+    translation_key="rain_today",
     device_class=SensorDeviceClass.PRECIPITATION,
     state_class=SensorStateClass.TOTAL_INCREASING,
     native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
@@ -162,7 +177,7 @@ LAST_PACKET = SensorEntityDescription(
 )
 
 DESCRIPTIONS: dict[str, SensorEntityDescription] = {
-    d.key: d for d in (*SENSORS, RAIN, LAST_PACKET)
+    d.key: d for d in (*SENSORS, RAIN, RAIN_TODAY, LAST_PACKET)
 }
 
 
@@ -183,6 +198,9 @@ def _entities_for(
     ]
     if wanted(RAIN.key, None):
         entities.append(ChaacRainSensor(receiver, uid))
+    # Follows the total so stations registered before it existed get it too
+    if wanted(RAIN.key, None) or wanted(RAIN_TODAY.key, None):
+        entities.append(ChaacRainTodaySensor(receiver, uid))
     if wanted(LAST_PACKET.key, None):
         entities.append(ChaacLastPacketSensor(receiver, uid))
     return entities
@@ -318,6 +336,51 @@ class ChaacRainSensor(ChaacEntity, RestoreSensor):
     def _update(self, reading: WeatherReading, first: bool) -> None:
         # The reading that created the device was already handled before this
         # entity existed; counting it after a restore could double count.
+        if first:
+            return
+        self._attr_native_value = round(self._attr_native_value + reading.rain_mm, 4)
+
+
+class ChaacRainTodaySensor(ChaacEntity, RestoreSensor):
+    """Rain since local midnight."""
+
+    def __init__(self, receiver: ChaacReceiver, uid: int) -> None:
+        super().__init__(receiver, uid, RAIN_TODAY)
+        self._attr_native_value = 0.0
+        self._day: date = dt_util.now().date()
+
+    async def async_added_to_hass(self) -> None:
+        last = await self.async_get_last_sensor_data()
+        state = await self.async_get_last_state()
+        if (
+            last is not None
+            and state is not None
+            and isinstance(last.native_value, (int, float))
+        ):
+            self._attr_native_value = float(last.native_value)
+            self._day = dt_util.as_local(state.last_updated).date()
+        self._roll_over()
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            async_track_time_change(self.hass, self._midnight, hour=0, minute=0, second=0)
+        )
+
+    @callback
+    def _roll_over(self) -> None:
+        today = dt_util.now().date()
+        if today != self._day:
+            self._day = today
+            self._attr_native_value = 0.0
+
+    @callback
+    def _midnight(self, now: datetime) -> None:
+        self._roll_over()
+        self.async_write_ha_state()
+
+    @callback
+    def _update(self, reading: WeatherReading, first: bool) -> None:
+        self._roll_over()
+        # Same double-count guard as the total
         if first:
             return
         self._attr_native_value = round(self._attr_native_value + reading.rain_mm, 4)
