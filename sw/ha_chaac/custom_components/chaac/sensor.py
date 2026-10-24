@@ -48,12 +48,15 @@ class ChaacSensorDescription(SensorEntityDescription):
 
 V1P1_ONLY = frozenset({PACKET_TYPE_WEATHER_V1P1})
 
+# suggested_unit_of_measurement keeps weather sensors metric on an HA set to
+# US units; HA only applies it when the entity is first created
 SENSORS: tuple[ChaacSensorDescription, ...] = (
     ChaacSensorDescription(
         key="temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_unit_of_measurement=UnitOfTemperature.CELSIUS,
         suggested_display_precision=1,
         value_fn=lambda r: r.values["temperature"],
     ),
@@ -63,6 +66,7 @@ SENSORS: tuple[ChaacSensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_unit_of_measurement=UnitOfTemperature.CELSIUS,
         suggested_display_precision=1,
         packet_types=V1P1_ONLY,
         value_fn=lambda r: r.values["alt_temperature"],
@@ -80,6 +84,7 @@ SENSORS: tuple[ChaacSensorDescription, ...] = (
         device_class=SensorDeviceClass.ATMOSPHERIC_PRESSURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.HPA,
+        suggested_unit_of_measurement=UnitOfPressure.HPA,
         suggested_display_precision=1,
         value_fn=lambda r: r.values["pressure"],
     ),
@@ -88,6 +93,7 @@ SENSORS: tuple[ChaacSensorDescription, ...] = (
         device_class=SensorDeviceClass.WIND_SPEED,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
+        suggested_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
         suggested_display_precision=1,
         value_fn=lambda r: r.values["wind_speed"],
     ),
@@ -97,6 +103,7 @@ SENSORS: tuple[ChaacSensorDescription, ...] = (
         device_class=SensorDeviceClass.WIND_SPEED,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
+        suggested_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
         suggested_display_precision=1,
         packet_types=V1P1_ONLY,
         value_fn=lambda r: r.values["gust_speed"],
@@ -155,6 +162,7 @@ RAIN = SensorEntityDescription(
     device_class=SensorDeviceClass.PRECIPITATION,
     state_class=SensorStateClass.TOTAL_INCREASING,
     native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
+    suggested_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
     suggested_display_precision=1,
     entity_registry_visible_default=False,
 )
@@ -166,6 +174,7 @@ RAIN_TODAY = SensorEntityDescription(
     device_class=SensorDeviceClass.PRECIPITATION,
     state_class=SensorStateClass.TOTAL_INCREASING,
     native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
+    suggested_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
     suggested_display_precision=1,
 )
 
